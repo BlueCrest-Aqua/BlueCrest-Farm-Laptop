@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="feed-inventory-version" content="complete-crop-safe-reconciliation">
 <title>BlueCrest - Shrimp Farm Management System</title>
-  <link rel="icon" type="image/png" href="./icon.png">
   <style id="embedded-app-styles">
 :root {
   --bg-app: #f2f4f1;
@@ -55,47 +54,47 @@ body.app-body {
 .app-layout { display: flex; height: 100vh; width: 100vw; }
 
 .app-sidebar {
-  width: 255px; min-width: 255px; background-color: var(--bg-sidebar);
+  width: 216px; min-width: 216px; background-color: var(--bg-sidebar);
   border-right: 1px solid var(--border-subtle); display: flex;
   flex-direction: column; height: 100vh; transition: transform 0.25s ease, width 0.25s ease; z-index: 60;
 }
 .app-sidebar.collapsed { transform: translateX(-100%); width: 0; min-width: 0; }
 
-.sidebar-brand { padding: 1.15rem 1.25rem; border-bottom: 1px solid var(--border-subtle); }
-.brand-crest { display: flex; align-items: center; gap: 0.75rem; }
-.brand-icon-box { width: 78px; height: 42px; border-radius: var(--radius-md); background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: center; }
-.crest-text h2 { font-size: 1.25rem; font-weight: 800; color: var(--brand-blue); line-height: 1.1; }
-.crest-text small { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
-.crest-text .crest-tagline { display: block; margin-top: 0.2rem; color: var(--brand-blue); font-size: 0.62rem; letter-spacing: 0.02em; text-transform: none; }
+.sidebar-brand { padding: 0.8rem 0.85rem; border-bottom: 1px solid var(--border-subtle); }
+.brand-crest { display: flex; align-items: center; gap: 0.5rem; }
+.brand-icon-box { width: 58px; height: 34px; border-radius: var(--radius-md); background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: center; }
+.crest-text h2 { font-size: 1.05rem; font-weight: 800; color: var(--brand-blue); line-height: 1.1; }
+.crest-text small { font-size: 0.62rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+.crest-text .crest-tagline { display: block; margin-top: 0.12rem; color: var(--brand-blue); font-size: 0.56rem; letter-spacing: 0.02em; text-transform: none; }
 
-.lab-org-badge { margin-top: 0.85rem; background: #ffffff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 0.55rem 0.65rem; display: flex; justify-content: flex-start; align-items: center; }
-.lab-org-badge span { font-family: Georgia, "Times New Roman", serif; font-size: 0.76rem; font-weight: 900; letter-spacing: 0.035em; color: #063b8f; }
-.lab-pill { background: var(--brand-blue); color: #ffffff; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: var(--radius-pill); }
+.lab-org-badge { margin-top: 0.55rem; background: #ffffff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 0.4rem 0.5rem; display: flex; justify-content: flex-start; align-items: center; }
+.lab-org-badge span { font-family: Georgia, "Times New Roman", serif; font-size: 0.64rem; font-weight: 900; letter-spacing: 0.03em; color: #063b8f; }
+.lab-pill { background: var(--brand-blue); color: #ffffff; font-size: 0.55rem; font-weight: 700; padding: 0.1rem 0.32rem; border-radius: var(--radius-pill); }
 
-.sidebar-menu { flex: 1; overflow-y: auto; padding: 0.85rem 0.75rem; display: flex; flex-direction: column; gap: 0.35rem; }
-.nav-item { background: transparent; border: none; width: 100%; display: flex; align-items: center; padding: 0.65rem 0.85rem; border-radius: var(--radius-pill); font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; text-align: left; }
+.sidebar-menu { flex: 1; overflow-y: auto; padding: 0.55rem 0.55rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.nav-item { background: transparent; border: none; width: 100%; min-height: 38px; display: flex; align-items: center; padding: 0.45rem 0.65rem; border-radius: var(--radius-pill); font-size: 0.78rem; font-weight: 600; color: #475569; cursor: pointer; text-align: left; }
 .nav-item:hover { background: #f1f5f9; color: #0f172a; }
 .nav-item.active { background-color: var(--brand-blue) !important; color: #ffffff !important; }
-.nav-icon { font-size: 1rem; margin-right: 0.75rem; }
+.nav-icon { font-size: 0.9rem; margin-right: 0.55rem; }
 .nav-text { flex: 1; }
 
 .nav-group { display: flex; flex-direction: column; }
-.nav-group-header { background: transparent; border: none; width: 100%; display: flex; align-items: center; padding: 0.65rem 0.85rem; border-radius: var(--radius-pill); font-size: 0.85rem; font-weight: 700; color: #334155; cursor: pointer; text-align: left; }
+.nav-group-header { background: transparent; border: none; width: 100%; min-height: 38px; display: flex; align-items: center; padding: 0.45rem 0.65rem; border-radius: var(--radius-pill); font-size: 0.78rem; font-weight: 700; color: #334155; cursor: pointer; text-align: left; }
 .nav-group-header:hover { background: #f1f5f9; color: #0f172a; }
 .nav-group-header.active-parent { color: var(--brand-blue); background-color: #eff6ff; }
-.nav-caret { margin-left: auto; font-size: 0.75rem; color: #94a3b8; transition: transform 0.2s ease; }
+.nav-caret { margin-left: auto; font-size: 0.68rem; color: #94a3b8; transition: transform 0.2s ease; }
 .nav-group.open .nav-caret { transform: rotate(180deg); color: var(--brand-blue); }
 
-.nav-submenu { display: none; flex-direction: column; gap: 0.2rem; margin-left: 1.25rem; padding-left: 0.75rem; border-left: 2px solid #e2e8f0; margin-top: 0.25rem; margin-bottom: 0.35rem; }
+.nav-submenu { display: none; flex-direction: column; gap: 0.1rem; margin-left: 1rem; padding-left: 0.55rem; border-left: 2px solid #e2e8f0; margin-top: 0.15rem; margin-bottom: 0.2rem; }
 .nav-group.open .nav-submenu { display: flex; }
-.nav-sub-item { background: transparent; border: none; width: 100%; display: flex; align-items: center; padding: 0.5rem 0.75rem; border-radius: var(--radius-pill); font-size: 0.8rem; font-weight: 600; color: #64748b; cursor: pointer; text-align: left; gap: 0.5rem; }
+.nav-sub-item { background: transparent; border: none; width: 100%; min-height: 32px; display: flex; align-items: center; padding: 0.35rem 0.5rem; border-radius: var(--radius-pill); font-size: 0.73rem; font-weight: 600; color: #64748b; cursor: pointer; text-align: left; gap: 0.4rem; }
 .nav-sub-item:hover { background: #f1f5f9; color: #0f172a; }
 .nav-sub-item.active { background-color: var(--brand-blue) !important; color: #ffffff !important; font-weight: 700; }
-.sub-icon { font-size: 0.85rem; }
+.sub-icon { font-size: 0.75rem; }
 
-.sidebar-footer { padding: 1rem; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem; align-items: center; }
-.btn-logout { background-color: #ea580c; color: #ffffff; border: none; width: 100%; padding: 0.55rem; border-radius: var(--radius-pill); font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-.app-version { font-size: 0.7rem; color: #94a3b8; }
+.sidebar-footer { padding: 0.65rem; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.35rem; align-items: center; }
+.btn-logout { background-color: #ea580c; color: #ffffff; border: none; width: 100%; min-height: 32px; padding: 0.35rem; border-radius: var(--radius-pill); font-size: 0.73rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+.app-version { font-size: 0.62rem; color: #94a3b8; }
 
 .main-wrapper { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 .top-nav { height: 56px; background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; flex-shrink: 0; }
@@ -118,7 +117,7 @@ body.app-body {
 .secondary-btn { background: #f1f5f9; color: #334155; border: 1px solid var(--border-subtle); }
 .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: #0f172a; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
 
-.content-canvas { flex: 1; overflow-y: auto; padding: 1.25rem 1.5rem 3rem 1.5rem; }
+.content-canvas { flex: 1; overflow-y: auto; padding: 0.85rem 1rem 1.5rem; }
 .view { display: none; }
 .view.active { display: block; animation: fadeIn 0.15s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -1299,12 +1298,12 @@ body > .invoice-product-dropdown {
 
 
 <style id="bluecrest-navigation-redesign">
-.sidebar-nav-group-label{padding:13px 12px 6px;margin-top:5px;font-size:10px;line-height:1;letter-spacing:.11em;text-transform:uppercase;font-weight:850;color:#98a2b3}
+.sidebar-nav-group-label{padding:8px 9px 4px;margin-top:3px;font-size:9px;line-height:1;letter-spacing:.11em;text-transform:uppercase;font-weight:850;color:#98a2b3}
 .sidebar-nav-group-label:first-child{margin-top:0}
 </style>
 
 <style id="bluecrest-menu-section-styles">
-.sidebar-section-label{padding:13px .85rem 6px;margin-top:.45rem;font-size:.62rem;line-height:1;letter-spacing:.11em;text-transform:uppercase;font-weight:850;color:#98a2b3}
+.sidebar-section-label{padding:8px .65rem 4px;margin-top:.25rem;font-size:.58rem;line-height:1;letter-spacing:.11em;text-transform:uppercase;font-weight:850;color:#98a2b3}
 .sidebar-section-label:first-child{margin-top:0}
 </style>
 
@@ -1375,65 +1374,87 @@ body > .invoice-product-dropdown {
 <style id="bluecrest-header-refinement">
 /* ================= BLUECREST HEADER REFINEMENT ================= */
 .top-nav {
-  min-height: 74px;
-  height: auto;
-  padding: .7rem 1.25rem;
-  gap: 1rem;
+  min-height: 52px;
+  height: 52px;
+  padding: .35rem .8rem;
+  gap: .55rem;
   background: #ffffff;
   border-bottom: 1px solid #dbe3ec;
   box-shadow: 0 2px 10px rgba(15,23,42,.035);
 }
-.top-nav-left { gap: 1.1rem; min-width: 0; }
-.top-brand-mark { display:flex; align-items:center; gap:.6rem; min-width: 185px; }
+.top-nav-left { gap: .6rem; min-width: 0; }
+.top-brand-mark { display:flex; align-items:center; gap:.4rem; min-width: 142px; }
 .top-brand-icon {
-  width: 42px; height: 42px; border-radius: 13px;
+  width: 30px; height: 30px; border-radius: 9px;
   display:flex; align-items:center; justify-content:center;
   background: linear-gradient(145deg,#0d52b9,#0284c7);
-  color:#fff; font-size:1.55rem; font-weight:900;
-  box-shadow: 0 5px 14px rgba(13,82,185,.18);
+  color:#fff; font-size:1.1rem; font-weight:900;
+  box-shadow: 0 3px 8px rgba(13,82,185,.14);
   transform: rotate(-8deg);
 }
 .top-brand-copy { display:flex; flex-direction:column; line-height:1; }
-.top-brand-copy strong { font-size:1.2rem; letter-spacing:-.035em; color:#10213f; }
+.top-brand-copy strong { font-size:.94rem; letter-spacing:-.035em; color:#10213f; }
 .top-brand-copy strong span { color:#0d52b9; }
-.top-brand-copy small { margin-top:.24rem; font-size:.5rem; letter-spacing:.16em; color:#64748b; font-weight:800; }
+.top-brand-copy small { margin-top:.12rem; font-size:.42rem; letter-spacing:.13em; color:#64748b; font-weight:800; }
 .current-screen-badge span {
   display:inline-flex; align-items:center; gap:.42rem;
-  font-size:.78rem; font-weight:800; color:#0d52b9;
+  font-size:.68rem; font-weight:800; color:#0d52b9;
   background:#eff6ff; border:1px solid #dbeafe;
-  padding:.42rem .8rem; border-radius:10px;
+  padding:.3rem .55rem; border-radius:8px;
 }
-.current-screen-badge span::before { content:'▦'; font-size:.9rem; }
-.top-nav-right { gap:.55rem; flex-wrap:wrap; justify-content:flex-end; }
+.current-screen-badge span::before { content:'▦'; font-size:.72rem; }
+.top-nav-right { gap:.7rem; flex-wrap:nowrap; justify-content:flex-end; min-width:0; }
+.header-control-group { display:flex; align-items:center; gap:.45rem; min-width:0; }
+.header-divider { width:1px; height:22px; background:#dbe3ec; flex:0 0 auto; }
+.top-nav .pill-btn { min-height:31px; height:31px; padding:.3rem .55rem; font-size:.68rem; gap:.3rem; white-space:nowrap; }
+.top-nav .status-dot { width:6px; height:6px; }
+.top-nav .user-avatar { width:28px; height:28px; font-size:.62rem; }
+.top-nav .icon-toggle-btn { padding:.25rem .42rem; font-size:.8rem; }
 .global-cycle-selector {
-  display:grid !important; grid-template-columns:auto minmax(88px,120px) auto minmax(100px,125px) auto;
-  align-items:center; gap:.42rem; padding:.42rem .55rem;
-  border:1px solid #dbe3ec; border-radius:12px; background:#fff;
-  box-shadow:0 2px 8px rgba(15,23,42,.035);
+  position:relative; display:flex !important; align-items:center; justify-content:flex-start; gap:.25rem; min-width:190px; height:31px; padding:0 .58rem;
+  border:1px solid #dbe3ec; border-radius:8px; background:#fff;
+  box-shadow:0 1px 4px rgba(15,23,42,.03);
 }
-.global-cycle-selector label { font-size:.63rem !important; color:#52627a !important; margin:0 !important; }
+.global-cycle-selector label { position:absolute; width:1px; height:1px; margin:-1px !important; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 .global-cycle-selector label::first-letter { font-weight:900; }
-.global-cycle-selector select { height:36px !important; border:1px solid #d8e2ee !important; border-radius:9px !important; background:#f8fafc !important; padding:0 .6rem !important; font-size:.78rem !important; font-weight:800 !important; max-width:none !important; }
+.global-cycle-selector select { appearance:none; height:29px !important; border:0 !important; border-radius:0 !important; background:transparent !important; padding:0 .14rem !important; font-size:.7rem !important; font-weight:800 !important; color:#172033; max-width:none !important; cursor:pointer; }
+.global-cycle-selector #globalYearSelect { width:58px; }
+.global-cycle-selector #globalCropSelect { width:78px; }
+.cycle-separator { color:#789; font-size:.78rem; font-weight:800; pointer-events:none; }
+.global-cycle-selector::after { content:'▾'; color:#52627a; font-size:.68rem; pointer-events:none; }
 .global-cycle-selector select:focus { border-color:#0d52b9 !important; box-shadow:0 0 0 3px rgba(13,82,185,.1); outline:none; }
-.global-cycle-selector .small-button {
-  height:36px !important; padding:.45rem .8rem !important; border-radius:9px;
+.top-nav #manageCyclesBtn {
+  height:31px; padding:.3rem .52rem; border-radius:7px;
   background:#0d52b9; color:#fff; border:1px solid #0d52b9;
-  box-shadow:0 4px 10px rgba(13,82,185,.15);
+  box-shadow:0 2px 5px rgba(13,82,185,.12);
+  font-size:.68rem; font-weight:800; cursor:pointer;
 }
-.global-cycle-selector .small-button:hover { background:#0a469f; }
+.top-nav #manageCyclesBtn:hover { background:#0a469f; }
+.top-nav .firebase-status-badge { width:31px; padding:0; justify-content:center; position:relative; background:#fff !important; color:#15803d; border:1px solid #bbf7d0; }
+.top-nav .firebase-status-badge .header-cloud-icon { font-size:.84rem; line-height:1; }
+.top-nav .firebase-status-badge .status-dot { position:absolute; right:4px; bottom:5px; background:#22c55e; box-shadow:0 0 0 1px #fff; }
+.top-nav .firebase-status-badge #firebaseStatusLabel { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.top-nav .firebase-status-badge.is-disconnected { color:#b91c1c; border-color:#fecaca; background:#fff !important; }
+.top-nav .firebase-status-badge.is-disconnected .status-dot { background:#dc2626; }
+.top-nav .firebase-status-badge.is-checking { color:#a16207; border-color:#fde68a; background:#fff !important; }
+.top-nav .firebase-status-badge.is-checking .status-dot { background:#eab308; }
+.top-nav #activeCycleBadge { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+.top-nav #bcLockStatusBar { display:flex !important; align-items:center; gap:6px !important; flex-wrap:nowrap !important; white-space:nowrap; margin-left:4px; padding-left:12px; border-left:1px solid #dbe3ec; }
+.top-nav #bcLockStatusBar > span { padding:5px 7px !important; font-size:10px; }
+.top-nav #bcLockStatusBar button { min-height:31px; height:31px; padding:0 8px !important; font-size:10px !important; }
 .nav-item[data-route="summary"] {
-  margin-bottom:.1rem; min-height:42px; padding:.72rem .9rem;
+  margin-bottom:0; min-height:38px; padding:.45rem .65rem;
   border:1px solid transparent; font-weight:800;
 }
-.nav-item[data-route="summary"] .nav-icon { font-size:1rem; }
+.nav-item[data-route="summary"] .nav-icon { font-size:.9rem; }
 .nav-item[data-route="summary"].active {
   background:linear-gradient(135deg,#0d52b9,#1769d1) !important;
   color:#fff !important; border-color:#0d52b9;
-  box-shadow:0 5px 14px rgba(13,82,185,.18);
+  box-shadow:0 3px 8px rgba(13,82,185,.14);
 }
 @media (max-width: 1100px) {
-  .top-brand-mark { min-width: 155px; }
-  .top-brand-copy strong { font-size:1.05rem; }
+  .top-brand-mark { min-width: 120px; }
+  .top-brand-copy strong { font-size:.88rem; }
   .current-screen-badge { display:none; }
 }
 @media (max-width: 760px) {
@@ -5014,29 +5035,35 @@ body.bc-return-modal-open{overflow:hidden!important}
               <small>AQUA MANAGEMENT</small>
             </div>
           </div>
-          <div class="current-screen-badge">
-            <span id="activeRouteLabel">Dashboard</span>
-          </div>
         </div>
 
         <div class="top-nav-right">
-          <div class="global-cycle-selector" id="globalCycleSelector">
-            <label>Year</label>
-            <select id="globalYearSelect" aria-label="Active farm year"></select>
-            <label>Crop</label>
-            <select id="globalCropSelect" aria-label="Active farm crop"></select>
+          <div class="header-control-group header-cycle-group">
+            <div class="global-cycle-selector" id="globalCycleSelector" aria-label="Active Year and Crop">
+              <label>Year</label>
+              <select id="globalYearSelect" aria-label="Active farm year"></select>
+              <span class="cycle-separator" aria-hidden="true">·</span>
+              <label>Crop</label>
+              <select id="globalCropSelect" aria-label="Active farm crop"></select>
+            </div>
             <button type="button" class="small-button" id="manageCyclesBtn">Manage</button>
           </div>
-          <button type="button" class="pill-btn firebase-status-badge is-checking" id="firebaseStatusBadge" title="Checking Firebase connection">
-            <span class="status-dot"></span>
-            <span id="firebaseStatusLabel">Cloud: checking</span>
-          </button>
-          <button type="button" class="pill-btn action-blue" id="uploadAllToFirebaseBtn" title="Upload the farm currently in this Chrome to Firebase">Save all to Firebase</button>
-          <button type="button" class="pill-btn status-green" id="activeCycleBadge">
-            <span class="status-dot"></span> Active Cycle
-          </button>
-          <button type="button" class="pill-btn" id="blueCrestSignOutBtn">Sign Out</button>
-          <div class="user-avatar" title="Elite Aqualines Admin">BC</div>
+          <span class="header-divider" aria-hidden="true"></span>
+          <div class="header-control-group header-cloud-group">
+            <button type="button" class="pill-btn firebase-status-badge is-checking" id="firebaseStatusBadge" title="Checking Firebase connection">
+              <span class="header-cloud-icon" aria-hidden="true">☁</span>
+              <span class="status-dot"></span>
+              <span id="firebaseStatusLabel">Cloud: checking</span>
+            </button>
+            <button type="button" class="pill-btn action-blue" id="uploadAllToFirebaseBtn" title="Upload the farm currently in this Chrome to Firebase">Save all to Firebase</button>
+            <button type="button" class="pill-btn status-green" id="activeCycleBadge">
+              <span class="status-dot"></span> Active Cycle
+            </button>
+          </div>
+          <span class="header-divider" aria-hidden="true"></span>
+          <div class="header-control-group header-profile-group">
+            <div class="user-avatar" title="Elite Aqualines Admin">BC</div>
+          </div>
         </div>
       </header>
 

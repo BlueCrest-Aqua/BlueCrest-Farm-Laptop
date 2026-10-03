@@ -685,6 +685,13 @@ body > .invoice-product-dropdown {
 #vendorStatementView .statement-table-container { border-radius:8px; overflow:auto; }
 #vendorStatementView .statement-ledger-table { font-size:.75rem; }
 #vendorStatementView .statement-ledger-table th { position:static; padding:.42rem .48rem; background:#edf3f8; color:#243b5a; font-size:.66rem; line-height:1.15; }
+/* Surgical Vendor Statement fix: keep ledger column headers directly below the compact bar while scrolling. */
+#vendorStatementView.compact-sticky-active .statement-table-container { overflow:visible; }
+#vendorStatementView.compact-sticky-active .statement-ledger-table th { position:sticky; top:calc(43px - 1.2rem); z-index:34; }
+@media(max-width:900px){
+  #vendorStatementView.compact-sticky-active .statement-ledger-table th { top:calc(43px - .8rem); }
+}
+
 #vendorStatementView .statement-ledger-table td { padding:.36rem .48rem; font-size:.74rem; line-height:1.2; }
 #vendorStatementView .statement-ledger-table tr.credit-row td { background:#fff; }
 #vendorStatementView .statement-ledger-table tr:hover td { background:#f7fbff; }

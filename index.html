@@ -618,8 +618,177 @@ body > .invoice-product-dropdown {
   .vendor-statement-bottom-summary { grid-template-columns: 1fr; }
 }
 
+
+/* Surgical Vendor Statement compact sticky review bar. Vendor Statement page only. */
+#vendorStatementView .vendor-statement-compact-sticky {
+  position: sticky; top: -1.2rem; z-index: 35; display:none; align-items:center; gap:.42rem;
+  margin:0 0 .35rem; padding:.38rem .48rem; border:1px solid #c9d9e8; border-radius:8px;
+  background:rgba(255,255,255,.98); box-shadow:0 4px 12px rgba(15,35,64,.08);
+}
+#vendorStatementView .vendor-statement-compact-sticky select,
+#vendorStatementView .vendor-statement-compact-sticky input { height:29px; min-height:29px; padding:.24rem .42rem; font-size:.69rem; }
+#vendorStatementView .vendor-statement-compact-sticky .compact-vendor { width:130px; min-width:110px; }
+#vendorStatementView .vendor-statement-compact-sticky .compact-crop { width:92px; min-width:82px; }
+#vendorStatementView .vendor-statement-compact-sticky .compact-search { flex:1 1 170px; min-width:145px; max-width:245px; }
+#vendorStatementView .vendor-statement-compact-sticky .compact-filter-btn { height:29px; padding:0 .55rem; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#334155; font-size:.68rem; font-weight:800; cursor:pointer; white-space:nowrap; }
+#vendorStatementView .vendor-statement-compact-kpis { margin-left:auto; display:flex; align-items:center; gap:.28rem; white-space:nowrap; }
+#vendorStatementView .vendor-statement-compact-kpi { min-width:88px; padding:.24rem .42rem; border:1px solid #dbe5ef; border-radius:6px; background:#f8fafc; line-height:1.05; }
+#vendorStatementView .vendor-statement-compact-kpi span { display:block; color:#64748b; font-size:.54rem; font-weight:800; text-transform:uppercase; }
+#vendorStatementView .vendor-statement-compact-kpi strong { display:block; margin-top:.12rem; color:#0f2742; font-size:.72rem; font-weight:900; }
+#vendorStatementView .vendor-statement-compact-kpi.credit strong { color:#15803d; }
+#vendorStatementView .vendor-statement-compact-kpi.balance strong { color:#0d52b9; }
+#vendorStatementView .vendor-statement-compact-filter-panel { position:absolute; top:calc(100% + 4px); left:0; z-index:45; width:min(720px,92vw); padding:.55rem; border:1px solid #cbd5e1; border-radius:8px; background:#fff; box-shadow:0 12px 28px rgba(15,35,64,.16); }
+#vendorStatementView .vendor-statement-compact-filter-panel[hidden] { display:none; }
+#vendorStatementView .vendor-statement-compact-filter-panel .compact-filter-row { display:flex; align-items:center; gap:.35rem; flex-wrap:wrap; }
+#vendorStatementView .vendor-statement-compact-filter-panel label { display:inline-flex; align-items:center; gap:.2rem; padding:.18rem .3rem; border:1px solid #e2e8f0; border-radius:999px; background:#f8fafc; font-size:.65rem; }
+#vendorStatementView .vendor-statement-compact-filter-panel input[type=checkbox] { width:auto; height:auto; min-height:0; }
+#vendorStatementView .vendor-statement-compact-sticky.is-visible { display:flex; }
+#vendorStatementView .statement-table-container { overflow:visible; }
+#vendorStatementView.compact-sticky-active .statement-ledger-table th { position:sticky; top:calc(43px - 1.2rem); z-index:30; }
+
+@media(max-width:900px){
+  #vendorStatementView .vendor-statement-compact-sticky { top:-.8rem; }
+  #vendorStatementView.compact-sticky-active .statement-ledger-table th { top:calc(43px - .8rem); }
+  #vendorStatementView .vendor-statement-compact-kpis .debit, #vendorStatementView .vendor-statement-compact-kpis .credit { display:none; }
+  #vendorStatementView .vendor-statement-compact-sticky .compact-search { max-width:none; }
+}
+@media print { #vendorStatementView .vendor-statement-compact-sticky { display:none !important; } }
+
+/* Vendor Statement workspace presentation — reuses the existing statement DOM and calculations. */
+#vendorStatementView .statement-print-wrapper { display:block; height:auto; overflow:visible; padding:0; }
+#vendorStatementView .vendor-statement-page-title { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:0 0 .55rem; }
+#vendorStatementView .vendor-statement-page-title h2 { margin:0; color:#0f2742; font-size:1.2rem; line-height:1.15; }
+#vendorStatementView .vendor-statement-page-title p { margin:.16rem 0 0; color:var(--text-muted); font-size:.74rem; }
+#vendorStatementView .vendor-statement-page-actions { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; justify-content:flex-end; }
+#vendorStatementView .vendor-statement-page-actions .pill-btn { min-height:31px; padding:.3rem .55rem; font-size:.7rem; }
+#vendorStatementView .statement-controls-bar { display:block; margin:0 0 .55rem; padding:.55rem .65rem; border:1px solid #dbe5ef; border-radius:8px; background:#fff; }
+#vendorStatementView .statement-controls-bar > div:first-child { display:flex !important; align-items:flex-end !important; gap:.42rem !important; flex-wrap:wrap !important; }
+#vendorStatementView .statement-controls-bar label { font-size:.66rem !important; line-height:1.1; }
+#vendorStatementView .statement-controls-bar .form-select-sm,
+#vendorStatementView .statement-controls-bar .form-input-sm { height:31px; min-height:31px; padding:.3rem .48rem; font-size:.72rem; }
+#vendorStatementView .statement-controls-bar #statementVendorSelect { min-width:150px !important; }
+#vendorStatementView .statement-controls-bar #statementRowSearch { min-width:205px; }
+#vendorStatementView #statementTransactionKindFilters { gap:.28rem !important; padding-top:.05rem !important; }
+#vendorStatementView #statementTransactionKindFilters label { display:inline-flex; align-items:center; gap:.2rem; padding:.18rem .3rem; border:1px solid #e2e8f0; border-radius:999px; background:#f8fafc; }
+#vendorStatementView .statement-sheet-header { min-height:0; margin:0 0 .55rem; border-radius:8px; background:#fff; }
+#vendorStatementView .statement-main-banner { display:none; }
+#vendorStatementView .statement-summary-grid { display:flex; min-height:0; grid-auto-rows:auto; gap:0; border:0; background:#fff; }
+#vendorStatementView .statement-summary-grid .summary-cell { flex:1 1 0; min-height:52px; padding:.38rem .58rem; text-align:left; align-items:flex-start; border-left:1px solid #dbe5ef; background:#fff; }
+#vendorStatementView .statement-summary-grid .summary-cell:first-child { border-left:0; }
+#vendorStatementView .statement-summary-grid .summary-cell:nth-child(-n+4) { display:none !important; }
+#vendorStatementView .statement-summary-grid .cell-lbl { margin:0 0 .16rem; font-size:.62rem; letter-spacing:0; text-transform:none; }
+#vendorStatementView .statement-summary-grid .cell-val { font-size:.95rem; }
+#vendorStatementView .statement-summary-grid .summary-cell:nth-child(5) .cell-val { color:#0f2742 !important; }
+#vendorStatementView .statement-summary-grid .summary-cell:nth-child(6) .cell-val { color:#15803d !important; }
+#vendorStatementView .statement-summary-grid .summary-cell:nth-child(7) { flex:1.18 1 0; background:#eff6ff; }
+#vendorStatementView .statement-summary-grid .summary-cell:nth-child(7) .cell-val { color:var(--brand-blue) !important; }
+#vendorStatementView .statement-table-container { border-radius:8px; overflow:auto; }
+#vendorStatementView .statement-ledger-table { font-size:.75rem; }
+#vendorStatementView .statement-ledger-table th { position:static; padding:.42rem .48rem; background:#edf3f8; color:#243b5a; font-size:.66rem; line-height:1.15; }
+#vendorStatementView .statement-ledger-table td { padding:.36rem .48rem; font-size:.74rem; line-height:1.2; }
+#vendorStatementView .statement-ledger-table tr.credit-row td { background:#fff; }
+#vendorStatementView .statement-ledger-table tr:hover td { background:#f7fbff; }
+#vendorStatementView .vendor-statement-bottom-summary { display:none; }
+#vendorStatementView .statement-kind-pill { display:inline-flex; align-items:center; min-height:20px; padding:2px 7px; border:0; border-radius:999px; font-size:.66rem; font-weight:800; line-height:1; white-space:nowrap; }
+#vendorStatementView .statement-kind-purchase { color:#1d4ed8; background:#dbeafe; }
+#vendorStatementView .statement-kind-payment { color:#15803d; background:#dcfce7; }
+#vendorStatementView .statement-kind-stock-return { color:#c2410c; background:#ffedd5; cursor:pointer; }
+#vendorStatementView .statement-kind-debit-note { color:#b91c1c; background:#fee2e2; }
+#vendorStatementView .statement-kind-credit-note { color:#7e22ce; background:#f3e8ff; }
+#vendorStatementView .statement-kind-other-adjustment { color:#475569; background:#e2e8f0; }
+#vendorStatementView .statement-kind-manual { color:#64748b; background:#f1f5f9; }
+#vendorStatementView .statement-crop-pill { display:inline-flex; padding:2px 6px; border-radius:999px; background:#eff6ff; color:var(--brand-blue); font-size:.66rem; font-weight:800; }
+#vendorStatementView .statement-row-actions { display:flex; gap:.24rem; justify-content:center; }
+#vendorStatementView .statement-row-actions .small-button { min-height:25px; padding:.2rem .38rem; border-radius:6px; font-size:.62rem; }
+@media(max-width:900px){
+  #vendorStatementView .vendor-statement-page-title { align-items:flex-start; flex-direction:column; }
+  #vendorStatementView .vendor-statement-page-actions { justify-content:flex-start; }
+  #vendorStatementView .statement-summary-grid { overflow:auto; }
+  #vendorStatementView .statement-summary-grid .summary-cell { min-width:145px; }
+}
+
 .payment-only-view .statement-ledger-table th.statement-debit-header,
 .payment-only-view .statement-ledger-table td.statement-debit-cell { display: none; }
+
+
+
+/* Surgical Vendor Payment compact sticky review bar. Vendor Payment page only. */
+#vendorPaymentsView .vendor-payment-compact-sticky {
+  position:sticky; top:-1.2rem; z-index:35; display:none; align-items:center; gap:.42rem;
+  margin:0 0 .35rem; padding:.38rem .48rem; border:1px solid #c9d9e8; border-radius:8px;
+  background:rgba(255,255,255,.98); box-shadow:0 4px 12px rgba(15,35,64,.08);
+}
+#vendorPaymentsView .vendor-payment-compact-sticky.is-visible{display:flex;}
+#vendorPaymentsView .vendor-payment-compact-sticky select,
+#vendorPaymentsView .vendor-payment-compact-sticky input{height:29px;min-height:29px;padding:.24rem .42rem;font-size:.69rem;}
+#vendorPaymentsView .vendor-payment-compact-sticky .compact-vendor{width:145px;min-width:120px;}
+#vendorPaymentsView .vendor-payment-compact-sticky .compact-crop{width:92px;min-width:82px;}
+#vendorPaymentsView .vendor-payment-compact-sticky .compact-account{width:145px;min-width:120px;}
+#vendorPaymentsView .vendor-payment-compact-sticky .compact-search{flex:1 1 180px;min-width:145px;max-width:270px;}
+#vendorPaymentsView .vendor-payment-compact-kpis{margin-left:auto;display:flex;align-items:center;gap:.28rem;white-space:nowrap;}
+#vendorPaymentsView .vendor-payment-compact-kpi{min-width:92px;padding:.24rem .42rem;border:1px solid #dbe5ef;border-radius:6px;background:#f8fafc;line-height:1.05;}
+#vendorPaymentsView .vendor-payment-compact-kpi span{display:block;color:#64748b;font-size:.54rem;font-weight:800;text-transform:uppercase;}
+#vendorPaymentsView .vendor-payment-compact-kpi strong{display:block;margin-top:.12rem;color:#15803d;font-size:.72rem;font-weight:900;}
+#vendorPaymentsView .vendor-payment-compact-kpi.entries strong{color:var(--brand-blue);}
+#vendorPaymentsView .vendor-payment-table-wrap{overflow:visible;}
+#vendorPaymentsView.compact-payment-sticky-active .vendor-payment-table th{position:sticky;top:calc(43px - 1.2rem);z-index:30;}
+@media(max-width:900px){
+  #vendorPaymentsView .vendor-payment-compact-sticky{top:-.8rem;}
+  #vendorPaymentsView.compact-payment-sticky-active .vendor-payment-table th{top:calc(43px - .8rem);}
+  #vendorPaymentsView .vendor-payment-compact-sticky .compact-account{display:none;}
+  #vendorPaymentsView .vendor-payment-compact-sticky .compact-search{max-width:none;}
+}
+@media print{#vendorPaymentsView .vendor-payment-compact-sticky{display:none!important;}}
+
+/* Surgical Vendor Payments workspace page. Existing payment/accounting logic is reused unchanged. */
+#vendorPaymentsView .vendor-payment-page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin:0 0 .55rem}
+#vendorPaymentsView .vendor-payment-page-header h2{margin:0;color:#0f2742;font-size:1.2rem;line-height:1.15}
+#vendorPaymentsView .vendor-payment-page-header p{margin:.16rem 0 0;color:var(--text-muted);font-size:.74rem}
+#vendorPaymentsView .vendor-payment-add-btn{min-height:31px;padding:.3rem .72rem;font-size:.72rem}
+#vendorPaymentsView .vendor-payment-filters{display:flex;align-items:flex-end;gap:.42rem;flex-wrap:wrap;margin:0 0 .55rem;padding:.55rem .65rem;border:1px solid #dbe5ef;border-radius:8px;background:#fff}
+#vendorPaymentsView .vendor-payment-filter{display:flex;align-items:center;gap:.35rem}
+#vendorPaymentsView .vendor-payment-filter label{font-size:.66rem;font-weight:800;white-space:nowrap}
+#vendorPaymentsView .vendor-payment-filter select,
+#vendorPaymentsView .vendor-payment-filter input{height:31px;min-height:31px;padding:.3rem .48rem;font-size:.72rem}
+#vendorPaymentsView #paymentVendorFilter{min-width:150px}
+#vendorPaymentsView #paymentCropFilter{min-width:130px}
+#vendorPaymentsView #paymentAccountFilter{min-width:160px}
+#vendorPaymentsView #paymentSearchFilter{min-width:230px}
+#vendorPaymentsView .vendor-payment-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 .55rem;border:1px solid #dbe5ef;border-radius:8px;overflow:hidden;background:#fff}
+#vendorPaymentsView .vendor-payment-summary-card{min-height:52px;padding:.38rem .65rem;border-left:1px solid #dbe5ef}
+#vendorPaymentsView .vendor-payment-summary-card:first-child{border-left:0}
+#vendorPaymentsView .vendor-payment-summary-card span{display:block;margin:0 0 .16rem;color:#64748b;font-size:.62rem;font-weight:800}
+#vendorPaymentsView .vendor-payment-summary-card strong{display:block;color:#15803d;font-size:.95rem;font-weight:900}
+#vendorPaymentsView .vendor-payment-summary-card.entries strong{color:var(--brand-blue)}
+#vendorPaymentsView .vendor-payment-history{border:1px solid #dbe5ef;border-radius:8px;background:#fff;overflow:hidden}
+#vendorPaymentsView .vendor-payment-history-title{padding:.48rem .65rem;border-bottom:1px solid #dbe5ef;color:#0f2742;font-size:.78rem;font-weight:850}
+#vendorPaymentsView .vendor-payment-table-wrap{overflow:auto}
+#vendorPaymentsView .vendor-payment-table{width:100%;border-collapse:collapse;font-size:.74rem}
+#vendorPaymentsView .vendor-payment-table th{padding:.42rem .48rem;background:#edf3f8;color:#243b5a;font-size:.66rem;text-align:left;white-space:nowrap}
+#vendorPaymentsView .vendor-payment-table td{padding:.36rem .48rem;border-top:1px solid #e5edf4;line-height:1.2}
+#vendorPaymentsView .vendor-payment-table tbody tr:hover td{background:#f7fbff}
+#vendorPaymentsView .vendor-payment-amount{text-align:right;color:#15803d;font-weight:850}
+#vendorPaymentsView .vendor-payment-actions{display:flex;justify-content:center;gap:.24rem}
+#vendorPaymentsView .vendor-payment-actions .small-button{min-height:25px;padding:.2rem .38rem;border-radius:6px;font-size:.62rem}
+#vendorPaymentsView .vendor-payment-empty{text-align:center;color:#64748b;padding:1.4rem!important}
+#vendorPaymentEntryDialog{width:min(1080px,94vw);max-height:88vh;border:0;border-radius:12px;padding:0;box-shadow:0 24px 70px rgba(15,23,42,.28)}
+#vendorPaymentEntryDialog::backdrop{background:rgba(15,23,42,.38)}
+#vendorPaymentEntryDialog .vendor-payment-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.72rem .9rem;border-bottom:1px solid #dbe5ef;background:#f8fbfe}
+#vendorPaymentEntryDialog .vendor-payment-dialog-head h3{margin:0;color:#0f2742;font-size:1rem}
+#vendorPaymentEntryDialog .vendor-payment-dialog-close{width:30px;height:30px;border:1px solid #d3e0eb;border-radius:50%;background:#fff;color:#244565;font-size:20px;line-height:1;cursor:pointer}
+#vendorPaymentEntryDialog .quick-payment-drawer{display:block!important;padding:.8rem .9rem;background:#fff}
+#vendorPaymentEntryDialog .quick-payment-drawer>h4{display:none}
+#vendorPaymentEntryDialog .quick-payment-drawer>div{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#vendorPaymentEntryDialog .vendor-payment-dialog-actions{display:flex;justify-content:flex-end;gap:.5rem;padding:.65rem .9rem;border-top:1px solid #dbe5ef;background:#f8fbfe}
+#vendorPaymentEntryDialog #saveAdvancePaymentBtn{width:auto!important}
+@media(max-width:820px){
+  #vendorPaymentsView .vendor-payment-page-header{flex-direction:column}
+  #vendorPaymentsView .vendor-payment-summary{grid-template-columns:1fr}
+  #vendorPaymentsView .vendor-payment-summary-card{border-left:0;border-top:1px solid #dbe5ef}
+  #vendorPaymentsView .vendor-payment-summary-card:first-child{border-top:0}
+  #vendorPaymentEntryDialog .quick-payment-drawer>div{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:560px){#vendorPaymentEntryDialog .quick-payment-drawer>div{grid-template-columns:1fr!important}}
 
 /* --- Weekly Sample Modal Overlay --- */
 .modal-overlay {
@@ -1842,6 +2011,65 @@ body > .invoice-product-dropdown {
 .vendor-master-hero{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.25rem;padding:1.35rem 1.5rem;border:1px solid #dbe5ef;border-radius:20px;background:linear-gradient(135deg,#0f2742,#155e75);color:#fff;box-shadow:0 12px 30px rgba(15,39,66,.14)}
 .vendor-master-eyebrow,.vendor-master-section-kicker{display:block;font-size:.68rem;font-weight:850;letter-spacing:.13em;text-transform:uppercase;color:#7dd3fc}
 .vendor-master-hero h2{margin:.25rem 0 .3rem;font-size:1.65rem;letter-spacing:-.02em}.vendor-master-hero p{margin:0;color:#dbeafe;font-size:.82rem}.vendor-master-count{min-width:125px;padding:.75rem 1rem;border:1px solid rgba(255,255,255,.2);border-radius:14px;background:rgba(255,255,255,.08);text-align:center}.vendor-master-count span{display:block;font-size:1.5rem;font-weight:900}.vendor-master-count small{font-size:.7rem;color:#dbeafe}.vendor-master-grid{display:grid;grid-template-columns:minmax(320px,.8fr) minmax(500px,1.2fr);gap:1rem}.vendor-master-form-card,.vendor-master-list-card{margin:0}.vendor-master-card-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}.vendor-master-card-head h3{margin:.2rem 0 0;font-size:1.05rem;color:#0f172a}.vendor-master-id-badge{padding:.3rem .55rem;border-radius:999px;background:#e0f2fe;color:#0369a1;font-size:.65rem;font-weight:850;letter-spacing:.08em}.vendor-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}.vendor-form-full{grid-column:1/-1}.vendor-status-toggle{padding:.75rem;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc}.vendor-checkbox-label{display:flex!important;align-items:center;gap:.5rem;font-weight:800!important}.vendor-status-toggle small{display:block;margin-top:.35rem;color:#64748b;font-size:.68rem}.vendor-master-actions{margin-top:1rem}.vendor-master-search{min-width:190px}.vendor-master-table-wrap{overflow:auto}.vendor-master-table{min-width:650px}.vendor-master-table th{white-space:nowrap}.vendor-master-table td{vertical-align:middle}.vendor-table-sub{display:block;margin-top:.15rem;color:#64748b;font-size:.68rem}.vendor-type-badge,.vendor-status-badge{display:inline-flex;padding:.28rem .55rem;border-radius:999px;font-size:.66rem;font-weight:800}.vendor-type-badge.account{background:#e0f2fe;color:#0369a1}.vendor-type-badge.spot{background:#fef3c7;color:#92400e}.vendor-status-badge.active{background:#dcfce7;color:#166534}.vendor-status-badge.inactive{background:#e2e8f0;color:#475569}@media(max-width:950px){.vendor-master-grid{grid-template-columns:1fr}}@media(max-width:560px){.vendor-master-hero{align-items:flex-start;flex-direction:column}.vendor-master-count{width:100%}.vendor-form-grid{grid-template-columns:1fr}.vendor-form-full{grid-column:auto}.vendor-master-card-head{align-items:flex-start;flex-direction:column}.vendor-master-search{width:100%}}
+
+/* Surgical Vendor Statement + Vendor Payment hero-header parity with Vendor List. */
+#vendorStatementView .vendor-statement-page-title,
+#vendorPaymentsView .vendor-payment-page-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:1rem;
+  margin:0 0 1.25rem;
+  padding:1.35rem 1.5rem;
+  border:1px solid #dbe5ef;
+  border-radius:20px;
+  background:linear-gradient(135deg,#0f2742,#155e75);
+  color:#fff;
+  box-shadow:0 12px 30px rgba(15,39,66,.14);
+}
+#vendorStatementView .vendor-statement-page-title .vendor-account-eyebrow,
+#vendorPaymentsView .vendor-payment-page-header .vendor-account-eyebrow{
+  display:block;
+  font-size:.68rem;
+  font-weight:850;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#7dd3fc;
+}
+#vendorStatementView .vendor-statement-page-title h2,
+#vendorPaymentsView .vendor-payment-page-header h2{
+  margin:.25rem 0 .3rem;
+  color:#fff;
+  font-size:1.65rem;
+  line-height:normal;
+  letter-spacing:-.02em;
+}
+#vendorStatementView .vendor-statement-page-title p,
+#vendorPaymentsView .vendor-payment-page-header p{
+  margin:0;
+  color:#dbeafe;
+  font-size:.82rem;
+}
+#vendorStatementView .vendor-statement-page-actions{
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+#vendorStatementView .vendor-statement-page-actions .pill-btn,
+#vendorPaymentsView .vendor-payment-add-btn{
+  min-height:31px;
+}
+@media(max-width:900px){
+  #vendorStatementView .vendor-statement-page-title,
+  #vendorPaymentsView .vendor-payment-page-header{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  #vendorStatementView .vendor-statement-page-actions{justify-content:flex-start;}
+}
+
 </style>
 <style id="sampling-chart-expand-style">
 .chart-panel-header{position:relative}.chart-expand-btn{margin-left:auto;width:32px;height:32px;border:1px solid #cddcea;border-radius:8px;background:#fff;color:#126bd2;font-size:18px;font-weight:900;line-height:1;cursor:pointer}.chart-expand-btn:hover{background:#eaf3ff}.sampling-chart-expand-dialog{width:min(1240px,calc(100vw - 28px));height:min(820px,calc(100vh - 28px));max-width:none;max-height:none;padding:0;border:0;border-radius:18px;box-shadow:0 26px 75px rgba(15,35,64,.32)}.sampling-chart-expand-dialog::backdrop{background:rgba(15,35,64,.5)}.sampling-chart-expand-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.2rem;border-bottom:1px solid #dbe7f0;background:#f8fbfe}.sampling-chart-expand-head h2{margin:0;color:#123b63;font-size:1.12rem}.sampling-chart-expand-close{width:36px;height:36px;border:1px solid #cddcea;border-radius:50%;background:#fff;color:#244565;font-size:25px;line-height:1;cursor:pointer}.sampling-chart-expand-body{height:calc(100% - 69px);box-sizing:border-box;padding:1rem 1.2rem;display:flex;flex-direction:column}.sampling-chart-expanded-svg{display:block;width:100%;height:100%;min-height:0;flex:1;border:1px solid #e1eaf1;border-radius:12px;background:#fff}.sampling-chart-expand-note{margin:.7rem 0 0;color:#526b85;font-size:.8rem;min-height:1.1rem}@media(max-width:640px){.sampling-chart-expand-dialog{width:calc(100vw - 16px);height:calc(100vh - 16px)}.sampling-chart-expand-body{padding:.7rem}.sampling-chart-expand-head{padding:.8rem 1rem}}
@@ -5003,10 +5231,10 @@ body.bc-return-modal-open{overflow:hidden!important}
             <button class="nav-sub-item" data-route="vendorList" type="button">
               <span class="sub-icon">👥</span><span>Vendor List</span>
             </button>
-            <button class="nav-sub-item" id="vendorStatementNavBtn" type="button">
+            <button class="nav-sub-item" id="vendorStatementNavBtn" data-route="vendorStatement" type="button">
               <span class="sub-icon">📑</span><span>Vendor Statement</span>
             </button>
-            <button class="nav-sub-item" id="vendorPaymentsNavBtn" type="button">
+            <button class="nav-sub-item" id="vendorPaymentsNavBtn" data-route="vendorPayments" type="button">
               <span class="sub-icon">💳</span><span>Vendor Payments</span>
             </button>
           </div>
@@ -6277,6 +6505,227 @@ body.bc-return-modal-open{overflow:hidden!important}
         </dialog>
 
 
+        <!-- VIEW: VENDOR STATEMENT -->
+        <section id="vendorStatementView" class="view vendor-statement-page">
+    <div class="statement-print-wrapper" id="statementPrintWrapper">
+      <div class="vendor-statement-page-title no-print">
+        <div>
+          <span class="vendor-account-eyebrow">VENDOR ACCOUNT</span>
+          <h2>Vendor Statement</h2>
+          <p>View purchase, payment, stock return and adjustments for each vendor.</p>
+        </div>
+        <div class="vendor-statement-page-actions">
+          <button type="button" class="pill-btn secondary-btn" id="openDetailedVendorStatementBtn">Detailed Statement</button>
+          <button type="button" class="pill-btn action-blue" id="printStatementBtn">🖨️ Print / Save PDF</button>
+          <button type="button" class="pill-btn secondary-btn" id="copyStatementBtn">📋 Copy WhatsApp Summary</button>
+        </div>
+      </div>
+      <div class="statement-controls-bar no-print">
+        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+          <label style="font-weight:700; font-size:0.85rem;">Select Vendor:</label>
+          <select id="statementVendorSelect" class="form-select-sm" style="min-width:180px;"></select>
+          
+          <label style="font-weight:700; font-size:0.85rem; margin-left:0.5rem;">Crop:</label>
+          <select id="statementCropFilter" class="form-select-sm">
+            <option value="ALL">All Crops</option>
+            <option value="Crop 1">Crop 1</option>
+            <option value="Crop 2">Crop 2</option>
+          </select>
+
+          <select id="statementTypeFilter" class="form-select-sm">
+            <option value="ALL">All Sides</option>
+            <option value="Debit">Debit Only</option>
+            <option value="Credit">Credit Only</option>
+          </select>
+          <input id="statementRowSearch" class="form-input-sm" type="text" placeholder="Search invoice / reference / product">
+          <fieldset id="statementTransactionKindFilters" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin:0;padding:0;border:0;" aria-label="Transaction type filters">
+            <legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Transaction Type</legend>
+            <label style="font-size:.75rem;font-weight:700;"><input type="checkbox" value="ALL" checked> All</label>
+            <label style="font-size:.75rem;"><input type="checkbox" value="Purchase"> Purchase</label>
+            <label style="font-size:.75rem;"><input type="checkbox" value="Payment"> Payment</label>
+            <label style="font-size:.75rem;"><input type="checkbox" value="Stock Return"> Stock Return</label>
+            <label style="font-size:.75rem;"><input type="checkbox" value="Debit Note"> Debit Note</label>
+            <label style="font-size:.75rem;"><input type="checkbox" value="Credit Note"> Credit Note</label>
+            <label style="font-size:.75rem;"><input type="checkbox" value="Other Adjustment"> Other Adjustment</label>
+            <label style="font-size:.75rem;"><input type="checkbox" value="Manual / Unclassified"> Manual / Unclassified</label>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="statement-sheet-header">
+        <div class="statement-main-banner">
+          <h1 id="statementAccountTitle">VENDOR ACCOUNT</h1>
+        </div>
+
+        <div id="statementSummaryGrid" class="statement-summary-grid">
+          <div class="summary-cell"><span class="cell-lbl">Crop 1 Total Purchases</span><strong class="cell-val" id="stmtCrop1Purchases">₹0</strong></div>
+          <div class="summary-cell"><span class="cell-lbl">Crop 2 Total Purchases</span><strong class="cell-val" id="stmtCrop2Purchases">₹0</strong></div>
+          <div class="summary-cell"><span class="cell-lbl">Crop 1 Balance</span><strong class="cell-val" id="stmtCrop1Balance">₹0</strong></div>
+          <div class="summary-cell"><span class="cell-lbl">Crop 2 Balance</span><strong class="cell-val" id="stmtCrop2Balance">₹0</strong></div>
+          <div class="summary-cell highlight-total"><span class="cell-lbl">Total Debit (Bills)</span><strong class="cell-val text-blue" id="stmtTotalDebit">₹0</strong></div>
+          <div class="summary-cell highlight-total"><span class="cell-lbl">Total Credit (Paid)</span><strong class="cell-val text-green" id="stmtTotalCredit">₹0</strong></div>
+          <div class="summary-cell highlight-total"><span class="cell-lbl">Closing Balance</span><strong class="cell-val text-orange" id="stmtClosingBalance">₹0</strong></div>
+          <div class="summary-cell highlight-total statement-filtered-kpi" style="display:none;"><span class="cell-lbl">Filtered Entries</span><strong class="cell-val" id="stmtFilteredEntries">0</strong></div>
+          <div class="summary-cell highlight-total statement-filtered-kpi" style="display:none;"><span class="cell-lbl">Filtered Debit</span><strong class="cell-val text-blue" id="stmtFilteredDebit">₹0</strong></div>
+          <div class="summary-cell highlight-total statement-filtered-kpi" style="display:none;"><span class="cell-lbl">Filtered Credit</span><strong class="cell-val text-green" id="stmtFilteredCredit">₹0</strong></div>
+          <div class="summary-cell highlight-total statement-filtered-kpi" style="display:none;"><span class="cell-lbl">Closing Balance</span><strong class="cell-val text-orange" id="stmtFilteredClosingBalance">₹0</strong></div>
+        </div>
+      </div>
+
+
+      <div id="vendorStatementCompactSticky" class="vendor-statement-compact-sticky no-print" aria-label="Vendor statement quick controls">
+        <select id="compactStatementVendor" class="compact-vendor" aria-label="Vendor"></select>
+        <select id="compactStatementCrop" class="compact-crop" aria-label="Crop">
+          <option value="ALL">All Crops</option><option value="Crop 1">Crop 1</option><option value="Crop 2">Crop 2</option>
+        </select>
+        <input id="compactStatementSearch" class="compact-search" type="text" placeholder="Search statement" aria-label="Search statement">
+        <button id="compactStatementFilterBtn" class="compact-filter-btn" type="button" aria-expanded="false">Filters ▾</button>
+        <div id="compactStatementFilterPanel" class="vendor-statement-compact-filter-panel" hidden>
+          <div class="compact-filter-row">
+            <select id="compactStatementSide" aria-label="Debit or credit side" style="width:120px;">
+              <option value="ALL">All Sides</option><option value="Debit">Debit Only</option><option value="Credit">Credit Only</option>
+            </select>
+            <label><input type="checkbox" value="ALL" checked> All</label>
+            <label><input type="checkbox" value="Purchase"> Purchase</label>
+            <label><input type="checkbox" value="Payment"> Payment</label>
+            <label><input type="checkbox" value="Stock Return"> Stock Return</label>
+            <label><input type="checkbox" value="Debit Note"> Debit Note</label>
+            <label><input type="checkbox" value="Credit Note"> Credit Note</label>
+            <label><input type="checkbox" value="Other Adjustment"> Other Adjustment</label>
+            <label><input type="checkbox" value="Manual / Unclassified"> Manual / Unclassified</label>
+          </div>
+        </div>
+        <div class="vendor-statement-compact-kpis" aria-label="Statement totals">
+          <div class="vendor-statement-compact-kpi debit"><span>Debit</span><strong id="compactStmtDebit">₹0</strong></div>
+          <div class="vendor-statement-compact-kpi credit"><span>Credit</span><strong id="compactStmtCredit">₹0</strong></div>
+          <div class="vendor-statement-compact-kpi balance"><span>Balance</span><strong id="compactStmtBalance">₹0</strong></div>
+        </div>
+      </div>
+
+      <div class="table-responsive statement-table-container">
+        <table class="statement-ledger-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">Sr No.</th>
+              <th id="statementVendorHeader" style="width: 150px; display:none;">Vendor</th>
+              <th style="width: 80px;">Crop</th>
+              <th style="width: 120px;">Date</th>
+              <th style="width: 120px;">Transaction Type</th>
+              <th style="width: 100px;">Invoice / Ref.</th>
+              <th class="statement-debit-header" style="width: 110px; text-align: right;">Debit</th>
+              <th style="width: 110px; text-align: right;">Credit</th>
+              <th style="width: 130px; text-align: right;">Closing Balance</th>
+              <th>Remarks</th>
+              <th class="no-print" style="width:60px; text-align:center;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="statementTableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="vendorStatementBottomSummary" class="vendor-statement-bottom-summary">
+        <div class="vendor-statement-total-card debit-total">
+          <span>Total Debit</span>
+          <strong id="stmtBottomDebit">₹0</strong>
+        </div>
+        <div class="vendor-statement-total-card credit-total">
+          <span>Total Credit</span>
+          <strong id="stmtBottomCredit">₹0</strong>
+        </div>
+        <div class="vendor-statement-total-card balance-total">
+          <span id="stmtBottomBalanceLabel">Closing Balance</span>
+          <strong id="stmtBottomBalance">₹0</strong>
+        </div>
+      </div>
+
+      <div id="quickAddPaymentBox" class="quick-payment-drawer no-print" hidden>
+        <h4 style="font-size:0.9rem; font-weight:800; margin-bottom:0.75rem; color:#0f172a;">Record Advance / Payment / Credit Note</h4>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:0.65rem; align-items:end;">
+          <div class="form-group" style="margin:0;"><label>Date *</label><input type="date" id="advDate"></div>
+          <div class="form-group" style="margin:0;"><label>Crop *</label><select id="advCrop"><option value="Crop 1">Crop 1</option><option value="Crop 2">Crop 2</option></select></div>
+          <div class="form-group" style="margin:0;"><label>Accounting Side *</label><select id="advType"><option value="Credit">Credit</option><option value="Debit">Debit</option></select></div>
+          <div class="form-group" style="margin:0;"><label>Transaction Type *</label><select id="advTransactionKind" required><option value="">Select type…</option><option value="Payment">Payment</option><option value="Debit Note">Debit Note</option><option value="Credit Note">Credit Note</option><option value="Other Adjustment">Other Adjustment</option></select></div>
+          <div class="form-group" style="margin:0;"><label>Bill No. (Optional)</label><input type="text" id="advBillNo" placeholder="e.g. 1021"></div>
+          <div class="form-group searchable-field" style="margin:0;"><label>Vendor *</label><input type="text" id="advVendor" placeholder="Search vendor..."><div id="advVendorSuggestions" class="ledger-suggestions" hidden></div></div>
+          <div class="form-group searchable-field" style="margin:0;"><label>Account</label><input type="text" id="advAccount" placeholder="Search or add account..."><div id="advAccountSuggestions" class="ledger-suggestions" hidden></div></div>
+          <div class="form-group" style="margin:0;"><label>Amount (₹) *</label><input type="number" id="advAmount" step="any" placeholder="e.g. 200000"></div>
+          <div class="form-group" style="margin:0;"><label>Remarks *</label><input type="text" id="advRemarks" placeholder="Advance, Feed Return, CN..."></div>
+          <div><button type="button" class="pill-btn action-blue" id="saveAdvancePaymentBtn" style="width:100%;">Save Entry</button></div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="vendorDetailedStatementDialog" style="width:min(1320px,96vw);max-height:92vh;border:0;border-radius:18px;padding:0;box-shadow:0 24px 70px rgba(15,23,42,.32);">
+    <div id="vendorDetailedStatementPrint" style="background:#fff;max-height:92vh;overflow:auto;">
+      <div style="padding:18px 22px;background:linear-gradient(135deg,#123b63,#167f83);color:#fff;display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;">
+        <div><div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.82;">BlueCrest</div><h2 style="margin:.2rem 0 0;font-size:1.25rem;">Vendor Detailed Statement</h2><div id="vendorDetailedStatementScope" style="margin-top:.4rem;font-size:.8rem;opacity:.92;"></div></div>
+        <div class="no-print" style="display:flex;gap:.5rem;"><button type="button" class="pill-btn secondary-btn" onclick="printDetailedVendorStatement()">Print / Save PDF</button><button type="button" class="pill-btn secondary-btn" onclick="document.getElementById('vendorDetailedStatementDialog').close()">Close</button></div>
+      </div>
+      <div id="vendorDetailedStatementBody" style="padding:20px 22px;"></div>
+    </div>
+  </dialog>
+
+        </section>
+
+        <!-- VIEW: VENDOR PAYMENTS — presentation only; existing vendorTransactions/save/edit/delete logic is reused. -->
+        <section id="vendorPaymentsView" class="view vendor-payment-page">
+          <div class="vendor-payment-page-header">
+            <div>
+              <span class="vendor-account-eyebrow">VENDOR ACCOUNT</span>
+              <h2>Vendor Payment</h2>
+              <p>Record and view all payments made to each vendor.</p>
+            </div>
+            <button type="button" class="pill-btn action-blue vendor-payment-add-btn" id="openAddPaymentModalBtn">+ Add Payment</button>
+          </div>
+
+          <div class="vendor-payment-filters">
+            <div class="vendor-payment-filter"><label for="paymentVendorFilter">Select Vendor:</label><select id="paymentVendorFilter"><option value="ALL">All Vendors</option></select></div>
+            <div class="vendor-payment-filter"><label for="paymentCropFilter">Crop:</label><select id="paymentCropFilter"><option value="ALL">All Crops</option><option value="Crop 1">Crop 1</option><option value="Crop 2">Crop 2</option></select></div>
+            <div class="vendor-payment-filter"><label for="paymentAccountFilter">Account:</label><select id="paymentAccountFilter"><option value="ALL">All Accounts</option></select></div>
+            <div class="vendor-payment-filter"><input id="paymentSearchFilter" type="text" placeholder="Search reference / remarks" aria-label="Search reference or remarks"></div>
+          </div>
+
+          <div class="vendor-payment-summary">
+            <div class="vendor-payment-summary-card"><span>Total Payments</span><strong id="vendorPaymentTotal">₹0</strong></div>
+            <div class="vendor-payment-summary-card entries"><span>Total Entries</span><strong id="vendorPaymentEntries">0</strong></div>
+          </div>
+
+
+
+          <div id="vendorPaymentCompactSticky" class="vendor-payment-compact-sticky no-print" aria-label="Vendor payment quick controls">
+            <select id="compactPaymentVendor" class="compact-vendor" aria-label="Vendor"></select>
+            <select id="compactPaymentCrop" class="compact-crop" aria-label="Crop"><option value="ALL">All Crops</option><option value="Crop 1">Crop 1</option><option value="Crop 2">Crop 2</option></select>
+            <select id="compactPaymentAccount" class="compact-account" aria-label="Account"></select>
+            <input id="compactPaymentSearch" class="compact-search" type="text" placeholder="Search payments" aria-label="Search payments">
+            <div class="vendor-payment-compact-kpis" aria-label="Filtered payment totals">
+              <div class="vendor-payment-compact-kpi"><span>Total Payments</span><strong id="compactPaymentTotal">₹0</strong></div>
+              <div class="vendor-payment-compact-kpi entries"><span>Entries</span><strong id="compactPaymentEntries">0</strong></div>
+            </div>
+          </div>
+
+          <div class="vendor-payment-history">
+            <div class="vendor-payment-history-title">Payment History</div>
+            <div class="vendor-payment-table-wrap">
+              <table class="vendor-payment-table">
+                <thead><tr><th style="width:54px;">Sr No.</th><th style="width:115px;">Date</th><th style="width:90px;">Crop</th><th style="width:170px;">Account</th><th style="width:150px;">Invoice / Reference</th><th style="width:130px;text-align:right;">Amount (₹)</th><th>Remarks</th><th style="width:90px;text-align:center;">Action</th></tr></thead>
+                <tbody id="vendorPaymentTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <dialog id="vendorPaymentEntryDialog" aria-labelledby="vendorPaymentEntryDialogTitle">
+          <div class="vendor-payment-dialog-head">
+            <h3 id="vendorPaymentEntryDialogTitle">Add Payment</h3>
+            <button type="button" id="closeVendorPaymentEntryDialog" class="vendor-payment-dialog-close" aria-label="Close">×</button>
+          </div>
+          <div id="vendorPaymentEntryHost"></div>
+          <div class="vendor-payment-dialog-actions">
+            <button type="button" class="pill-btn secondary-btn" id="cancelVendorPaymentEntry">Cancel</button>
+          </div>
+        </dialog>
+
         <!-- VIEW: VENDOR LIST -->
         <section id="vendorListView" class="view">
           <div class="vendor-master-hero">
@@ -6790,137 +7239,6 @@ document.addEventListener('click', function(e){ const m=document.getElementById(
       <button value="add" class="pill-btn secondary-btn">Keep old bills and add CSV</button>
       <button value="replace" class="pill-btn action-blue">Replace this crop's purchases</button>
     </form>
-  </dialog>
-
-  <dialog id="vendorStatementDialog" class="vendor-statement-dialog">
-    <button type="button" id="closeStatementBtn" class="vendor-statement-close no-print" aria-label="Close Vendor Statement" title="Close">×</button>
-    <div class="statement-print-wrapper" id="statementPrintWrapper">
-      <div class="statement-brand-header">
-        <div>
-          <strong>BlueCrest</strong>
-          <span class="statement-brand-subtitle">Bahadurkhed, Punjab</span>
-          <span class="statement-brand-tagline">Smarter Ponds. Stronger Harvests.</span>
-        </div>
-        <span>Vendor Statement</span>
-      </div>
-      <div class="statement-controls-bar no-print">
-        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-          <label style="font-weight:700; font-size:0.85rem;">Select Vendor:</label>
-          <select id="statementVendorSelect" class="form-select-sm" style="min-width:180px;"></select>
-          
-          <label style="font-weight:700; font-size:0.85rem; margin-left:0.5rem;">Crop:</label>
-          <select id="statementCropFilter" class="form-select-sm">
-            <option value="ALL">All Crops</option>
-            <option value="Crop 1">Crop 1</option>
-            <option value="Crop 2">Crop 2</option>
-          </select>
-
-          <select id="statementTypeFilter" class="form-select-sm">
-            <option value="ALL">All Sides</option>
-            <option value="Debit">Debit Only</option>
-            <option value="Credit">Credit Only</option>
-          </select>
-          <input id="statementRowSearch" class="form-input-sm" type="text" placeholder="Search invoice / reference / product">
-          <fieldset id="statementTransactionKindFilters" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin:0;padding:0;border:0;" aria-label="Transaction type filters">
-            <legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Transaction Type</legend>
-            <label style="font-size:.75rem;font-weight:700;"><input type="checkbox" value="ALL" checked> All</label>
-            <label style="font-size:.75rem;"><input type="checkbox" value="Purchase"> Purchase</label>
-            <label style="font-size:.75rem;"><input type="checkbox" value="Payment"> Payment</label>
-            <label style="font-size:.75rem;"><input type="checkbox" value="Stock Return"> Stock Return</label>
-            <label style="font-size:.75rem;"><input type="checkbox" value="Debit Note"> Debit Note</label>
-            <label style="font-size:.75rem;"><input type="checkbox" value="Credit Note"> Credit Note</label>
-            <label style="font-size:.75rem;"><input type="checkbox" value="Other Adjustment"> Other Adjustment</label>
-            <label style="font-size:.75rem;"><input type="checkbox" value="Manual / Unclassified"> Manual / Unclassified</label>
-          </fieldset>
-        </div>
-        <div style="display:flex; gap:0.5rem; align-items:center;">
-          <button type="button" class="pill-btn secondary-btn" id="openDetailedVendorStatementBtn">Detailed Statement</button>
-          <button type="button" class="pill-btn action-blue" id="printStatementBtn">🖨️ Print / Save PDF</button>
-          <button type="button" class="pill-btn secondary-btn" id="copyStatementBtn">📋 Copy WhatsApp Summary</button>
-        </div>
-      </div>
-
-      <div class="statement-sheet-header">
-        <div class="statement-main-banner">
-          <h1 id="statementAccountTitle">VENDOR ACCOUNT</h1>
-        </div>
-
-        <div id="statementSummaryGrid" class="statement-summary-grid">
-          <div class="summary-cell"><span class="cell-lbl">Crop 1 Total Purchases</span><strong class="cell-val" id="stmtCrop1Purchases">₹0</strong></div>
-          <div class="summary-cell"><span class="cell-lbl">Crop 2 Total Purchases</span><strong class="cell-val" id="stmtCrop2Purchases">₹0</strong></div>
-          <div class="summary-cell"><span class="cell-lbl">Crop 1 Balance</span><strong class="cell-val" id="stmtCrop1Balance">₹0</strong></div>
-          <div class="summary-cell"><span class="cell-lbl">Crop 2 Balance</span><strong class="cell-val" id="stmtCrop2Balance">₹0</strong></div>
-          <div class="summary-cell highlight-total"><span class="cell-lbl">Total Debit (Bills)</span><strong class="cell-val text-blue" id="stmtTotalDebit">₹0</strong></div>
-          <div class="summary-cell highlight-total"><span class="cell-lbl">Total Credit (Paid)</span><strong class="cell-val text-green" id="stmtTotalCredit">₹0</strong></div>
-          <div class="summary-cell highlight-total"><span class="cell-lbl">Closing Balance</span><strong class="cell-val text-orange" id="stmtClosingBalance">₹0</strong></div>
-          <div class="summary-cell highlight-total statement-filtered-kpi" style="display:none;"><span class="cell-lbl">Filtered Entries</span><strong class="cell-val" id="stmtFilteredEntries">0</strong></div>
-          <div class="summary-cell highlight-total statement-filtered-kpi" style="display:none;"><span class="cell-lbl">Filtered Debit</span><strong class="cell-val text-blue" id="stmtFilteredDebit">₹0</strong></div>
-          <div class="summary-cell highlight-total statement-filtered-kpi" style="display:none;"><span class="cell-lbl">Filtered Credit</span><strong class="cell-val text-green" id="stmtFilteredCredit">₹0</strong></div>
-        </div>
-      </div>
-
-      <div class="table-responsive statement-table-container">
-        <table class="statement-ledger-table">
-          <thead>
-            <tr>
-              <th style="width: 50px;">Sr No.</th>
-              <th id="statementVendorHeader" style="width: 150px; display:none;">Vendor</th>
-              <th style="width: 80px;">Crop</th>
-              <th style="width: 120px;">Date</th>
-              <th style="width: 120px;">Transaction Type</th>
-              <th style="width: 100px;">Invoice / Ref.</th>
-              <th class="statement-debit-header" style="width: 110px; text-align: right;">Debit</th>
-              <th style="width: 110px; text-align: right;">Credit</th>
-              <th style="width: 130px; text-align: right;">Closing Balance</th>
-              <th>Remarks</th>
-              <th class="no-print" style="width:60px; text-align:center;">Action</th>
-            </tr>
-          </thead>
-          <tbody id="statementTableBody"></tbody>
-        </table>
-      </div>
-
-      <div id="vendorStatementBottomSummary" class="vendor-statement-bottom-summary">
-        <div class="vendor-statement-total-card debit-total">
-          <span>Total Debit</span>
-          <strong id="stmtBottomDebit">₹0</strong>
-        </div>
-        <div class="vendor-statement-total-card credit-total">
-          <span>Total Credit</span>
-          <strong id="stmtBottomCredit">₹0</strong>
-        </div>
-        <div class="vendor-statement-total-card balance-total">
-          <span id="stmtBottomBalanceLabel">Closing Balance</span>
-          <strong id="stmtBottomBalance">₹0</strong>
-        </div>
-      </div>
-
-      <div id="quickAddPaymentBox" class="quick-payment-drawer no-print" hidden>
-        <h4 style="font-size:0.9rem; font-weight:800; margin-bottom:0.75rem; color:#0f172a;">Record Advance / Payment / Credit Note</h4>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:0.65rem; align-items:end;">
-          <div class="form-group" style="margin:0;"><label>Date *</label><input type="date" id="advDate"></div>
-          <div class="form-group" style="margin:0;"><label>Crop *</label><select id="advCrop"><option value="Crop 1">Crop 1</option><option value="Crop 2">Crop 2</option></select></div>
-          <div class="form-group" style="margin:0;"><label>Accounting Side *</label><select id="advType"><option value="Credit">Credit</option><option value="Debit">Debit</option></select></div>
-          <div class="form-group" style="margin:0;"><label>Transaction Type *</label><select id="advTransactionKind" required><option value="">Select type…</option><option value="Payment">Payment</option><option value="Debit Note">Debit Note</option><option value="Credit Note">Credit Note</option><option value="Other Adjustment">Other Adjustment</option></select></div>
-          <div class="form-group" style="margin:0;"><label>Bill No. (Optional)</label><input type="text" id="advBillNo" placeholder="e.g. 1021"></div>
-          <div class="form-group searchable-field" style="margin:0;"><label>Vendor *</label><input type="text" id="advVendor" placeholder="Search vendor..."><div id="advVendorSuggestions" class="ledger-suggestions" hidden></div></div>
-          <div class="form-group searchable-field" style="margin:0;"><label>Account</label><input type="text" id="advAccount" placeholder="Search or add account..."><div id="advAccountSuggestions" class="ledger-suggestions" hidden></div></div>
-          <div class="form-group" style="margin:0;"><label>Amount (₹) *</label><input type="number" id="advAmount" step="any" placeholder="e.g. 200000"></div>
-          <div class="form-group" style="margin:0;"><label>Remarks *</label><input type="text" id="advRemarks" placeholder="Advance, Feed Return, CN..."></div>
-          <div><button type="button" class="pill-btn action-blue" id="saveAdvancePaymentBtn" style="width:100%;">Save Entry</button></div>
-        </div>
-      </div>
-    </div>
-  </dialog>
-
-  <dialog id="vendorDetailedStatementDialog" style="width:min(1320px,96vw);max-height:92vh;border:0;border-radius:18px;padding:0;box-shadow:0 24px 70px rgba(15,23,42,.32);">
-    <div id="vendorDetailedStatementPrint" style="background:#fff;max-height:92vh;overflow:auto;">
-      <div style="padding:18px 22px;background:linear-gradient(135deg,#123b63,#167f83);color:#fff;display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;">
-        <div><div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.82;">BlueCrest</div><h2 style="margin:.2rem 0 0;font-size:1.25rem;">Vendor Detailed Statement</h2><div id="vendorDetailedStatementScope" style="margin-top:.4rem;font-size:.8rem;opacity:.92;"></div></div>
-        <div class="no-print" style="display:flex;gap:.5rem;"><button type="button" class="pill-btn secondary-btn" onclick="printDetailedVendorStatement()">Print / Save PDF</button><button type="button" class="pill-btn secondary-btn" onclick="document.getElementById('vendorDetailedStatementDialog').close()">Close</button></div>
-      </div>
-      <div id="vendorDetailedStatementBody" style="padding:20px 22px;"></div>
-    </div>
   </dialog>
 
   <dialog id="vendorStatementReferenceDialog" style="width:min(860px,94vw);max-height:88vh;border:0;border-radius:18px;padding:0;box-shadow:0 24px 70px rgba(15,23,42,.28);">
@@ -8246,6 +8564,7 @@ const ROUTE_LABELS = {
   stockReturn: 'Stock Return',
   catalogue: 'Purchase & Inventory',
   vendorList: 'Vendor List',
+  vendorStatement: 'Vendor Statement',
   inventory: 'Inventory',
   finance: 'Financial Overview',
   ledger: 'Ledger',
@@ -8774,6 +9093,20 @@ const vendorMasterSearch = document.getElementById('vendorMasterSearch');
 const vendorMasterCount = document.getElementById('vendorMasterCount');
 const vendorFormTitle = document.getElementById('vendorFormTitle');
 const vendorStatementDialog = document.getElementById('vendorStatementDialog');
+const vendorStatementView = document.getElementById('vendorStatementView');
+const vendorPaymentsView = document.getElementById('vendorPaymentsView');
+const paymentVendorFilter = document.getElementById('paymentVendorFilter');
+const paymentCropFilter = document.getElementById('paymentCropFilter');
+const paymentAccountFilter = document.getElementById('paymentAccountFilter');
+const paymentSearchFilter = document.getElementById('paymentSearchFilter');
+const vendorPaymentTotal = document.getElementById('vendorPaymentTotal');
+const vendorPaymentEntries = document.getElementById('vendorPaymentEntries');
+const vendorPaymentTableBody = document.getElementById('vendorPaymentTableBody');
+const vendorPaymentEntryDialog = document.getElementById('vendorPaymentEntryDialog');
+const vendorPaymentEntryDialogTitle = document.getElementById('vendorPaymentEntryDialogTitle');
+const vendorPaymentEntryHost = document.getElementById('vendorPaymentEntryHost');
+const closeVendorPaymentEntryDialog = document.getElementById('closeVendorPaymentEntryDialog');
+const cancelVendorPaymentEntry = document.getElementById('cancelVendorPaymentEntry');
 const statementVendorSelect = document.getElementById('statementVendorSelect');
 const statementCropFilter = document.getElementById('statementCropFilter');
 const statementTypeFilter = document.getElementById('statementTypeFilter');
@@ -8792,6 +9125,7 @@ const stmtClosingBalance = document.getElementById('stmtClosingBalance');
 const stmtFilteredEntries = document.getElementById('stmtFilteredEntries');
 const stmtFilteredDebit = document.getElementById('stmtFilteredDebit');
 const stmtFilteredCredit = document.getElementById('stmtFilteredCredit');
+const stmtFilteredClosingBalance = document.getElementById('stmtFilteredClosingBalance');
 const stmtBottomDebit = document.getElementById('stmtBottomDebit');
 const stmtBottomCredit = document.getElementById('stmtBottomCredit');
 const stmtBottomBalance = document.getElementById('stmtBottomBalance');
@@ -10926,6 +11260,8 @@ function renderActiveRoute(route) {
       ['renderVendorMaster', renderVendorMaster],
       ['renderVendorStatement', renderVendorStatement]
     ],
+    vendorStatement: [['renderVendorStatement', renderVendorStatement]],
+    vendorPayments: [['renderVendorPaymentsPage', renderVendorPaymentsPage]],
     finance: [
       ['renderFinancialLedger', renderFinancialLedger],
       ['renderFinanceOverview', renderFinanceOverview]
@@ -13902,9 +14238,155 @@ if (vendorMasterTableBody) {
   });
 }
 
+
+function populateVendorPaymentFilters() {
+  if (paymentVendorFilter) {
+    const current = paymentVendorFilter.value || 'ALL';
+    const vendorNames = getVendorMasterList(false).map(v => String(v.name || '').trim()).filter(Boolean);
+    paymentVendorFilter.innerHTML = '<option value="ALL">All Vendors</option>' + vendorNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+    paymentVendorFilter.value = current === 'ALL' || vendorNames.includes(current) ? current : 'ALL';
+  }
+  if (paymentAccountFilter) {
+    const current = paymentAccountFilter.value || 'ALL';
+    const accounts = [...new Set(vendorTransactions.map(v => String(v?.account || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+    paymentAccountFilter.innerHTML = '<option value="ALL">All Accounts</option>' + accounts.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+    paymentAccountFilter.value = current === 'ALL' || accounts.includes(current) ? current : 'ALL';
+  }
+}
+
+function getFilteredVendorPaymentTransactions() {
+  const year = Number(activeCycle?.year);
+  const vendor = paymentVendorFilter?.value || 'ALL';
+  const crop = paymentCropFilter?.value || 'ALL';
+  const account = paymentAccountFilter?.value || 'ALL';
+  const query = String(paymentSearchFilter?.value || '').trim().toLowerCase();
+  return vendorTransactions
+    .filter(txn => Number(getRecordYear(txn)) === year)
+    .filter(txn => vendor === 'ALL' || String(txn?.vendor || '').trim() === vendor)
+    .filter(txn => crop === 'ALL' || String(txn?.crop || 'Crop 1') === crop)
+    .filter(txn => account === 'ALL' || String(txn?.account || '').trim() === account)
+    .filter(txn => {
+      if (!query) return true;
+      return [txn?.billNo, txn?.remarks, txn?.account, txn?.vendor].some(value => String(value || '').toLowerCase().includes(query));
+    })
+    .sort((a,b) => new Date(a?.date || 0) - new Date(b?.date || 0));
+}
+
+
+
+function updateVendorPaymentCompactVisibility() {
+  const view = document.getElementById('vendorPaymentsView');
+  const bar = document.getElementById('vendorPaymentCompactSticky');
+  const summary = view?.querySelector('.vendor-payment-summary');
+  const scroller = view?.closest('.content-canvas');
+  if (!view || !bar || !summary || !scroller || !view.classList.contains('active')) {
+    bar?.classList.remove('is-visible');
+    view?.classList.remove('compact-payment-sticky-active');
+    return;
+  }
+  const scrollerTop = scroller.getBoundingClientRect().top;
+  const shouldShow = summary.getBoundingClientRect().bottom <= scrollerTop + 2;
+  bar.classList.toggle('is-visible', shouldShow);
+  view.classList.toggle('compact-payment-sticky-active', shouldShow);
+}
+
+function syncVendorPaymentCompactBar() {
+  const bar = document.getElementById('vendorPaymentCompactSticky');
+  if (!bar) return;
+  const vendor = document.getElementById('compactPaymentVendor');
+  const crop = document.getElementById('compactPaymentCrop');
+  const account = document.getElementById('compactPaymentAccount');
+  const search = document.getElementById('compactPaymentSearch');
+  const syncSelect = (compact, source) => {
+    if (!compact || !source) return;
+    const options = [...source.options].map(o => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.textContent)}</option>`).join('');
+    if (compact.innerHTML !== options) compact.innerHTML = options;
+    compact.value = source.value;
+  };
+  syncSelect(vendor, paymentVendorFilter);
+  syncSelect(crop, paymentCropFilter);
+  syncSelect(account, paymentAccountFilter);
+  if (search && paymentSearchFilter && document.activeElement !== search) search.value = paymentSearchFilter.value;
+  const total = document.getElementById('compactPaymentTotal');
+  const entries = document.getElementById('compactPaymentEntries');
+  if (total && vendorPaymentTotal) total.textContent = vendorPaymentTotal.textContent;
+  if (entries && vendorPaymentEntries) entries.textContent = vendorPaymentEntries.textContent;
+  updateVendorPaymentCompactVisibility();
+}
+
+function setupVendorPaymentCompactBar() {
+  const vendor = document.getElementById('compactPaymentVendor');
+  const crop = document.getElementById('compactPaymentCrop');
+  const account = document.getElementById('compactPaymentAccount');
+  const search = document.getElementById('compactPaymentSearch');
+  if (!vendor || vendor.dataset.bound === '1') return;
+  vendor.dataset.bound = '1';
+  const view = document.getElementById('vendorPaymentsView');
+  const scroller = view?.closest('.content-canvas');
+  if (scroller && scroller.dataset.vendorPaymentCompactBound !== '1') {
+    scroller.dataset.vendorPaymentCompactBound = '1';
+    scroller.addEventListener('scroll', updateVendorPaymentCompactVisibility, {passive:true});
+    window.addEventListener('resize', updateVendorPaymentCompactVisibility, {passive:true});
+  }
+  vendor.addEventListener('change', () => { paymentVendorFilter.value = vendor.value; paymentVendorFilter.dispatchEvent(new Event('change', {bubbles:true})); });
+  crop?.addEventListener('change', () => { paymentCropFilter.value = crop.value; paymentCropFilter.dispatchEvent(new Event('change', {bubbles:true})); });
+  account?.addEventListener('change', () => { paymentAccountFilter.value = account.value; paymentAccountFilter.dispatchEvent(new Event('change', {bubbles:true})); });
+  search?.addEventListener('input', () => { paymentSearchFilter.value = search.value; paymentSearchFilter.dispatchEvent(new Event('input', {bubbles:true})); });
+  syncVendorPaymentCompactBar();
+}
+
+function renderVendorPaymentsPage() {
+  if (!vendorPaymentTableBody) return;
+  populateVendorPaymentFilters();
+  const rows = getFilteredVendorPaymentTransactions();
+  const total = rows.reduce((sum, txn) => sum + (Number(txn?.amount) || 0), 0);
+  if (vendorPaymentTotal) vendorPaymentTotal.textContent = `₹${Math.round(total).toLocaleString()}`;
+  if (vendorPaymentEntries) vendorPaymentEntries.textContent = String(rows.length);
+  vendorPaymentTableBody.innerHTML = rows.length ? rows.map((txn, index) => `
+    <tr>
+      <td style="font-weight:700;color:#64748b;">${index + 1}</td>
+      <td><strong>${escapeHtml(formatDate(txn.date))}</strong></td>
+      <td><span class="statement-crop-pill" style="color:${txn.crop === 'Crop 2' ? 'var(--brand-purple)' : 'var(--brand-blue)'};">${escapeHtml(txn.crop || 'Crop 1')}</span></td>
+      <td>${escapeHtml(txn.account || '—')}</td>
+      <td><strong>${escapeHtml(txn.billNo || '—')}</strong></td>
+      <td class="vendor-payment-amount">${Math.round(Number(txn.amount) || 0).toLocaleString()}</td>
+      <td>${escapeHtml(txn.remarks || '—')}</td>
+      <td><div class="vendor-payment-actions">
+        <button type="button" class="small-button" data-bc-action="editVendorTxn" data-id="${escapeHtml(String(txn.id || ''))}">Edit</button>
+        <button type="button" class="small-button" style="color:var(--brand-red);" data-bc-action="deleteVendorTxn" data-id="${escapeHtml(String(txn.id || ''))}" aria-label="Delete payment">✕</button>
+      </div></td>
+    </tr>`).join('') : '<tr><td colspan="8" class="vendor-payment-empty">No payment records match the selected filters.</td></tr>';
+  syncVendorPaymentCompactBar();
+}
+
+function openVendorPaymentEntryDialog(editMode = false) {
+  if (!vendorPaymentEntryDialog || !vendorPaymentEntryHost || !quickAddPaymentBox) return;
+  vendorPaymentEntryHost.appendChild(quickAddPaymentBox);
+  quickAddPaymentBox.hidden = false;
+  if (vendorPaymentEntryDialogTitle) vendorPaymentEntryDialogTitle.textContent = editMode ? 'Edit Payment' : 'Add Payment';
+  if (saveAdvancePaymentBtn) saveAdvancePaymentBtn.textContent = editMode ? 'Update Payment' : 'Save Payment';
+  if (!vendorPaymentEntryDialog.open) vendorPaymentEntryDialog.showModal();
+}
+
+function closeVendorPaymentEntryDialogFn() {
+  vendorPaymentEntryDialog?.close();
+}
+
+function openVendorPaymentsPage(targetVendor = null) {
+  vendorPaymentOnlyMode = false;
+  navigateTo('vendorPayments');
+  populateVendorPaymentFilters();
+  if (targetVendor && paymentVendorFilter) paymentVendorFilter.value = targetVendor;
+  renderVendorPaymentsPage();
+}
+
 function openVendorStatement(targetVendor = null, paymentOnly = false) {
   vendorPaymentOnlyMode = paymentOnly;
   const statementWrapper = document.getElementById('statementPrintWrapper');
+  const statementHost = paymentOnly ? vendorStatementDialog : vendorStatementView;
+  if (statementWrapper && statementHost && statementWrapper.parentElement !== statementHost) {
+    statementHost.appendChild(statementWrapper);
+  }
   if (statementWrapper) {
     statementWrapper.classList.remove('statement-scroll-locked');
     statementWrapper.scrollTop = 0;
@@ -13930,8 +14412,10 @@ function openVendorStatement(targetVendor = null, paymentOnly = false) {
   }
   renderVendorStatement();
   setupVendorStatementScrollLock();
-  if (vendorStatementDialog) {
+  if (paymentOnly && vendorStatementDialog) {
     vendorStatementDialog.showModal();
+  } else if (!paymentOnly) {
+    navigateTo('vendorStatement');
   }
 }
 
@@ -13967,6 +14451,16 @@ function getSelectedStatementTransactionKinds() {
 function getManualVendorTransactionKind(transaction) {
   return VENDOR_TRANSACTION_KINDS.includes(transaction?.transactionKind) ? transaction.transactionKind : 'Manual / Unclassified';
 }
+function getVendorStatementTransactionPillClass(kind) {
+  const normalized = String(kind || 'Manual / Unclassified').trim().toLowerCase();
+  if (normalized === 'purchase') return 'statement-kind-purchase';
+  if (normalized === 'payment') return 'statement-kind-payment';
+  if (normalized === 'stock return') return 'statement-kind-stock-return';
+  if (normalized === 'debit note') return 'statement-kind-debit-note';
+  if (normalized === 'credit note') return 'statement-kind-credit-note';
+  if (normalized === 'other adjustment') return 'statement-kind-other-adjustment';
+  return 'statement-kind-manual';
+}
 function getStatementReferenceToken(row) {
   return encodeURIComponent([row.billNo === '—' ? '' : row.billNo || '', row.vendor || '', row.crop || 'Crop 1', row.date || '', row.transactionKind || '', row.purchaseReferenceId || ''].join('\u001f'));
 }
@@ -13982,6 +14476,94 @@ function getCompactStatementRemark(row, detailId) {
     : (details.length > 1 ? 'Multiple items' : 'Remark details');
   const count = details.length > 1 ? ` — ${details.length} items` : '';
   return `${escapeHtml(title + count)} <button type="button" class="no-print" data-bc-action="openVendorStatementRemarkDetails" data-id="${escapeHtml(detailId)}" style="border:0;background:none;padding:0;color:var(--brand-blue);font:inherit;font-weight:800;cursor:pointer;text-decoration:underline;white-space:nowrap;">View Details</button>`;
+}
+
+
+function updateVendorStatementCompactVisibility() {
+  const view = document.getElementById('vendorStatementView');
+  const bar = document.getElementById('vendorStatementCompactSticky');
+  const summary = document.getElementById('statementSummaryGrid');
+  const scroller = view?.closest('.content-canvas');
+  if (!view || !bar || !summary || !scroller || vendorPaymentOnlyMode || !view.classList.contains('active')) {
+    bar?.classList.remove('is-visible');
+    view?.classList.remove('compact-sticky-active');
+    return;
+  }
+  const scrollerTop = scroller.getBoundingClientRect().top;
+  const shouldShow = summary.getBoundingClientRect().bottom <= scrollerTop + 2;
+  bar.classList.toggle('is-visible', shouldShow);
+  view.classList.toggle('compact-sticky-active', shouldShow);
+}
+
+function syncVendorStatementCompactBar() {
+  const bar = document.getElementById('vendorStatementCompactSticky');
+  if (!bar) return;
+  if (vendorPaymentOnlyMode) {
+    bar.classList.remove('is-visible');
+    document.getElementById('vendorStatementView')?.classList.remove('compact-sticky-active');
+    return;
+  }
+  const vendor = document.getElementById('compactStatementVendor');
+  const crop = document.getElementById('compactStatementCrop');
+  const search = document.getElementById('compactStatementSearch');
+  const side = document.getElementById('compactStatementSide');
+  if (vendor && statementVendorSelect) {
+    const options = [...statementVendorSelect.options].map(o => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.textContent)}</option>`).join('');
+    if (vendor.innerHTML !== options) vendor.innerHTML = options;
+    vendor.value = statementVendorSelect.value;
+  }
+  if (crop && statementCropFilter) crop.value = statementCropFilter.value;
+  if (search && statementRowSearch && document.activeElement !== search) search.value = statementRowSearch.value;
+  if (side && statementTypeFilter) side.value = statementTypeFilter.value;
+  const sourceChecks = statementTransactionKindFilters ? [...statementTransactionKindFilters.querySelectorAll('input[type="checkbox"]')] : [];
+  bar.querySelectorAll('#compactStatementFilterPanel input[type="checkbox"]').forEach(box => {
+    const source = sourceChecks.find(input => input.value === box.value);
+    if (source) box.checked = source.checked;
+  });
+  const d = document.getElementById('compactStmtDebit');
+  const c = document.getElementById('compactStmtCredit');
+  const b = document.getElementById('compactStmtBalance');
+  if (d && stmtFilteredDebit) d.textContent = stmtFilteredDebit.textContent;
+  if (c && stmtFilteredCredit) c.textContent = stmtFilteredCredit.textContent;
+  if (b && stmtFilteredClosingBalance) b.textContent = stmtFilteredClosingBalance.textContent;
+  updateVendorStatementCompactVisibility();
+}
+
+function setupVendorStatementCompactBar() {
+  const vendor = document.getElementById('compactStatementVendor');
+  const crop = document.getElementById('compactStatementCrop');
+  const search = document.getElementById('compactStatementSearch');
+  const side = document.getElementById('compactStatementSide');
+  const btn = document.getElementById('compactStatementFilterBtn');
+  const panel = document.getElementById('compactStatementFilterPanel');
+  if (!vendor || vendor.dataset.bound === '1') return;
+  vendor.dataset.bound = '1';
+  const statementView = document.getElementById('vendorStatementView');
+  const statementScroller = statementView?.closest('.content-canvas');
+  if (statementScroller && statementScroller.dataset.vendorStatementCompactBound !== '1') {
+    statementScroller.dataset.vendorStatementCompactBound = '1';
+    statementScroller.addEventListener('scroll', updateVendorStatementCompactVisibility, { passive:true });
+    window.addEventListener('resize', updateVendorStatementCompactVisibility, { passive:true });
+  }
+  vendor.addEventListener('change', () => { statementVendorSelect.value = vendor.value; statementVendorSelect.dispatchEvent(new Event('change', { bubbles:true })); });
+  crop?.addEventListener('change', () => { statementCropFilter.value = crop.value; statementCropFilter.dispatchEvent(new Event('change', { bubbles:true })); });
+  search?.addEventListener('input', () => { statementRowSearch.value = search.value; statementRowSearch.dispatchEvent(new Event('input', { bubbles:true })); });
+  side?.addEventListener('change', () => { statementTypeFilter.value = side.value; statementTypeFilter.dispatchEvent(new Event('change', { bubbles:true })); });
+  btn?.addEventListener('click', () => { const opening = panel.hidden; panel.hidden = !opening; btn.setAttribute('aria-expanded', String(opening)); });
+  document.addEventListener('click', event => {
+    if (!panel || panel.hidden) return;
+    if (panel.contains(event.target) || btn?.contains(event.target)) return;
+    panel.hidden = true;
+    btn?.setAttribute('aria-expanded', 'false');
+  });
+  panel?.addEventListener('change', event => {
+    const changed = event.target;
+    if (!changed.matches('input[type="checkbox"]')) return;
+    const source = statementTransactionKindFilters?.querySelector(`input[value="${CSS.escape(changed.value)}"]`);
+    if (!source) return;
+    source.checked = changed.checked;
+    source.dispatchEvent(new Event('change', { bubbles:true }));
+  });
 }
 
 function renderVendorStatement() {
@@ -14316,6 +14898,7 @@ function renderVendorStatement() {
   if (stmtFilteredEntries) stmtFilteredEntries.textContent = String(filteredRows.length);
   if (stmtFilteredDebit) stmtFilteredDebit.textContent = `₹${Math.round(bottomDebit).toLocaleString()}`;
   if (stmtFilteredCredit) stmtFilteredCredit.textContent = `₹${Math.round(bottomCredit).toLocaleString()}`;
+  if (stmtFilteredClosingBalance) stmtFilteredClosingBalance.textContent = formatBalance(bottomDebit - bottomCredit);
   const bottomBalanceLabel = document.getElementById('stmtBottomBalanceLabel');
   if (bottomBalanceLabel) bottomBalanceLabel.textContent = filtersActive ? 'Actual Closing Balance (all rows)' : 'Closing Balance';
   window.bcVendorStatementDisplayState = {
@@ -14334,6 +14917,9 @@ function renderVendorStatement() {
   window.bcVendorStatementRemarkDetails = {};
   statementTableBody.innerHTML = filteredRows.map(({ row, debitVal, creditVal, runningBalance }, index) => {
     const rowClass = row.type !== 'Debit' ? 'credit-row' : '';
+    const transactionPillClass = vendorPaymentOnlyMode
+      ? 'badge-paid'
+      : `statement-kind-pill ${getVendorStatementTransactionPillClass(row.transactionKind)}`;
     const remarkDetailId = `statement_remark_${Date.now()}_${index}`;
     window.bcVendorStatementRemarkDetails[remarkDetailId] = {
       title: `${row.transactionKind || 'Statement'} • ${row.billNo || 'No Reference'}`,
@@ -14345,9 +14931,9 @@ function renderVendorStatement() {
       <tr class="${rowClass}">
         <td style="font-weight:700; color:#64748b;">${srCounter++}</td>
         ${showAllVendors ? `<td><strong>${escapeHtml(row.vendor || '—')}</strong></td>` : ''}
-        <td><strong style="color:${row.crop === 'Crop 2' ? 'var(--brand-purple)' : 'var(--brand-blue)'};">${escapeHtml(row.crop)}</strong></td>
+        <td><span class="statement-crop-pill" style="color:${row.crop === 'Crop 2' ? 'var(--brand-purple)' : 'var(--brand-blue)'};">${escapeHtml(row.crop)}</span></td>
         <td><strong>${formatDate(row.date)}</strong></td>
-        <td>${row.transactionKind === 'Stock Return' && row.stockReturnDetailToken ? `<button type="button" class="badge-paid" data-bc-action="openVendorStatementStockReturnDetails" data-id="${escapeHtml(row.stockReturnDetailToken)}" style="font-size:0.68rem;border:0;cursor:pointer;transition:filter .15s,transform .15s;" onmouseenter="this.style.filter='brightness(.94)'" onmouseleave="this.style.filter=''" onfocus="this.style.outline='2px solid var(--brand-blue)';this.style.outlineOffset='2px'" onblur="this.style.outline=''">Stock Return</button>` : `<span class="badge-paid" style="font-size:0.68rem;">${escapeHtml(row.transactionKind || 'Manual / Unclassified')}</span>`}</td>
+        <td>${row.transactionKind === 'Stock Return' && row.stockReturnDetailToken ? `<button type="button" class="statement-kind-pill ${transactionPillClass}" data-bc-action="openVendorStatementStockReturnDetails" data-id="${escapeHtml(row.stockReturnDetailToken)}" onmouseenter="this.style.filter='brightness(.94)'" onmouseleave="this.style.filter=''" onfocus="this.style.outline='2px solid var(--brand-blue)';this.style.outlineOffset='2px'" onblur="this.style.outline=''">Stock Return</button>` : `<span class="statement-kind-pill ${transactionPillClass}">${escapeHtml(row.transactionKind || 'Manual / Unclassified')}</span>`}</td>
         <td>${row.referenceToken ? `<button type="button" data-bc-action="openVendorStatementReference" data-id="${escapeHtml(row.referenceToken)}" style="border:0;background:none;padding:0;color:var(--brand-blue);font:inherit;font-weight:800;cursor:pointer;text-decoration:underline;">${escapeHtml(row.isNoInvoicePurchase ? 'View Purchase' : (row.billNo || '—'))}</button>` : `<strong>${escapeHtml(row.billNo || '—')}</strong>`}</td>
         <td class="statement-debit-cell" style="text-align:right; font-weight:700; color:${debitVal > 0 ? '#0f172a' : '#94a3b8'};">
           ${debitVal > 0 ? Math.round(debitVal).toLocaleString() : ''}
@@ -14362,7 +14948,7 @@ function renderVendorStatement() {
           ${compactRemark}
         </td>
         <td class="no-print" style="text-align:center;">
-          ${row.isManual ? `<div style="display:flex;gap:.35rem;justify-content:center;">
+          ${row.isManual ? `<div class="statement-row-actions">
             <button type="button" class="small-button" data-bc-action="editVendorTxn" data-id="${escapeHtml(String(row.id))}" aria-label="Edit payment">Edit</button>
             ${row.transactionKind === 'Manual / Unclassified' ? `<button type="button" class="small-button" data-bc-action="classifyVendorTxn" data-id="${escapeHtml(String(row.id))}">Classify</button>` : ''}
             <button type="button" class="small-button" style="color:var(--brand-red);" data-bc-action="deleteVendorTxn" data-id="${escapeHtml(String(row.id))}" aria-label="Delete payment">✕</button>
@@ -14371,6 +14957,8 @@ function renderVendorStatement() {
       </tr>
     `;
   }).join('');
+  setupVendorStatementCompactBar();
+  syncVendorStatementCompactBar();
 }
 
 function openVendorStatementRemarkDetails(id) {
@@ -14531,7 +15119,7 @@ function editVendorTxn(id) {
   }
 
   editingVendorTxnId = targetId;
-  if (quickAddPaymentBox) quickAddPaymentBox.hidden = false;
+  openVendorPaymentEntryDialog(true);
   if (advDateInput) advDateInput.value = txn.date || '';
   if (advCropSelect) advCropSelect.value = txn.crop || 'Crop 1';
   if (advTypeSelect) advTypeSelect.value = txn.type || 'Credit';
@@ -14560,6 +15148,7 @@ async function deleteVendorTxn(id) {
   vendorTransactions = vendorTransactions.filter(v => String(v.id) !== targetId);
   saveStorage();
   renderVendorStatement();
+  renderVendorPaymentsPage();
   renderFinanceOverview();
   renderFinancialLedger();
 }
@@ -14590,7 +15179,8 @@ function copyVendorStatementSummary() {
 }
 
 function printVendorStatement() {
-  if (!vendorStatementDialog) return;
+  const statementSource = document.getElementById('statementPrintWrapper');
+  if (!statementSource) return;
 
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
@@ -14598,29 +15188,45 @@ function printVendorStatement() {
     return;
   }
 
-  const statementMarkup = vendorStatementDialog.cloneNode(true);
-  // The print document contains only this clone, not the app's inline print CSS.
-  // Keep the dialog open so its statement content is rendered in the new window.
+  const statementMarkup = document.createElement('dialog');
+  statementMarkup.className = 'vendor-statement-dialog';
+  statementMarkup.appendChild(statementSource.cloneNode(true));
+  // The print document contains only this presentation clone, not the app's inline print CSS.
   statementMarkup.setAttribute('open', '');
   const viewState = window.bcVendorStatementDisplayState || { rows: [], debitTotal: 0, creditTotal: 0, vendorName: statementVendorSelect?.value || '', year: activeCycle?.year || '', crop: 'ALL', transactionKinds: [], debitCredit: 'ALL', search: '', filtersActive: false };
   const visibleDates = viewState.rows.map(row => String(row.date || '')).filter(Boolean).sort();
   const dateRange = visibleDates.length ? `${formatDate(visibleDates[0])}${visibleDates.length > 1 ? ` – ${formatDate(visibleDates[visibleDates.length - 1])}` : ''}` : 'No matching rows';
   const kindsLabel = viewState.transactionKinds?.length ? viewState.transactionKinds.join(', ') : 'All';
-  const sideLabel = viewState.debitCredit && viewState.debitCredit !== 'ALL' ? viewState.debitCredit : 'All';
+  const farmName = String(blueCrestSession?.farmName || document.getElementById('blueCrestFarmName')?.textContent || 'BlueCrest Farm').trim();
   const auditBlock = document.createElement('section');
   auditBlock.className = 'statement-print-audit';
-  auditBlock.innerHTML = `<div class="statement-print-title"><div class="statement-print-company"><strong>V.I. Aqualines</strong><small>Bahadurkheda, Punjab</small><small>+91 98771-70407</small></div><span>Vendor Statement — ${escapeHtml(viewState.vendorName)}</span></div><p><strong>Year:</strong> ${escapeHtml(String(viewState.year))} &nbsp;|&nbsp; <strong>Crop:</strong> ${escapeHtml(viewState.crop === 'ALL' ? 'All Crops' : viewState.crop)} &nbsp;|&nbsp; <strong>Period:</strong> ${escapeHtml(dateRange)}</p><p><strong>Transaction Type:</strong> ${escapeHtml(kindsLabel)} &nbsp;|&nbsp; <strong>Side:</strong> ${escapeHtml(sideLabel)}${viewState.search ? ` &nbsp;|&nbsp; <strong>Search:</strong> ${escapeHtml(viewState.search)}` : ''}</p><div class="statement-print-totals"><strong>Filtered Debit: ₹${Math.round(viewState.debitTotal || 0).toLocaleString()}</strong><strong>Filtered Credit: ₹${Math.round(viewState.creditTotal || 0).toLocaleString()}</strong></div></section>`;
+  auditBlock.innerHTML = `<div class="statement-print-title"><strong>${escapeHtml(farmName)}</strong><span>Vendor Statement — ${escapeHtml(viewState.vendorName)}</span></div><p><strong>Year:</strong> ${escapeHtml(String(viewState.year))} &nbsp;|&nbsp; <strong>Crop:</strong> ${escapeHtml(viewState.crop === 'ALL' ? 'All Crops' : viewState.crop)} &nbsp;|&nbsp; <strong>Period:</strong> ${escapeHtml(dateRange)}</p><p><strong>Transaction Type:</strong> ${escapeHtml(kindsLabel)}${viewState.search ? ` &nbsp;|&nbsp; <strong>Search:</strong> ${escapeHtml(viewState.search)}` : ''}</p><div class="statement-print-totals"><strong>Filtered Debit: ₹${Math.round(viewState.debitTotal || 0).toLocaleString()}</strong><strong>Filtered Credit: ₹${Math.round(viewState.creditTotal || 0).toLocaleString()}</strong></div></section>`;
   const printWrapper = statementMarkup.querySelector('.statement-print-wrapper');
   statementMarkup.querySelector('.statement-brand-header')?.remove();
   statementMarkup.querySelector('.statement-controls-bar')?.remove();
   statementMarkup.querySelector('#quickAddPaymentBox')?.remove();
   statementMarkup.querySelectorAll('.no-print').forEach(element => element.remove());
-  const tableContainer = statementMarkup.querySelector('.statement-table-container');
-  if (tableContainer) printWrapper?.insertBefore(auditBlock, tableContainer);
-  if (viewState.filtersActive) {
-    statementMarkup.querySelector('.statement-sheet-header')?.remove();
-    statementMarkup.querySelector('#vendorStatementBottomSummary')?.remove();
+  const statementSheetHeader = statementMarkup.querySelector('.statement-sheet-header');
+  if (statementSheetHeader) {
+    const filteredRows = Array.isArray(viewState.rows) ? viewState.rows : [];
+    const totalByKind = kind => filteredRows
+      .filter(row => row.transactionKind === kind)
+      .reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+    const printClosingBalance = Number(viewState.debitTotal || 0) - Number(viewState.creditTotal || 0);
+    const printMoney = value => `₹${Math.abs(Math.round(Number(value) || 0)).toLocaleString()}`;
+    const closingLabel = printClosingBalance >= 0 ? 'Closing Balance (Payable)' : 'Closing Balance (Credit)';
+    const summaryGrid = statementSheetHeader.querySelector('#statementSummaryGrid');
+    if (summaryGrid) {
+      summaryGrid.innerHTML = `
+        <div class="summary-cell print-kpi-purchase"><span class="cell-lbl">Total Purchases</span><strong class="cell-val">${printMoney(totalByKind('Purchase'))}</strong></div>
+        <div class="summary-cell print-kpi-debit-note"><span class="cell-lbl">Total Debit Notes</span><strong class="cell-val">${printMoney(totalByKind('Debit Note'))}</strong></div>
+        <div class="summary-cell print-kpi-payment"><span class="cell-lbl">Total Payments</span><strong class="cell-val">${printMoney(totalByKind('Payment'))}</strong></div>
+        <div class="summary-cell print-kpi-credit-note"><span class="cell-lbl">Total Credit Notes</span><strong class="cell-val">${printMoney(totalByKind('Credit Note'))}</strong></div>
+        <div class="summary-cell print-kpi-closing"><span class="cell-lbl">${closingLabel}</span><strong class="cell-val">${printMoney(printClosingBalance)}</strong></div>`;
+    }
+    printWrapper?.insertBefore(auditBlock, statementSheetHeader);
   }
+  statementMarkup.querySelector('#vendorStatementBottomSummary')?.remove();
   const stylesheetLinks = [...document.querySelectorAll('link[rel="stylesheet"]')]
     .map(link => `<link rel="stylesheet" href="${link.href}">`)
     .join('');
@@ -14630,11 +15236,9 @@ function printVendorStatement() {
     <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>V.I. Aqualines</title>
+        <title>${escapeHtml(farmName)} — Vendor Statement</title>
         ${stylesheetLinks}
-        <style>@page { margin: 10mm; } body { margin:0; background:#fff; color:#111827; font-family:Arial,sans-serif; } .vendor-statement-dialog{display:block!important;position:static!important;width:100%!important;max-width:none!important;border:0!important;margin:0!important;padding:0!important;box-shadow:none!important}.statement-print-wrapper{display:block!important;max-height:none!important;overflow:visible!important;padding:0!important}.no-print,.statement-controls-bar,#quickAddPaymentBox,.statement-ledger-table .no-print{display:none!important}.statement-print-audit{margin:0 0 8px;padding:0 0 8px;border-bottom:1.5px solid #1e3a8a}.statement-print-title{display:block;color:#1e3a8a}.statement-print-company{display:flex;flex-direction:column;line-height:1.25}.statement-print-company strong{font-size:15px}.statement-print-company small{font-size:8.5px;color:#334155}.statement-print-title span{display:block;margin-top:8px;font-size:11.5px;font-weight:700;text-align:center;white-space:nowrap}.statement-print-audit p{margin:3px 0;font-size:9px}.statement-print-totals{display:flex;gap:22px;margin-top:6px;font-size:10px}.statement-sheet-header{margin:0 0 8px}.statement-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.summary-cell{padding:4px;border:1px solid #cbd5e1;font-size:8px}.cell-lbl{display:block}.statement-table-container{overflow:visible!important}.statement-ledger-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.5px}.statement-ledger-table th,.statement-ledger-table td{padding:4px 5px!important;border:1px solid #94a3b8!important;vertical-align:top;line-height:1.25}.statement-ledger-table th{background:#e2e8f0!important;color:#111827!important}.statement-ledger-table th:nth-child(1){width:4%!important}.statement-ledger-table th:nth-child(3){width:7%!important}.statement-ledger-table th:nth-child(4){width:9%!important}.statement-ledger-table th:nth-child(5){width:12%!important}.statement-ledger-table th:nth-child(6){width:9%!important}.statement-ledger-table th:nth-child(7),.statement-ledger-table th:nth-child(8){width:8%!important}.statement-ledger-table th:nth-child(9){width:10%!important}.statement-ledger-table th:nth-child(10){width:25%!important}.statement-ledger-table td:nth-child(10){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vendor-statement-bottom-summary{display:flex;gap:8px;margin-top:8px}.vendor-statement-total-card{padding:5px 8px;border:1px solid #cbd5e1;font-size:9px}.vendor-statement-total-card span{display:block}.statement-print-audit + .statement-sheet-header{margin-top:0}
-
-/* Feed Entry desktop module */
+        <style>@page { size: A4 landscape; margin: 6mm; } body { margin:0; background:#fff; color:#111827; font-family:Arial,sans-serif; -webkit-print-color-adjust:exact; print-color-adjust:exact; } .vendor-statement-dialog{display:block!important;position:static!important;width:100%!important;max-width:none!important;border:0!important;margin:0!important;padding:0!important;box-shadow:none!important}.statement-print-wrapper{display:block!important;max-height:none!important;overflow:visible!important;padding:0!important}.no-print,.statement-controls-bar,#quickAddPaymentBox,.statement-ledger-table .no-print{display:none!important}.statement-print-audit{margin:0 0 3mm!important;padding:0 0 2mm!important;border-bottom:1.2px solid #1e3a8a!important}.statement-print-title{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:10mm!important;color:#123f7a!important}.statement-print-title>strong,.statement-print-title>span{display:block!important;font-size:14pt!important;font-weight:800!important;line-height:1.15!important}.statement-print-title>span{text-align:right!important;white-space:nowrap!important}.statement-print-audit p{margin:1mm 0!important;font-size:9pt!important;line-height:1.2!important}.statement-print-totals{display:flex!important;gap:10mm!important;margin-top:1.5mm!important;font-size:9.5pt!important;color:#0f2742!important}.statement-print-totals strong{font-weight:800!important}.statement-print-totals strong:first-child{color:#dc2626!important}.statement-print-totals strong:last-child{color:#15803d!important}.statement-sheet-header{margin:0 0 3mm!important;min-height:0!important;border:0!important;overflow:visible!important}.statement-main-banner{display:none!important}.statement-summary-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-auto-rows:auto!important;gap:1.5mm!important;background:transparent!important;border:0!important}.summary-cell{display:flex!important;flex-direction:column!important;min-height:0!important;padding:2.25mm 2.6mm!important;text-align:left!important;align-items:flex-start!important;justify-content:center!important;border:1px solid #b9c8d8!important;background:#fff!important}.cell-lbl{display:block!important;margin:0 0 .75mm!important;font-size:8.7pt!important;line-height:1.15!important;font-weight:700!important;letter-spacing:0!important;text-transform:none!important;color:#4b5f76!important}.cell-val{display:block!important;font-size:11.8pt!important;font-weight:800!important;line-height:1.15!important;color:#123f7a!important}.print-kpi-purchase{background:#eff6ff!important;border-color:#93c5fd!important}.print-kpi-purchase .cell-lbl,.print-kpi-purchase .cell-val{color:#0d52b9!important}.print-kpi-debit-note{background:#fff1f2!important;border-color:#fda4af!important}.print-kpi-debit-note .cell-lbl,.print-kpi-debit-note .cell-val{color:#dc2626!important}.print-kpi-payment{background:#f0fdf4!important;border-color:#86efac!important}.print-kpi-payment .cell-lbl,.print-kpi-payment .cell-val{color:#15803d!important}.print-kpi-credit-note{background:#faf5ff!important;border-color:#c4b5fd!important}.print-kpi-credit-note .cell-lbl,.print-kpi-credit-note .cell-val{color:#7e22ce!important}.print-kpi-closing{background:#edf6ff!important;border-color:#93c5fd!important}.print-kpi-closing .cell-lbl,.print-kpi-closing .cell-val{color:#126bd2!important}.statement-filtered-kpi{display:none!important}.statement-table-container{overflow:visible!important;border:1px solid #94a3b8!important;border-radius:0!important}.statement-ledger-table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important;font-size:8.7pt!important}.statement-ledger-table thead{display:table-header-group!important}.statement-ledger-table tr{break-inside:avoid!important;page-break-inside:avoid!important}.statement-ledger-table th,.statement-ledger-table td{padding:1.7mm 1.8mm!important;border:1px solid #94a3b8!important;vertical-align:top!important;line-height:1.16!important}.statement-ledger-table th{background:#e2e8f0!important;color:#111827!important;font-size:8.8pt!important;font-weight:800!important}.statement-ledger-table td{font-size:8.7pt!important}.statement-ledger-table th:nth-child(1){width:3.5%!important}.statement-ledger-table th:nth-child(2){width:10%!important}.statement-ledger-table th:nth-child(3){width:6%!important}.statement-ledger-table th:nth-child(4){width:8%!important}.statement-ledger-table th:nth-child(5){width:11%!important}.statement-ledger-table th:nth-child(6){width:10%!important}.statement-ledger-table th:nth-child(7),.statement-ledger-table th:nth-child(8){width:8%!important}.statement-ledger-table th:nth-child(9){width:10%!important}.statement-ledger-table th:last-child{width:25%!important}.statement-ledger-table th:not(:last-child),.statement-ledger-table td:not(:last-child){white-space:nowrap!important}.statement-ledger-table th:last-child,.statement-ledger-table td:last-child{white-space:normal!important;overflow-wrap:anywhere!important}.statement-kind-pill{display:inline-block!important;padding:.6mm 1.4mm!important;border-radius:999px!important;font-size:7.5pt!important;font-weight:800!important;line-height:1.1!important;white-space:nowrap!important}.statement-kind-purchase{color:#1d4ed8!important;background:#dbeafe!important}.statement-kind-payment{color:#15803d!important;background:#dcfce7!important}.statement-kind-stock-return{color:#c2410c!important;background:#ffedd5!important}.statement-kind-debit-note{color:#b91c1c!important;background:#fee2e2!important}.statement-kind-credit-note{color:#7e22ce!important;background:#f3e8ff!important}.statement-kind-other-adjustment{color:#475569!important;background:#e2e8f0!important}.statement-kind-manual{color:#64748b!important;background:#f1f5f9!important}.vendor-statement-bottom-summary{display:none!important}.statement-print-audit + .statement-sheet-header{margin-top:0!important}/* Feed Entry desktop module */
 .page-header-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.25rem}
 .feed-entry-toolbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;background:#fff;border:1px solid var(--border-color,#e2e8f0);border-radius:14px;padding:.85rem 1rem;margin-bottom:1rem}
 .feed-entry-label{font-weight:800;color:#334155;font-size:.9rem}
@@ -15196,6 +15800,10 @@ function setupEventListeners() {
   document.querySelectorAll('.sidebar-menu .nav-sub-item[data-route]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (btn.dataset.route === 'vendorStatement') {
+        openVendorStatement();
+        return;
+      }
       navigateTo(btn.dataset.route);
     });
   });
@@ -15662,11 +16270,14 @@ function setupEventListeners() {
   if (cancelReturnEditBtn) cancelReturnEditBtn.addEventListener('click', resetStockReturnForm);
 
   if (openVendorStatementBtn) openVendorStatementBtn.addEventListener('click', () => openVendorStatement());
-  if (vendorStatementNavBtn) vendorStatementNavBtn.addEventListener('click', () => openVendorStatement());
   if (vendorPaymentsNavBtn) vendorPaymentsNavBtn.addEventListener('click', () => {
-    openVendorStatement(null, true);
-    if (advDateInput) advDateInput.value = new Date().toISOString().split('T')[0];
+    openVendorPaymentsPage();
   });
+  [paymentVendorFilter, paymentCropFilter, paymentAccountFilter].forEach(control => {
+    if (control) control.addEventListener('change', renderVendorPaymentsPage);
+  });
+  if (paymentSearchFilter) paymentSearchFilter.addEventListener('input', renderVendorPaymentsPage);
+  setupVendorPaymentCompactBar();
   if (statementVendorSelect) statementVendorSelect.addEventListener('change', () => {
     if (advVendorInput) advVendorInput.value = statementVendorSelect.value || '';
     renderVendorStatement();
@@ -15686,7 +16297,7 @@ function setupEventListeners() {
   });
   if (printStatementBtn) printStatementBtn.addEventListener('click', printVendorStatement);
   if (copyStatementBtn) copyStatementBtn.addEventListener('click', copyVendorStatementSummary);
-  if (closeStatementBtn) closeStatementBtn.addEventListener('click', () => vendorStatementDialog.close());
+  if (closeStatementBtn) closeStatementBtn.addEventListener('click', () => vendorStatementDialog?.close());
   if (closeVendorStatementReferenceDialog) closeVendorStatementReferenceDialog.addEventListener('click', () => vendorStatementReferenceDialog?.close());
   if (closeVendorStatementRemarkDialog) closeVendorStatementRemarkDialog.addEventListener('click', () => vendorStatementRemarkDialog?.close());
   if (cancelVendorTransactionKind) cancelVendorTransactionKind.addEventListener('click', () => vendorTransactionKindDialog?.close());
@@ -15694,16 +16305,21 @@ function setupEventListeners() {
 
   if (openAddPaymentModalBtn) {
     openAddPaymentModalBtn.addEventListener('click', () => {
-      quickAddPaymentBox.hidden = !quickAddPaymentBox.hidden;
-      if (!quickAddPaymentBox.hidden) {
-        editingVendorTxnId = null;
-        if (saveAdvancePaymentBtn) saveAdvancePaymentBtn.textContent = 'Save Entry';
-        if (advDateInput) advDateInput.value = new Date().toISOString().split('T')[0];
-        if (advVendorInput) advVendorInput.value = statementVendorSelect?.value || '';
-        if (advTransactionKindSelect) advTransactionKindSelect.value = '';
+      editingVendorTxnId = null;
+      if (advDateInput) advDateInput.value = new Date().toISOString().split('T')[0];
+      if (advVendorInput) {
+        const selectedVendor = paymentVendorFilter?.value || '';
+        advVendorInput.value = selectedVendor === 'ALL' ? '' : selectedVendor;
       }
+      if (advTransactionKindSelect) advTransactionKindSelect.value = '';
+      openVendorPaymentEntryDialog(false);
     });
   }
+  if (closeVendorPaymentEntryDialog) closeVendorPaymentEntryDialog.addEventListener('click', closeVendorPaymentEntryDialogFn);
+  if (cancelVendorPaymentEntry) cancelVendorPaymentEntry.addEventListener('click', closeVendorPaymentEntryDialogFn);
+  if (vendorPaymentEntryDialog) vendorPaymentEntryDialog.addEventListener('click', event => {
+    if (event.target === vendorPaymentEntryDialog) closeVendorPaymentEntryDialogFn();
+  });
 
   const saveAdvancePayment = async () => {
     const vendor = advVendorInput?.value.trim() || '';
@@ -15765,9 +16381,10 @@ function setupEventListeners() {
     if (advVendorInput) advVendorInput.value = vendor;
     if (statementVendorSelect) statementVendorSelect.value = vendor;
     renderVendorStatement();
+    renderVendorPaymentsPage();
     renderFinanceOverview();
     renderFinancialLedger();
-    if (advDateInput) advDateInput.focus();
+    closeVendorPaymentEntryDialogFn();
   };
 
   if (saveAdvancePaymentBtn) saveAdvancePaymentBtn.addEventListener('click', saveAdvancePayment);

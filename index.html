@@ -752,6 +752,7 @@ body > .invoice-product-dropdown {
 #vendorPaymentsView .vendor-payment-page-header h2{margin:0;color:#0f2742;font-size:1.2rem;line-height:1.15}
 #vendorPaymentsView .vendor-payment-page-header p{margin:.16rem 0 0;color:var(--text-muted);font-size:.74rem}
 #vendorPaymentsView .vendor-payment-add-btn{min-height:31px;padding:.3rem .72rem;font-size:.72rem}
+#vendorPaymentPendingStatus[hidden],#purchasePendingStatus[hidden]{display:none!important}
 #vendorPaymentsView .vendor-payment-filters{display:flex;align-items:flex-end;gap:.42rem;flex-wrap:wrap;margin:0 0 .55rem;padding:.55rem .65rem;border:1px solid #dbe5ef;border-radius:8px;background:#fff}
 #vendorPaymentsView .vendor-payment-filter{display:flex;align-items:center;gap:.35rem}
 #vendorPaymentsView .vendor-payment-filter label{font-size:.66rem;font-weight:800;white-space:nowrap}
@@ -5575,6 +5576,7 @@ body.bc-return-modal-open{overflow:hidden!important}
             <div class="stock-transfer-page-actions">
               <span class="stock-transfer-cycle-badge" id="stockTransferCycleContext">Selected Cycle</span>
               <button type="button" class="pill-btn action-blue" id="openStockTransferBtn" onclick="openStockTransferModal(); return false;">+ Add Stock Transfer</button>
+              <button type="button" class="pill-btn secondary-btn" id="openMotherPondClosureBtn" onclick="openMotherPondClosureModal(); return false;" hidden>Close Mother Pond</button>
             </div>
           </div>
 
@@ -5645,6 +5647,58 @@ body.bc-return-modal-open{overflow:hidden!important}
                     <button type="button" class="pill-btn secondary-btn" id="stockTransferCancelBtn">Cancel</button>
                   </div>
                   <p id="stockTransferMessage" class="error-msg"></p>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage 2 only: validates a future Mother Pond reconciliation without
+               creating a record, changing a lock, or changing any stock data. -->
+          <div id="motherPondClosureModal" class="modal-overlay" aria-hidden="true">
+            <div class="modal-card stock-transfer-form-modal-card" role="dialog" aria-modal="true" aria-labelledby="motherPondClosureModalTitle">
+              <div class="stock-transfer-modal-header">
+                <div>
+                  <span class="stock-transfer-modal-eyebrow">TRANSFER RECONCILIATION</span>
+                  <h2 id="motherPondClosureModalTitle">Close Mother Pond</h2>
+                  <p>Review the final Mother Pond transfer reconciliation before closure is enabled.</p>
+                </div>
+                <button type="button" class="modal-close stock-transfer-modal-close" onclick="closeMotherPondClosureModal(); return false;" aria-label="Close">&times;</button>
+              </div>
+              <div class="stock-transfer-modal-body">
+                <form id="motherPondClosureForm" onsubmit="return reviewMotherPondClosure(event);">
+                  <div class="form-group">
+                    <label for="motherPondClosurePond">Mother Pond *</label>
+                    <select id="motherPondClosurePond" required onchange="updateMotherPondClosurePreview();"></select>
+                  </div>
+                  <div id="motherPondClosureSummary" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem;margin:.8rem 0 1rem;"></div>
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="motherPondClosureActualRemaining">Actual Remaining Stock (pcs) *</label>
+                      <input type="number" id="motherPondClosureActualRemaining" min="0" step="1" required placeholder="0" oninput="updateMotherPondClosurePreview();">
+                    </div>
+                    <div class="form-group">
+                      <label for="motherPondClosureDate">Closure Date *</label>
+                      <input type="date" id="motherPondClosureDate" required onchange="updateMotherPondClosurePreview();">
+                    </div>
+                    <div class="form-group">
+                      <label for="motherPondClosureReason">Reason *</label>
+                      <select id="motherPondClosureReason" required onchange="updateMotherPondClosurePreview();">
+                        <option value="">Select reason</option>
+                        <option value="Transfer Completed">Transfer Completed</option>
+                        <option value="Mortality / Loss">Mortality / Loss</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="motherPondClosureNotes">Notes <span id="motherPondClosureNotesRequired"></span></label>
+                      <textarea id="motherPondClosureNotes" rows="2" placeholder="Required when Reason is Other" oninput="updateMotherPondClosurePreview();"></textarea>
+                    </div>
+                  </div>
+                  <div id="motherPondClosureValidation" style="margin:.15rem 0 .9rem;padding:.7rem .8rem;border:1px solid #dbe5ef;border-radius:9px;background:#f8fafc;color:#475569;font-size:.78rem;">Stage 2 validation only — pond has not been closed.</div>
+                  <div class="form-actions-bar">
+                    <button type="submit" class="pill-btn action-blue" id="motherPondClosureValidateBtn">Review Closure</button>
+                    <button type="button" class="pill-btn secondary-btn" onclick="closeMotherPondClosureModal(); return false;">Cancel</button>
+                  </div>
                 </form>
               </div>
             </div>
@@ -6297,6 +6351,11 @@ body.bc-return-modal-open{overflow:hidden!important}
             </div>
           </div>
 
+          <div id="purchasePendingStatus" hidden style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin:0 0 .55rem;padding:.42rem .6rem;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#174b7a;font-size:.72rem;font-weight:700;">
+            <span id="purchasePendingStatusText">0 Purchase Invoices Pending Upload</span>
+            <button type="button" id="purchasePendingRetryBtn" class="pill-btn secondary-btn" style="min-height:28px;padding:.28rem .55rem;font-size:.7rem;">Retry Upload</button>
+          </div>
+
           <div id="purchaseHistorySectionHeader" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
             <h2 class="sub-header-title" style="margin-bottom:0;">Historical Purchase Invoices</h2>
             <div class="purchase-history-toolbar">
@@ -6684,6 +6743,10 @@ body.bc-return-modal-open{overflow:hidden!important}
               <p>Record and view all payments made to each vendor.</p>
             </div>
             <button type="button" class="pill-btn action-blue vendor-payment-add-btn" id="openAddPaymentModalBtn">+ Add Payment</button>
+          </div>
+          <div id="vendorPaymentPendingStatus" hidden style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin:0 0 .55rem;padding:.42rem .6rem;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#174b7a;font-size:.72rem;font-weight:700;">
+            <span id="vendorPaymentPendingStatusText">0 Vendor Payments Pending Upload</span>
+            <button id="vendorPaymentPendingRetryBtn" type="button" class="pill-btn secondary-btn" style="min-height:28px;padding:.25rem .55rem;font-size:.68rem;">Retry Upload</button>
           </div>
 
           <div class="vendor-payment-filters">
@@ -7492,6 +7555,80 @@ function rebindClosingStockListener() { stopClosingStockListener(); const genera
 function stopCrop2ClosingStockListener() { if (typeof blueCrestCrop2ClosingStockListenerUnsubscribe === 'function') try { blueCrestCrop2ClosingStockListenerUnsubscribe(); } catch (error) { console.warn('Crop 2 closing-stock listener teardown failed:', error); } blueCrestCrop2ClosingStockListenerUnsubscribe=null; blueCrestCrop2ClosingStockBoundRoute=null; blueCrestCrop2ClosingStockListenerGeneration++; }
 function bindCrop2ClosingStockListener(generation) { return crop2ClosingStockCollectionOrLegacy('crop2ClosingPackedStock').onSnapshot(snapshot => { if (generation !== blueCrestCrop2ClosingStockListenerGeneration || !isCrop2ClosingStockScoped()) return; const cloudClosingStock=snapshot.docs.map(doc => { const data=doc.data() || {}; return {...data,id:data.id || doc.id,firestoreId:doc.id}; }); try { writeOperationalStorage(STORAGE_KEYS.CROP2_CLOSING_PACKED_STOCK,JSON.stringify(cloudClosingStock)); } catch (error) { console.warn('Crop 2 closing stock local cache update failed:',error); } scheduleFirebaseRender(); }, error => console.error('Firestore Crop 2 closing stock listener error:',error)); }
 function listenCrop2ClosingStockCollection() { stopCrop2ClosingStockListener(); if (!isCrop2ClosingStockScoped()) return null; blueCrestCrop2ClosingStockBoundRoute='scoped'; const generation=++blueCrestCrop2ClosingStockListenerGeneration; blueCrestCrop2ClosingStockListenerUnsubscribe=bindCrop2ClosingStockListener(generation); return blueCrestCrop2ClosingStockListenerUnsubscribe; }
+
+// Stage 1 — Mother Pond closure records are native farm-scoped reconciliation
+// evidence. They intentionally bypass legacy operational routing: a closure
+// record must never be read from or written to a top-level collection.
+const MOTHER_POND_CLOSURES_COLLECTION = 'motherPondClosures';
+let blueCrestMotherPondClosuresUnsubscribe = null;
+let blueCrestMotherPondClosuresFarmId = null;
+let blueCrestMotherPondClosuresGeneration = 0;
+function motherPondClosuresCollection() {
+  return farmCollection(MOTHER_POND_CLOSURES_COLLECTION);
+}
+function motherPondClosureRecordId(record) {
+  return String(record?.firestoreId || record?.id || '').trim();
+}
+function motherPondClosureCycleId(record) {
+  if (record?.cycleId) return String(record.cycleId).trim().toLowerCase();
+  if (typeof cycleIdFor === 'function' && record?.year && (record?.crop || record?.cropCycle)) {
+    return String(cycleIdFor(record.year, record.crop || record.cropCycle)).trim().toLowerCase();
+  }
+  return '';
+}
+function getMotherPondClosureRevisions(pondId, cycleId) {
+  const targetPond = String(pondId || '').trim().toLowerCase();
+  const targetCycle = String(cycleId || '').trim().toLowerCase();
+  return (Array.isArray(motherPondClosures) ? motherPondClosures : []).filter(record =>
+    motherPondClosureCycleId(record) === targetCycle &&
+    [record?.pondId, record?.pondName].some(value => String(value || '').trim().toLowerCase() === targetPond)
+  );
+}
+function getMotherPondClosureById(closureId) {
+  const target = String(closureId || '').trim();
+  if (!target) return null;
+  return (Array.isArray(motherPondClosures) ? motherPondClosures : []).find(record => motherPondClosureRecordId(record) === target) || null;
+}
+function getActiveMotherPondClosure(pondId, cycleId) {
+  const lock = typeof window.blueCrestGetPondLock === 'function'
+    ? window.blueCrestGetPondLock(pondId, cycleId)
+    : null;
+  if (!lock || lock.closed !== true) return null;
+  return getMotherPondClosureById(lock.motherPondClosureId);
+}
+function stopMotherPondClosuresListener() {
+  const unsubscribe = blueCrestMotherPondClosuresUnsubscribe;
+  blueCrestMotherPondClosuresUnsubscribe = null;
+  blueCrestMotherPondClosuresFarmId = null;
+  blueCrestMotherPondClosuresGeneration++;
+  if (typeof unsubscribe === 'function') {
+    blueCrestFarmListenerUnsubscribes.delete(unsubscribe);
+    try { unsubscribe(); } catch (error) { console.warn('Mother Pond closures listener teardown failed:', error); }
+  }
+}
+function listenMotherPondClosures() {
+  stopMotherPondClosuresListener();
+  let farmId;
+  try { farmId = getActiveFarmId(); } catch (error) { return null; }
+  const generation = ++blueCrestMotherPondClosuresGeneration;
+  const listener = motherPondClosuresCollection().onSnapshot(snapshot => {
+    // Ignore callbacks from a prior farm/session even if Firestore delivers
+    // one while its unsubscribe is completing.
+    if (generation !== blueCrestMotherPondClosuresGeneration || blueCrestMotherPondClosuresFarmId !== farmId) return;
+    try { if (getActiveFarmId() !== farmId) return; } catch (error) { return; }
+    motherPondClosures = snapshot.docs.map(doc => {
+      const data = doc.data() || {};
+      return { ...data, id: data.id || doc.id, firestoreId: doc.id };
+    });
+    // Snapshot replacement is authoritative, including an empty collection.
+    writeOperationalStorage(STORAGE_KEYS.MOTHER_POND_CLOSURES, JSON.stringify(motherPondClosures));
+    scheduleFirebaseRender();
+  }, error => console.error('Firestore Mother Pond closures listener error:', error));
+  blueCrestMotherPondClosuresFarmId = farmId;
+  blueCrestMotherPondClosuresUnsubscribe = listener;
+  registerFarmUnsubscribe(listener);
+  return listener;
+}
 function stopOperationalMigrationControlListener() { if (typeof blueCrestOperationalMigrationControlUnsubscribe === 'function') try { blueCrestOperationalMigrationControlUnsubscribe(); } catch (error) { console.warn('Operational migration-control teardown failed:', error); } blueCrestOperationalMigrationControlUnsubscribe=null; blueCrestOperationalMigrationControlFarmId=null; blueCrestOperationalMigrationControlStartPromise=null; applyOperationalMigrationControl(null); stopOperationalGroupListeners('biological'); blueCrestOperationalBiologicalListenerBinders.clear(); blueCrestOperationalBiologicalBoundRoute=null; stopOperationalGroupListeners('accountingSource'); blueCrestOperationalAccountingListenerBinders.clear(); blueCrestOperationalAccountingBoundRoute=null; stopClosingStockListener(); blueCrestClosingStockListenerBinder=null; blueCrestClosingStockBoundRoute=null; stopCrop2ClosingStockListener(); }
 function startOperationalMigrationControlListener() { const farmId=getActiveFarmId(); if (blueCrestOperationalMigrationControlUnsubscribe && blueCrestOperationalMigrationControlFarmId === farmId) return blueCrestOperationalMigrationControlStartPromise || Promise.resolve(); stopOperationalMigrationControlListener(); blueCrestOperationalMigrationControlFarmId=farmId; blueCrestOperationalMigrationControlStartPromise=new Promise(resolve => { let settled=false; const done=()=>{if(!settled){settled=true;resolve();}}; const applySnapshot=data=>{const previous=blueCrestOperationalBiologicalBoundRoute; applyOperationalMigrationControl(data); const next=isOperationalGroupScoped('feeds')?'scoped':'legacy'; if (previous === null) { blueCrestOperationalBiologicalBoundRoute=next; beginOperationalGroupHydration('biological', OPERATIONAL_MIGRATION_GROUPS.biological); } else if (previous !== next && blueCrestOperationalBiologicalListenerBinders.size) rebindOperationalBiologicalListeners(); else blueCrestOperationalBiologicalBoundRoute=next;}; blueCrestOperationalMigrationControlUnsubscribe=db.collection('farms').doc(farmId).collection('migrationControl').doc('operational-v1').onSnapshot(snapshot=>{applySnapshot(snapshot.exists ? snapshot.data() : null); done();}, error=>{console.warn('Operational migration-control listener error:', error); applySnapshot(null); done();}); }); return blueCrestOperationalMigrationControlStartPromise; }
 const BLUECREST_FOUNDATION_COLLECTIONS = Object.freeze(['farmCycles', 'ponds', 'pondLocks', 'cropLocks', 'lockAudit']);
@@ -7947,6 +8084,8 @@ let blueCrestOperationalRuntimeFarmId = null;
 function clearOperationalRuntimeForFarmSwitch() {
   feedEntries = []; samples = []; harvests = []; purchases = []; stockReturns = [];
   treatments = []; stockTransfers = []; vendorTransactions = []; vendors = [];
+  motherPondClosures = [];
+  stopMotherPondClosuresListener();
   ledgerEntries = []; customLedgerSubcategories = []; customLedgerAccounts = []; farmSetupLedgerAccounts = [];
   masterCatalogue = []; masterCatalogueUpdatedAt = ''; productMemory = {};
   feedPhysicalStock = {}; feedMinStockKg = {}; feedStockAdjustments = [];
@@ -8442,8 +8581,11 @@ const STORAGE_KEYS = {
   CROP1_CLOSING_PACKED_STOCK: 'bluecrest_crop1_closing_packed_stock_v1',
   CROP2_CLOSING_PACKED_STOCK: 'bluecrest_crop2_closing_packed_stock_v1',
   STOCK_TRANSFERS: 'bluecrest_stock_transfers_v1',
+  MOTHER_POND_CLOSURES: 'bluecrest_mother_pond_closures_v1',
   VENDORS: 'bluecrest_vendors_v1',
-  PHYSICAL_INVENTORY_SETTLEMENTS: 'bluecrest_physical_inventory_settlements_v1'
+  PHYSICAL_INVENTORY_SETTLEMENTS: 'bluecrest_physical_inventory_settlements_v1',
+  VENDOR_PAYMENT_PENDING: 'bluecrest_vendor_payment_pending_v1',
+  PURCHASE_PENDING: 'bluecrest_purchase_pending_v1'
 };
 
 // LS-3: operational caches are farm-isolated. Foundation keys deliberately
@@ -8459,8 +8601,16 @@ const OPERATIONAL_STORAGE_LEGACY_KEYS = Object.freeze([
   'bluecrest_feed_crop_closing_adjustments', 'bluecrest_feed_crop_closing_adjustment_history',
   STORAGE_KEYS.FEED_PHYSICAL_STOCK, STORAGE_KEYS.FEED_ADJUSTMENTS, STORAGE_KEYS.PRODUCT_MEMORY
 ]);
+// Native caches added after the frozen Elite migration must be accepted by the
+// farm-scoped cache layer without changing completed migration-marker coverage.
+const OPERATIONAL_STORAGE_CACHE_KEYS = Object.freeze([
+  ...OPERATIONAL_STORAGE_LEGACY_KEYS,
+  STORAGE_KEYS.MOTHER_POND_CLOSURES,
+  STORAGE_KEYS.VENDOR_PAYMENT_PENDING,
+  STORAGE_KEYS.PURCHASE_PENDING
+]);
 function operationalStorageKey(legacyKey) {
-  if (!OPERATIONAL_STORAGE_LEGACY_KEYS.includes(legacyKey)) throw new Error('Operational storage key is invalid.');
+  if (!OPERATIONAL_STORAGE_CACHE_KEYS.includes(legacyKey)) throw new Error('Operational storage key is invalid.');
   return farmStorageKey(legacyKey);
 }
 function readOperationalStorage(legacyKey) {
@@ -8808,6 +8958,9 @@ let feedCropClosingAdjustments = [];
 let feedCropClosingAdjustmentHistory = [];
 let farmCycles = [];
 let stockTransfers = [];
+// Stage 1 — immutable Mother Pond closure reconciliation evidence. Pond locks
+// remain the sole authority for whether a pond is operationally closed.
+let motherPondClosures = [];
 let activeCycle = { year: 2026, crop: 'Crop 1', id: '2026|crop 1' };
 let currentRoute = null;
 let pondIntelligencePondId = null;
@@ -9156,6 +9309,9 @@ const advAccountSuggestions = document.getElementById('advAccountSuggestions');
 const advAmountInput = document.getElementById('advAmount');
 const advRemarksInput = document.getElementById('advRemarks');
 const saveAdvancePaymentBtn = document.getElementById('saveAdvancePaymentBtn');
+const vendorPaymentPendingStatus = document.getElementById('vendorPaymentPendingStatus');
+const vendorPaymentPendingStatusText = document.getElementById('vendorPaymentPendingStatusText');
+const vendorPaymentPendingRetryBtn = document.getElementById('vendorPaymentPendingRetryBtn');
 const vendorStatementReferenceDialog = document.getElementById('vendorStatementReferenceDialog');
 const vendorStatementReferenceBody = document.getElementById('vendorStatementReferenceBody');
 const closeVendorStatementReferenceDialog = document.getElementById('closeVendorStatementReferenceDialog');
@@ -10192,13 +10348,15 @@ function loadAndEnsureData() {
     stockReturns = JSON.parse(readOperationalStorage(STORAGE_KEYS.STOCK_RETURNS)) || [];
     treatments = JSON.parse(readOperationalStorage(STORAGE_KEYS.TREATMENTS)) || [];
     stockTransfers = JSON.parse(readOperationalStorage(STORAGE_KEYS.STOCK_TRANSFERS)) || [];
+    motherPondClosures = JSON.parse(readOperationalStorage(STORAGE_KEYS.MOTHER_POND_CLOSURES)) || [];
+    if (!Array.isArray(motherPondClosures)) motherPondClosures = [];
     vendorTransactions = JSON.parse(readOperationalStorage(STORAGE_KEYS.VENDOR_TXNS)) || [];
     vendors = JSON.parse(readOperationalStorage(STORAGE_KEYS.VENDORS)) || [];
     ledgerEntries = JSON.parse(readOperationalStorage(STORAGE_KEYS.LEDGER_ENTRIES)) || [];
     customLedgerSubcategories = JSON.parse(readOperationalStorage(STORAGE_KEYS.LEDGER_SUBCATEGORIES)) || [];
     customLedgerAccounts = JSON.parse(readOperationalStorage(STORAGE_KEYS.LEDGER_ACCOUNTS)) || [];
   } catch (e) {
-    ponds = []; feedEntries = []; samples = []; harvests = []; purchases = []; stockReturns = []; treatments = []; vendorTransactions = []; vendors = []; ledgerEntries = []; customLedgerSubcategories = []; customLedgerAccounts = [];
+    ponds = []; feedEntries = []; samples = []; harvests = []; purchases = []; stockReturns = []; treatments = []; stockTransfers = []; motherPondClosures = []; vendorTransactions = []; vendors = []; ledgerEntries = []; customLedgerSubcategories = []; customLedgerAccounts = [];
   }
 
   ensureVendorMaster({ persist: false });
@@ -10240,6 +10398,7 @@ function loadAndEnsureData() {
 
   try {
       if (db) {
+          listenMotherPondClosures();
           registerFoundationListenerBinder('ponds', (collection, hydrationEpoch) => collection.onSnapshot(snapshot => {
               setFirebaseStatus('connected');
               // Pond Master is shared by mobile + laptop. Always read the
@@ -10923,16 +11082,50 @@ function persistMasterCatalogueLocally(updatedAt = new Date().toISOString()) {
   writeOperationalStorage(STORAGE_KEYS.MASTER_CATALOGUE_UPDATED_AT, masterCatalogueUpdatedAt);
 }
 
+function mergeMasterCatalogueItemsForCloud(incomingItems, authoritativeItems) {
+  const authoritative = Array.isArray(authoritativeItems) ? authoritativeItems.filter(item => item && typeof item === 'object') : [];
+  return (Array.isArray(incomingItems) ? incomingItems : []).map(incoming => {
+    const source = incoming && typeof incoming === 'object' ? incoming : {};
+    const explicitId = String(source.productId || '').trim();
+    let matches = [];
+    if (explicitId) {
+      matches = authoritative.filter(item => String(item.productId || '').trim() === explicitId);
+    }
+    if (!explicitId || matches.length === 0) {
+      const sourceKey = catalogueProductKey(source);
+      matches = sourceKey
+        ? authoritative.filter(item => catalogueProductKey(item) === sourceKey)
+        : [];
+    }
+    const merged = matches.length === 1 ? { ...matches[0] } : {};
+    Object.entries(source).forEach(([key, value]) => {
+      if (value !== undefined) merged[key] = value;
+    });
+    if (!String(merged.productId || '').trim()) merged.productId = getCatalogueProductId(merged);
+    if (merged.useInPondTreatment === undefined) merged.useInPondTreatment = false;
+    if (merged.useInSupplement === undefined) merged.useInSupplement = false;
+    return merged;
+  });
+}
+
 async function persistMasterCatalogueToCloud() {
   requireFirebaseConnection();
   assertProductCatalogueWriteAllowed();
   const updatedAt = masterCatalogueUpdatedAt || new Date().toISOString();
-  if (!masterCatalogueUpdatedAt) persistMasterCatalogueLocally(updatedAt);
-  await productCatalogueDocumentOrLegacy('masterCatalogue').set({
-    items: firestoreSafeValue(masterCatalogue),
-    updatedAt,
-    count: masterCatalogue.length
-  }, { merge: true });
+  const catalogueRef = productCatalogueDocumentOrLegacy('masterCatalogue');
+  let persistedItems = [];
+  await db.runTransaction(async tx => {
+    const snapshot = await tx.get(catalogueRef);
+    const authoritativeItems = Array.isArray(snapshot.data()?.items) ? snapshot.data().items : [];
+    persistedItems = mergeMasterCatalogueItemsForCloud(masterCatalogue, authoritativeItems);
+    tx.set(catalogueRef, {
+      items: firestoreSafeValue(persistedItems),
+      updatedAt,
+      count: persistedItems.length
+    }, { merge: true });
+  });
+  masterCatalogue = persistedItems;
+  persistMasterCatalogueLocally(updatedAt);
   setFirebaseStatus('connected');
 }
 
@@ -11121,6 +11314,7 @@ function persistAllLocalNow(options = {}) {
     [STORAGE_KEYS.TREATMENTS, treatments],
     [STORAGE_KEYS.STOCK_RETURNS, stockReturns],
     [STORAGE_KEYS.STOCK_TRANSFERS, stockTransfers],
+    [STORAGE_KEYS.MOTHER_POND_CLOSURES, motherPondClosures],
     [STORAGE_KEYS.VENDOR_TXNS, vendorTransactions],
     [STORAGE_KEYS.VENDORS, vendors],
     [STORAGE_KEYS.LEDGER_ENTRIES, ledgerEntries],
@@ -11143,7 +11337,7 @@ function persistAllLocalNow(options = {}) {
     localCache.forEach(([key, value]) => {
       if (options.preserveCatalogueWhenInvalid && key === STORAGE_KEYS.MASTER_CATALOGUE && !hasValidMasterCatalogue(masterCatalogue)) return;
       if (value === undefined) return;
-      if (OPERATIONAL_STORAGE_LEGACY_KEYS.includes(key)) writeOperationalStorage(key, JSON.stringify(value));
+      if (OPERATIONAL_STORAGE_CACHE_KEYS.includes(key)) writeOperationalStorage(key, JSON.stringify(value));
       else localStorage.setItem(key, JSON.stringify(value));
     });
     if (masterCatalogueUpdatedAt && !(options.preserveCatalogueWhenInvalid && !hasValidMasterCatalogue(masterCatalogue))) {
@@ -11203,7 +11397,6 @@ async function uploadAllLocalFarmToFirebase() {
 
 function saveStorage(options = {}) {
   persistAllLocalNow(options);
-  if (!options.skipProductCatalogueCloud && isProductCatalogueActive()) persistMasterCatalogueToCloud().catch(err => console.warn('Product catalogue cloud save failed:', err));
 }
 
 function toggleNavGroup(groupId) {
@@ -13584,6 +13777,8 @@ function promptDeleteCatalogueProduct(ref) {
   if (!confirm(`Delete "${name}" from the Product Catalogue only?\n\nPurchase records, Stock Return records, inventory quantities and financial history will NOT be deleted.`)) return;
 
   masterCatalogue.splice(found.index, 1);
+  persistMasterCatalogueLocally(new Date().toISOString());
+  persistMasterCatalogueToCloud().catch(err => console.warn('Product catalogue cloud save failed:', err));
   saveStorage();
   renderProductCatalogue();
   renderAll();
@@ -13667,6 +13862,8 @@ function mergeCatalogueProducts(sourceRef, targetRef, { confirmed = false } = {}
   // Keep the target catalogue record and remove only the duplicate source entry.
   const removeIndex = source.index;
   masterCatalogue.splice(removeIndex, 1);
+  persistMasterCatalogueLocally(new Date().toISOString());
+  persistMasterCatalogueToCloud().catch(err => console.warn('Product catalogue cloud save failed:', err));
   saveStorage();
   renderProductCatalogue();
   renderAll();
@@ -16328,6 +16525,83 @@ function setupEventListeners() {
     if (event.target === vendorPaymentEntryDialog) closeVendorPaymentEntryDialogFn();
   });
 
+  let vendorPaymentPendingUploadInFlight = false;
+
+  const readPendingVendorPayments = () => {
+    try {
+      const parsed = JSON.parse(readOperationalStorage(STORAGE_KEYS.VENDOR_PAYMENT_PENDING) || '[]');
+      return Array.isArray(parsed) ? parsed.filter(item => item && String(item.id || '').trim()) : [];
+    } catch (error) {
+      console.warn('Pending vendor-payment queue could not be read:', error);
+      return [];
+    }
+  };
+
+  const writePendingVendorPayments = records => {
+    if (!writeOperationalStorage(STORAGE_KEYS.VENDOR_PAYMENT_PENDING, JSON.stringify(records))) {
+      throw new Error('Pending vendor payment could not be saved locally.');
+    }
+  };
+
+  const refreshPendingVendorPaymentStatus = (pendingRecords = null) => {
+    const count = Array.isArray(pendingRecords) ? pendingRecords.length : readPendingVendorPayments().length;
+    if (vendorPaymentPendingStatus) vendorPaymentPendingStatus.hidden = count === 0;
+    if (vendorPaymentPendingStatusText) vendorPaymentPendingStatusText.textContent = `${count} Vendor Payment${count === 1 ? '' : 's'} Pending Upload`;
+    if (vendorPaymentPendingRetryBtn) vendorPaymentPendingRetryBtn.disabled = vendorPaymentPendingUploadInFlight || count === 0;
+  };
+
+  const queuePendingVendorPayment = transaction => {
+    const pending = readPendingVendorPayments();
+    if (!pending.some(item => String(item.id) === String(transaction.id))) {
+      pending.push({ ...transaction });
+      writePendingVendorPayments(pending);
+    }
+    refreshPendingVendorPaymentStatus(pending);
+  };
+
+  const uploadPendingVendorPayments = async () => {
+    if (vendorPaymentPendingUploadInFlight) return;
+    vendorPaymentPendingUploadInFlight = true;
+    let pending = readPendingVendorPayments();
+    refreshPendingVendorPaymentStatus(pending);
+    try {
+      for (const transaction of pending) {
+        try {
+          await firebaseFirstBatchWrite('vendorTransactions', transaction, { silent: true, label: 'Vendor payment' });
+          const serverSnapshot = await operationalCollectionOrLegacy('vendorTransactions').doc(String(transaction.id)).get({ source: 'server' });
+          if (!serverSnapshot.exists || String(serverSnapshot.data()?.id || serverSnapshot.id) !== String(transaction.id)) {
+            throw new Error('Vendor payment server confirmation is pending.');
+          }
+          pending = readPendingVendorPayments().filter(item => String(item.id) !== String(transaction.id));
+          writePendingVendorPayments(pending);
+          refreshPendingVendorPaymentStatus(pending);
+        } catch (error) {
+          console.warn('Pending vendor payment upload deferred:', error);
+          break;
+        }
+      }
+    } finally {
+      vendorPaymentPendingUploadInFlight = false;
+      refreshPendingVendorPaymentStatus();
+    }
+  };
+
+  const applyNewVendorPaymentLocally = transaction => {
+    const existingIndex = vendorTransactions.findIndex(v => String(v?.id || '') === String(transaction.id));
+    if (existingIndex >= 0) vendorTransactions[existingIndex] = transaction;
+    else vendorTransactions.push(transaction);
+    writeOperationalStorage(STORAGE_KEYS.VENDOR_TXNS, JSON.stringify(vendorTransactions));
+    if (statementVendorSelect) statementVendorSelect.value = transaction.vendor;
+    renderVendorStatement();
+    renderVendorPaymentsPage();
+    renderFinanceOverview();
+    renderFinancialLedger();
+  };
+
+  if (vendorPaymentPendingRetryBtn) vendorPaymentPendingRetryBtn.addEventListener('click', () => { void uploadPendingVendorPayments(); });
+  window.addEventListener('online', () => { if (readPendingVendorPayments().length) void uploadPendingVendorPayments(); });
+  refreshPendingVendorPaymentStatus();
+
   const saveAdvancePayment = async () => {
     const vendor = advVendorInput?.value.trim() || '';
     const date = advDateInput.value || new Date().toISOString().split('T')[0];
@@ -16361,12 +16635,40 @@ function setupEventListeners() {
       ? vendorTransactions.find(v => String(v?.id || '') === String(editingVendorTxnId))
       : null;
     const transaction = {
-      id: editingVendorTxnId || `vtxn_${Date.now()}`,
+      id: editingVendorTxnId || `vtxn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       vendor, crop,
       year: Number(editingTxn?.year || activeCycle.year),
       cycleId: editingTxn?.cycleId || activeCycle.id,
       date, type, transactionKind, billNo, account, amount, remarks
     };
+    if (!editingVendorTxnId) {
+      if (saveAdvancePaymentBtn?.dataset.pendingVendorPayment === '1') return;
+      if (saveAdvancePaymentBtn) {
+        saveAdvancePaymentBtn.dataset.pendingVendorPayment = '1';
+        saveAdvancePaymentBtn.disabled = true;
+      }
+      try {
+        queuePendingVendorPayment(transaction);
+        rememberLedgerAccount(account);
+        applyNewVendorPaymentLocally(transaction);
+        advAmountInput.value = '';
+        advRemarksInput.value = '';
+        advBillNoInput.value = '';
+        if (advAccountInput) advAccountInput.value = '';
+        if (advVendorInput) advVendorInput.value = vendor;
+        closeVendorPaymentEntryDialogFn();
+        if (navigator.onLine !== false) void uploadPendingVendorPayments();
+      } catch (err) {
+        console.error('Pending vendor payment local save error:', err);
+        bcAlert('Vendor payment could not be saved locally. No payment was queued.');
+      } finally {
+        if (saveAdvancePaymentBtn) {
+          delete saveAdvancePaymentBtn.dataset.pendingVendorPayment;
+          saveAdvancePaymentBtn.disabled = false;
+        }
+      }
+      return;
+    }
     try {
       await firebaseFirstBatchWrite('vendorTransactions', transaction);
     } catch (err) {
@@ -16578,6 +16880,10 @@ function setupEventListeners() {
             .catch(err => console.error('Firestore treatment delete error:', err));
         } else if (confirmedDeleteType === 'purchase') {
           const removed = typeof removeLocalPurchase === 'function' ? removeLocalPurchase(confirmedDeleteId) : null;
+          window.removePendingPurchaseRecords?.([
+            confirmedDeleteId,
+            ...(removed && typeof purchaseIdentityKeys === 'function' ? purchaseIdentityKeys(removed) : [])
+          ]);
           saveStorage();
           renderAll();
           deleteDocsFromCloud('purchases', removed ? [removed, { id: confirmedDeleteId, firestoreId: removed.firestoreId }] : [{ id: confirmedDeleteId }])
@@ -17601,6 +17907,9 @@ async function handleSampleSubmit(e) {
     cycleId: activeCycle.id
   };
 
+  if (typeof window.blueCrestAssertOperationalWrite === 'function' &&
+      !window.blueCrestAssertOperationalWrite({ pondId: record.pondId, cycleId: record.cycleId })) return;
+
   try {
     await firebaseFirstBatchWrite('sampling', record);
     const existingIdx = samples.findIndex(s => s.id === record.id);
@@ -18016,6 +18325,8 @@ async function handleTreatmentSubmit(e) {
     bcAlert('Please select a pond from the active Year + Crop.');
     return;
   }
+  if (typeof window.blueCrestAssertOperationalWrite === 'function' &&
+      !window.blueCrestAssertOperationalWrite({ pondId: treatmentPondId, cycleId: activeCycle.id, pondName: treatmentPond.name || treatmentPondId })) return;
 
   const treatment = {
     id: treatmentIdInput.value || `t_${Date.now()}`,
@@ -21795,6 +22106,9 @@ function assertFeedRecordWritable(record) {
     bcAlert('This crop is closed. Feed records are read-only.');
     return false;
   }
+  const pondId = String(record?.pondId || record?.pond || record?.pondName || '').trim();
+  if (pondId && typeof window.blueCrestAssertOperationalWrite === 'function' &&
+      !window.blueCrestAssertOperationalWrite({ pondId, cycleId, pondName: record?.pond || record?.pondName || pondId })) return false;
   return true;
 }
 
@@ -22084,6 +22398,10 @@ async function handleFeedEntriesCSVImport(event) {
       });
     });
 
+    for (const record of incoming) {
+      if (!assertFeedRecordWritable(record)) throw new Error(`Pond ${record.pond || record.pondId} is closed. No Feed records were imported.`);
+    }
+
     const confirmed = confirm(`Import ${incoming.length} Feed Entry record${incoming.length === 1 ? '' : 's'} into ${cycleYear} • ${cycleCrop}?\n\nOnly Feed Entry records will be changed. Pond, Purchase, Inventory, Sampling, Harvest, Treatment and Finance data will not be imported.`);
     if (!confirmed) return;
 
@@ -22113,6 +22431,7 @@ async function handleFeedRecordSubmit(e) {
     return;
   }
   const crop = getPondCrop(pondId, activeCycle.id);
+  if (!assertFeedRecordWritable({ pondId, pond: pond.name || pondId, year: activeCycle.year, crop, cycleId: activeCycle.id })) return;
   const fasting = document.querySelector('input[name="feedFasting"][value="Yes"]').checked;
   const date = feedRecordDateInput.value;
   const time = formatFeedTimeForDisplay(feedRecordTimeInput.value);
@@ -22378,6 +22697,216 @@ function getPondStockMovementSummary(pondId, excludeId = '') {
     .reduce((s,t) => s + (Number(t.number || t.transferredNumber || t.count) || 0), 0);
   return { original, incoming, outgoing, current: original + incoming - outgoing };
 }
+
+// Stage 2 — validation-only Mother Pond reconciliation. These helpers read the
+// established pond and transfer data but deliberately do not persist anything.
+function getMotherPondClosureContext() {
+  const cycleId = String(activeCycle?.id || '').trim();
+  const year = Number(activeCycle?.year || 0);
+  const crop = String(activeCycle?.crop || '').trim();
+  return blueCrestSession?.farmId && cycleId && year > 0 && crop ? { cycleId, year, crop } : null;
+}
+function getMotherPondClosureOriginalStock(pond) {
+  const value = pond?.initialStockingNumber ?? pond?.stockingCount ?? pond?.stockedCount ?? pond?.pieces;
+  const stock = Number(value);
+  return Number.isFinite(stock) ? stock : 0;
+}
+function isMotherPondClosureEligible(pond) {
+  const context = getMotherPondClosureContext();
+  if (!context || !pond || String(pond.pondType || '').trim() !== 'mother') return false;
+  if (typeof window.blueCrestIsPondClosed === 'function' && window.blueCrestIsPondClosed(pond.id, context.cycleId)) return false;
+  return getMotherPondClosureOriginalStock(pond) > 0;
+}
+function getEligibleMotherPondsForClosure() {
+  return getMotherPondClosureContext() ? getActivePonds().filter(isMotherPondClosureEligible) : [];
+}
+function getMotherPondClosurePreview(pondId) {
+  const context = getMotherPondClosureContext();
+  const pond = getPondByRef(pondId);
+  if (!context || !pond || !getActivePonds().some(item => String(item.id) === String(pond.id))) return null;
+  const originalStock = getMotherPondClosureOriginalStock(pond);
+  // Reuse the active-cycle, source-pond matching already used by the Stock
+  // Transfer balance calculation; no new transfer-total system is introduced.
+  const transferredOut = getPondStockMovementSummary(pond.id).outgoing;
+  return { context, pond, originalStock, transferredOut, calculatedBalance: originalStock - transferredOut };
+}
+function motherPondClosureDay(value) {
+  const match = String(value || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return NaN;
+  return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+function motherPondClosureLatestOutgoingDate(pondId) {
+  const dates = getActiveStockTransfers()
+    .filter(record => String(record.fromPondId || record.fromPond || '') === String(pondId))
+    .map(record => ({ raw: record.date || record.transferDate || '', day: motherPondClosureDay(record.date || record.transferDate) }))
+    .filter(item => Number.isFinite(item.day));
+  return dates.length ? dates.reduce((latest, item) => item.day > latest.day ? item : latest) : null;
+}
+function motherPondClosurePcs(value) {
+  return `${Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })} pcs`;
+}
+function setMotherPondClosureValidation(message, state = 'neutral') {
+  const box = document.getElementById('motherPondClosureValidation');
+  if (!box) return;
+  const styles = {
+    neutral: ['#f8fafc', '#dbe5ef', '#475569'],
+    error: ['#fef2f2', '#fecaca', '#b42318'],
+    success: ['#ecfdf3', '#abefc6', '#067647']
+  };
+  const [background, border, color] = styles[state] || styles.neutral;
+  box.textContent = message;
+  box.style.background = background;
+  box.style.borderColor = border;
+  box.style.color = color;
+}
+function updateMotherPondClosureAction() {
+  const button = document.getElementById('openMotherPondClosureBtn');
+  if (!button) return;
+  const eligible = getEligibleMotherPondsForClosure();
+  button.hidden = eligible.length === 0;
+  button.disabled = eligible.length === 0;
+}
+function updateMotherPondClosurePreview() {
+  const select = document.getElementById('motherPondClosurePond');
+  const summary = document.getElementById('motherPondClosureSummary');
+  if (!select || !summary) return;
+  const preview = getMotherPondClosurePreview(select.value);
+  const notesRequired = document.getElementById('motherPondClosureNotesRequired');
+  const isOther = document.getElementById('motherPondClosureReason')?.value === 'Other';
+  if (notesRequired) notesRequired.textContent = isOther ? '*' : '(optional)';
+  if (!preview) {
+    summary.innerHTML = '<div style="grid-column:1/-1;color:#b42318;font-size:.8rem;">Select an eligible Mother Pond in the active cycle.</div>';
+    return;
+  }
+  const rawActual = document.getElementById('motherPondClosureActualRemaining')?.value.trim() || '';
+  const actualRemaining = rawActual === '' ? null : Number(rawActual);
+  const mortalityLoss = actualRemaining != null && Number.isFinite(actualRemaining) ? preview.calculatedBalance - actualRemaining : null;
+  const survival = preview.originalStock > 0 ? (preview.transferredOut / preview.originalStock) * 100 : null;
+  const card = (label, value, accent = '#0f2742') => `<div style="padding:.65rem .75rem;border:1px solid #dbe5ef;border-radius:9px;background:#f8fafc;"><small style="display:block;color:#64748b;font-weight:700;margin-bottom:.2rem;">${label}</small><strong style="color:${accent};font-size:.92rem;">${value}</strong></div>`;
+  summary.innerHTML = [
+    card('Mother Pond', escapeHtml(getPondDisplayName(preview.pond))),
+    card('Original Stock', motherPondClosurePcs(preview.originalStock)),
+    card('Total Transferred Out', motherPondClosurePcs(preview.transferredOut)),
+    card('Calculated Balance', motherPondClosurePcs(preview.calculatedBalance)),
+    card('Mortality / Unaccounted Loss', mortalityLoss == null ? 'Enter Actual Remaining' : motherPondClosurePcs(mortalityLoss), mortalityLoss != null && mortalityLoss < 0 ? '#b42318' : '#b54708'),
+    card('Transfer Survival', survival == null ? '—' : `${survival.toFixed(2)}%`, '#067647')
+  ].join('');
+}
+function openMotherPondClosureModal(pondId = '') {
+  const modal = document.getElementById('motherPondClosureModal');
+  const select = document.getElementById('motherPondClosurePond');
+  if (!modal || !select) return;
+  const eligible = getEligibleMotherPondsForClosure();
+  if (!eligible.length) { bcAlert('No eligible open Mother Pond is available in the active Year and Crop.'); return; }
+  select.innerHTML = eligible.map(pond => `<option value="${escapeHtml(String(pond.id))}">${escapeHtml(getPondDisplayName(pond))}</option>`).join('');
+  if (pondId && eligible.some(pond => String(pond.id) === String(pondId))) select.value = String(pondId);
+  document.getElementById('motherPondClosureActualRemaining').value = '';
+  document.getElementById('motherPondClosureDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('motherPondClosureReason').value = '';
+  document.getElementById('motherPondClosureNotes').value = '';
+  resetMotherPondClosureConfirmation();
+  setMotherPondClosureValidation('Stage 2 validation only — pond has not been closed.');
+  updateMotherPondClosurePreview();
+  modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
+}
+function closeMotherPondClosureModal() {
+  const modal = document.getElementById('motherPondClosureModal');
+  if (!modal) return;
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+  if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+}
+function resetMotherPondClosureConfirmation() {
+  const action = document.getElementById('motherPondClosureValidateBtn');
+  if (!action) return;
+  action.dataset.readySignature = '';
+  action.textContent = 'Review Closure';
+}
+function collectMotherPondClosureReview() {
+  const select = document.getElementById('motherPondClosurePond');
+  const actualInput = document.getElementById('motherPondClosureActualRemaining');
+  const closureDate = document.getElementById('motherPondClosureDate')?.value || '';
+  const reason = document.getElementById('motherPondClosureReason')?.value || '';
+  const notes = document.getElementById('motherPondClosureNotes')?.value.trim() || '';
+  const preview = getMotherPondClosurePreview(select?.value);
+  if (!preview || !isMotherPondClosureEligible(preview.pond)) return { valid: false, message: 'Select an eligible open Mother Pond in a valid active cycle.' };
+  if (!(preview.originalStock > 0)) return { valid: false, message: 'Mother Pond original stock is missing or invalid.' };
+  if (preview.transferredOut > preview.originalStock) return { valid: false, message: 'Transferred Out cannot exceed Original Stock.' };
+  const rawActual = actualInput?.value.trim() || '';
+  if (rawActual === '') return { valid: false, message: 'Actual Remaining Stock is required.' };
+  const actualRemaining = Number(rawActual);
+  if (!Number.isFinite(actualRemaining) || actualRemaining < 0) return { valid: false, message: 'Actual Remaining Stock must be zero or greater.' };
+  if (actualRemaining > preview.calculatedBalance) return { valid: false, message: 'Actual Remaining Stock cannot exceed the Calculated Balance.' };
+  const closureDay = motherPondClosureDay(closureDate);
+  if (!Number.isFinite(closureDay)) return { valid: false, message: 'Closure Date is required.' };
+  const stockingDate = preview.pond.stockingDate || preview.pond.date || '';
+  const stockingDay = motherPondClosureDay(stockingDate);
+  if (Number.isFinite(stockingDay) && closureDay < stockingDay) return { valid: false, message: 'Closure Date cannot be before the pond Stocking Date.' };
+  const latestTransfer = motherPondClosureLatestOutgoingDate(preview.pond.id);
+  if (latestTransfer && closureDay < latestTransfer.day) return { valid: false, message: 'Closure Date cannot be before the latest outgoing Stock Transfer date.' };
+  if (!reason) return { valid: false, message: 'Select a closure reason.' };
+  if (reason === 'Other' && !notes) return { valid: false, message: 'Notes are required when Reason is Other.' };
+  const mortalityLoss = preview.calculatedBalance - actualRemaining;
+  const survival = (preview.transferredOut / preview.originalStock) * 100;
+  const transferRecordIds = getActiveStockTransfers()
+    .filter(record => String(record.fromPondId || record.fromPond || '') === String(preview.pond.id))
+    .map(record => String(record.firestoreId || record.id || '')).filter(Boolean).sort();
+  const signature = JSON.stringify({
+    farmId: blueCrestSession?.farmId || '', cycleId: preview.context.cycleId, pondId: String(preview.pond.id),
+    originalStock: preview.originalStock, transferredOut: preview.transferredOut, transferRecordIds,
+    actualRemaining, closureDate, reason, notes
+  });
+  return { valid: true, preview, actualRemaining, closureDate, reason, notes, mortalityLoss, survival, transferRecordIds, signature };
+}
+function reviewMotherPondClosure(event) {
+  if (event) event.preventDefault();
+  void runMotherPondClosureReview();
+  return false;
+}
+async function runMotherPondClosureReview() {
+  const review = collectMotherPondClosureReview();
+  if (!review.valid) {
+    resetMotherPondClosureConfirmation();
+    setMotherPondClosureValidation(review.message, 'error');
+    return;
+  }
+  updateMotherPondClosurePreview();
+  const action = document.getElementById('motherPondClosureValidateBtn');
+  if (action?.dataset.readySignature !== review.signature) {
+    if (action) { action.dataset.readySignature = review.signature; action.textContent = 'Confirm & Close'; }
+    setMotherPondClosureValidation(`Review passed — Mortality / Loss: ${motherPondClosurePcs(review.mortalityLoss)}; Transfer Survival: ${review.survival.toFixed(2)}%. Confirming will close this pond and cannot be undone without reactivation.`, 'success');
+    return;
+  }
+  if (!window.confirm(`Confirm Mother Pond closure for ${getPondDisplayName(review.preview.pond)}?\n\nOriginal Stock: ${motherPondClosurePcs(review.preview.originalStock)}\nTransferred Out: ${motherPondClosurePcs(review.preview.transferredOut)}\nActual Remaining: ${motherPondClosurePcs(review.actualRemaining)}\nMortality / Loss: ${motherPondClosurePcs(review.mortalityLoss)}\n\nThis will create an immutable reconciliation record and lock the pond.`)) return;
+  if (typeof window.blueCrestCommitMotherPondClosure !== 'function') {
+    resetMotherPondClosureConfirmation();
+    setMotherPondClosureValidation('Mother Pond closure service is unavailable. No changes were made.', 'error');
+    return;
+  }
+  if (action) action.disabled = true;
+  try {
+    const result = await window.blueCrestCommitMotherPondClosure({
+      farmId: blueCrestSession?.farmId || '', uid: blueCrestSession?.uid || '',
+      pondId: review.preview.pond.id, pondFirestoreId: review.preview.pond.firestoreId || review.preview.pond.id,
+      cycleId: review.preview.context.cycleId, year: review.preview.context.year, crop: review.preview.context.crop,
+      actualRemaining: review.actualRemaining, closureDate: review.closureDate, reason: review.reason, notes: review.notes,
+      expected: { originalStock: review.preview.originalStock, transferredOut: review.preview.transferredOut, transferRecordIds: review.transferRecordIds }
+    });
+    closeMotherPondClosureModal();
+    updateMotherPondClosureAction();
+    if (typeof scheduleFirebaseRender === 'function') scheduleFirebaseRender();
+    bcAlert(result?.auditError
+      ? 'Mother Pond closed successfully. The reconciliation and pond lock were saved, but the audit entry could not be recorded.'
+      : 'Mother Pond closed successfully. The reconciliation record and pond lock were saved.');
+  } catch (error) {
+    console.error('Mother Pond closure transaction failed:', error);
+    resetMotherPondClosureConfirmation();
+    setMotherPondClosureValidation(`${error?.message || 'Closure could not be completed.'} No partial closure was saved. Review the current data and try again.`, 'error');
+  } finally {
+    if (action) action.disabled = false;
+  }
+}
 function populateStockTransferPonds() {
   const from = document.getElementById('stockTransferFrom'), to = document.getElementById('stockTransferTo');
   if (!from || !to) return;
@@ -22590,6 +23119,7 @@ async function saveStockTransfer(e) {
   renderAll();
 }
 function renderStockTransfers() {
+  updateMotherPondClosureAction();
   const body=document.getElementById('stockTransferTableBody'); if(!body) return;
   const rows=[...getActiveStockTransfers()].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
   const count=document.getElementById('stockTransferCount'); if(count) count.textContent=`${rows.length} ${rows.length===1?'transfer':'transfers'}`;
@@ -25297,7 +25827,9 @@ function handleImportCSV(e) {
 
       if (!Array.isArray(masterCatalogue)) masterCatalogue = [];
       newProducts.forEach(r => {
-        masterCatalogue.push({ name:r.name, company:r.company, category:r.category, unit:r.unit, unitPrice:r.unitPrice, packSize:r.packSize, stockUnit:r.stockUnit });
+        const definition = createCatalogueProductDefinition({ name:r.name, company:r.company, category:r.category, unit:r.unit, packSize:r.packSize, stockUnit:r.stockUnit, useInPondTreatment:false, useInSupplement:false });
+        const created = masterCatalogue.find(item => getCatalogueProductId(item) === definition.productId);
+        if (created) created.unitPrice = r.unitPrice;
       });
 
       const imported = incoming.map((r, i) => ({ id:`pur_${Date.now()}_${i}_${Math.random().toString(36).slice(2,8)}`, ...r }));
@@ -25322,7 +25854,10 @@ function handleImportCSV(e) {
       }
       // CSV import may legitimately add master products. Version that catalogue
       // change without altering any purchase or other historical record.
-      if (newProducts.length) persistMasterCatalogueLocally(new Date().toISOString());
+      if (newProducts.length) {
+        persistMasterCatalogueLocally(new Date().toISOString());
+        persistMasterCatalogueToCloud().catch(err => console.warn('Product catalogue cloud save failed:', err));
+      }
       saveStorage();
       if (typeof ensureVendorMaster === 'function') ensureVendorMaster();
       if (typeof renderInventoryAndPurchases === 'function') renderInventoryAndPurchases();
@@ -25453,6 +25988,92 @@ document.addEventListener('change', (e) => {
 
 <script id="bluecrest-purchase-save-final-guard">
 (function(){
+  let pendingPurchaseUploadInFlight=false;
+  function readPendingPurchaseInvoices(){
+    try {
+      const parsed=JSON.parse(readOperationalStorage(STORAGE_KEYS.PURCHASE_PENDING) || '[]');
+      return Array.isArray(parsed) ? parsed.filter(invoice => invoice && String(invoice.invoiceId || '').trim() && Array.isArray(invoice.records) && invoice.records.length) : [];
+    } catch(error) {
+      console.warn('Pending Purchase queue could not be read:',error);
+      return [];
+    }
+  }
+  function writePendingPurchaseInvoices(invoices){
+    if(!writeOperationalStorage(STORAGE_KEYS.PURCHASE_PENDING,JSON.stringify(Array.isArray(invoices) ? invoices : []))) {
+      throw new Error('Purchase pending queue could not be saved locally.');
+    }
+  }
+  function renderPendingPurchaseStatus(invoices=readPendingPurchaseInvoices()){
+    const count=Array.isArray(invoices) ? invoices.length : 0;
+    const status=document.getElementById('purchasePendingStatus');
+    const text=document.getElementById('purchasePendingStatusText');
+    const retry=document.getElementById('purchasePendingRetryBtn');
+    if(status) status.hidden=count===0;
+    if(text) text.textContent=`${count} Purchase Invoice${count===1?'':'s'} Pending Upload`;
+    if(retry) retry.disabled=count===0 || pendingPurchaseUploadInFlight;
+  }
+  function queuePendingPurchaseInvoice(invoice){
+    const invoices=readPendingPurchaseInvoices();
+    const invoiceId=String(invoice?.invoiceId || '').trim();
+    if(!invoiceId) throw new Error('Purchase invoice is missing its pending ID.');
+    if(!invoices.some(existing => String(existing?.invoiceId || '')===invoiceId)) {
+      invoices.push({invoiceId,records:(invoice.records || []).map(record => ({...record}))});
+      writePendingPurchaseInvoices(invoices);
+    }
+    renderPendingPurchaseStatus(invoices);
+    return invoices;
+  }
+  function removePendingPurchaseRecords(recordIds){
+    const ids=new Set((Array.isArray(recordIds) ? recordIds : [recordIds]).map(id => String(id || '').trim()).filter(Boolean));
+    if(!ids.size) return false;
+    const invoices=readPendingPurchaseInvoices();
+    let changed=false;
+    const remaining=invoices.map(invoice => {
+      const records=invoice.records.filter(record => {
+        const matches=ids.has(String(record?.id || '').trim()) || ids.has(String(record?.firestoreId || '').trim());
+        if(matches) changed=true;
+        return !matches;
+      });
+      return records.length ? {...invoice,records} : null;
+    }).filter(Boolean);
+    if(changed){
+      writePendingPurchaseInvoices(remaining);
+      renderPendingPurchaseStatus(remaining);
+    }
+    return changed;
+  }
+  function projectPendingPurchaseInvoice(records){
+    purchases=dedupePurchasesById(records.concat(purchases));
+    writeOperationalStorage(STORAGE_KEYS.PURCHASES,JSON.stringify(purchases));
+    writeOperationalStorage(STORAGE_KEYS.MASTER_CATALOGUE,JSON.stringify(masterCatalogue));
+    if(typeof renderActiveRoute==='function') renderActiveRoute(currentRoute || 'catalogue');
+    else if(typeof renderInventoryAndPurchases==='function') renderInventoryAndPurchases();
+  }
+  async function uploadPendingPurchaseInvoices(){
+    if(pendingPurchaseUploadInFlight) return;
+    const initial=readPendingPurchaseInvoices();
+    if(!initial.length){renderPendingPurchaseStatus(initial);return;}
+    pendingPurchaseUploadInFlight=true;
+    renderPendingPurchaseStatus(initial);
+    try {
+      let invoices=initial;
+      for(const invoice of initial){
+        await firebaseFirstBatchWrite('purchases',invoice.records,{silent:true,label:'Purchase'});
+        for(const record of invoice.records){
+          const confirmation=await operationalCollectionOrLegacy('purchases').doc(String(record.id)).get({source:'server'});
+          if(!confirmation.exists || String(confirmation.data()?.id || confirmation.id)!==String(record.id)) throw new Error('Purchase upload is awaiting server confirmation.');
+        }
+        invoices=invoices.filter(candidate => String(candidate?.invoiceId || '')!==String(invoice.invoiceId));
+        writePendingPurchaseInvoices(invoices);
+        renderPendingPurchaseStatus(invoices);
+      }
+    } catch(error) {
+      console.warn('Pending Purchase upload deferred:',error);
+    } finally {
+      pendingPurchaseUploadInFlight=false;
+      renderPendingPurchaseStatus();
+    }
+  }
   async function directPurchaseSave(event){
     if(event){ event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.(); }
     const form=document.getElementById('purchaseForm');
@@ -25547,6 +26168,23 @@ document.addEventListener('change', (e) => {
       if (editingInvoiceIds.length) {
         obsoleteInvoiceIds = editingInvoiceIds.filter(oldId => !records.some(r => String(r.id || '') === String(oldId)));
       }
+      if(!isEditingInvoice){
+        if(btn?.dataset.pendingPurchaseSubmission==='1') return false;
+        btn?.setAttribute('data-pending-purchase-submission','1');
+        if(btn) btn.disabled=true;
+        try {
+          const invoiceId=`pinv_${Date.now()}_${Math.random().toString(36).slice(2,10)}`;
+          queuePendingPurchaseInvoice({invoiceId,records});
+          projectPendingPurchaseInvoice(records);
+          if(msg) msg.textContent=`✓ Purchase saved locally (${records.length} item${records.length===1?'':'s'}). Upload pending.`;
+          if(typeof resetPurchaseForm==='function') resetPurchaseForm();
+          if(navigator.onLine!==false) void uploadPendingPurchaseInvoices();
+        } finally {
+          btn?.removeAttribute('data-pending-purchase-submission');
+          if(btn) btn.disabled=false;
+        }
+        return false;
+      }
       // Save/overwrite the edited invoice first. Only after cloud success do we
       // remove old item documents that were intentionally removed from the invoice.
       await firebaseFirstBatchWrite('purchases', records, { silent:true, label:'Purchase' });
@@ -25594,7 +26232,11 @@ document.addEventListener('change', (e) => {
     if(btn){ btn.onclick=directPurchaseSave; }
     const form=document.getElementById('purchaseForm');
     if(form){ form.onsubmit=directPurchaseSave; }
+    document.getElementById('purchasePendingRetryBtn')?.addEventListener('click',uploadPendingPurchaseInvoices);
+    renderPendingPurchaseStatus();
   }
+  window.addEventListener('online',uploadPendingPurchaseInvoices);
+  window.removePendingPurchaseRecords=removePendingPurchaseRecords;
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire); else wire();
   window.blueCrestDirectPurchaseSaveTest=directPurchaseSave;
 })();
@@ -25707,6 +26349,12 @@ document.addEventListener('DOMContentLoaded', () => {
     return legacyKey!==businessKey && Object.prototype.hasOwnProperty.call(pondLocks,legacyKey) ? pondLocks[legacyKey] || null : null;
   }
   function isPondClosed(pid,cid){ return effectivePondLock(canonicalCycleId(cid),canonicalPondId(pid))?.closed===true; }
+  // Read-only lock access for reconciliation evidence. The lock remains the
+  // only operational closure authority; callers must still require closed.
+  window.blueCrestGetPondLock=function(pid,cid){
+    const lock=effectivePondLock(canonicalCycleId(cid),canonicalPondId(pid));
+    return lock&&typeof lock==='object'?{...lock}:null;
+  };
   function harvestLockContext(h){
     const pondRef=String(h?.pondId||h?.pond||h?.pondName||'').trim();
     const hy=Number(h?.year||h?.cropYear||0);
@@ -25787,7 +26435,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return d.toLocaleString([], {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   }
   function bcAuditActionLabel(a){
-    const map={POND_REACTIVATED:'🔓 Pond Reactivated',CROP_REACTIVATED:'🔓 Crop Reactivated',POND_CLOSED:'🔒 Pond Closed',CROP_CLOSED:'🔒 Crop Closed'};
+    const map={POND_REACTIVATED:'🔓 Pond Reactivated',CROP_REACTIVATED:'🔓 Crop Reactivated',POND_CLOSED:'🔒 Pond Closed',MOTHER_POND_RECONCILIATION_CLOSED:'🔒 Mother Pond Reconciliation Closed',CROP_CLOSED:'🔒 Crop Closed'};
     return map[String(a||'')]||bcEsc(a||'Unknown');
   }
   function bcAuditScopeLabel(r){ return String(r?.scope||'').toLowerCase()==='pond'?'Pond':'Crop'; }
@@ -25880,6 +26528,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const rec=makeRec(); pondLocks[key]=rec;saveLocal();await cloudSet('pondLocks',key,rec);return true;
   }
+  window.blueCrestCommitMotherPondClosure=async function(payload){
+    const active=activeC(), cid=canonicalCycleId(active?.id), expectedCid=canonicalCycleId(payload?.cycleId);
+    if(!payload?.farmId || getActiveFarmId()!==payload.farmId || !cid || cid!==expectedCid) throw new Error('The active farm or cycle changed. Review the closure again.');
+    if(Number(active?.year)!==Number(payload.year) || String(active?.crop||'').trim()!==String(payload.crop||'').trim()) throw new Error('The active cycle changed. Review the closure again.');
+    if(!db || typeof db.runTransaction!=='function') throw new Error('Firestore transactions are unavailable. No closure was saved.');
+    assertFoundationWriteAllowed();
+    requireFirebaseConnection();
+    const pond=getPondForCycle(payload.pondId,cid);
+    if(!pond || String(pond.pondType||'').trim()!=='mother') throw new Error('The selected Mother Pond is no longer valid. Review the closure again.');
+    if(isPondClosed(pond.id,cid)) throw new Error('This Mother Pond is already closed.');
+    const closureDay=typeof motherPondClosureDay==='function'?motherPondClosureDay(payload.closureDate):NaN;
+    if(!Number.isFinite(closureDay)) throw new Error('Closure Date is invalid.');
+    if(!['Transfer Completed','Mortality / Loss','Other'].includes(payload.reason)) throw new Error('Closure reason is invalid.');
+    if(payload.reason==='Other'&&!String(payload.notes||'').trim()) throw new Error('Notes are required when Reason is Other.');
+    const subject=resolveLockPondSubject(pond.id||pond.name,cid),key=lockBusinessKey(cid,subject);
+    const closureId=`mpc_${Date.now()}_${Math.random().toString(36).slice(2,10)}`;
+    const lockRef=foundationCollection('pondLocks').doc(String(key));
+    const pondRef=foundationCollection('ponds').doc(String(payload.pondFirestoreId||pond.firestoreId||pond.id));
+    const transfersRef=farmCollection('stockTransfers');
+    const closureRef=farmCollection('motherPondClosures').doc(closureId);
+    const closedAt=todayIso();
+    let committedLock=null;
+    try{
+      // The compat Transaction API accepts DocumentReferences, not a collection
+      // reference. Read the scoped collection immediately before the transaction,
+      // then re-read each same-SDK document reference inside the transaction.
+      const transferPreflight=await transfersRef.get();
+      const transferRefs=transferPreflight.docs.map(doc=>transfersRef.doc(doc.id));
+      await db.runTransaction(async tx=>{
+        const [lockSnap,pondSnap,closureSnap,...transferSnaps]=await Promise.all([tx.get(lockRef),tx.get(pondRef),tx.get(closureRef),...transferRefs.map(ref=>tx.get(ref))]);
+        if(closureSnap.exists) throw new Error('A closure ID conflict occurred. Review and try again.');
+        const existingLock=lockSnap.exists?(lockSnap.data()||{}):null;
+        if(existingLock?.closed===true) throw new Error('This Mother Pond was closed by another session. Review the current data.');
+        if(!pondSnap.exists) throw new Error('The selected Mother Pond no longer exists. Review the closure again.');
+        const livePond={...(pondSnap.data()||{})};
+        const livePondId=String(livePond.id||livePond.name||pond.id).trim();
+        const liveYear=Number(livePond.year||livePond.cropYear||0),liveCrop=String(livePond.crop||livePond.cropCycle||'').trim();
+        const liveCid=livePond.cycleId?canonicalCycleId(livePond.cycleId):(liveYear&&liveCrop&&typeof cycleIdFor==='function'?canonicalCycleId(cycleIdFor(liveYear,liveCrop)):cid);
+        if(String(livePond.pondType||'').trim()!=='mother'||liveCid!==cid||(livePondId!==String(pond.id)&&String(livePond.name||'')!==String(pond.id))) throw new Error('The selected Mother Pond changed. Review the closure again.');
+        const originalStock=Number(livePond.initialStockingNumber??livePond.stockingCount??livePond.stockedCount??livePond.pieces??0);
+        if(!Number.isFinite(originalStock)||originalStock<=0) throw new Error('Mother Pond original stock is invalid.');
+        const outgoingDocs=transferSnaps.map(doc=>({...(doc.data()||{}),firestoreId:doc.id})).filter(record=>{
+          const recordYear=Number(record.year||record.cropYear||0),recordCrop=String(record.crop||record.cropCycle||'').trim();
+          const recordCid=record.cycleId?canonicalCycleId(record.cycleId):(recordYear&&recordCrop&&typeof cycleIdFor==='function'?canonicalCycleId(cycleIdFor(recordYear,recordCrop)):'' );
+          return recordCid===cid&&String(record.fromPondId||record.fromPond||'')===String(pond.id);
+        });
+        const transferredOut=outgoingDocs.reduce((sum,record)=>sum+(Number(record.number||record.transferredNumber||record.count||0)||0),0);
+        const transferRecordIds=outgoingDocs.map(record=>String(record.firestoreId)).sort();
+        const expectedIds=(Array.isArray(payload.expected?.transferRecordIds)?payload.expected.transferRecordIds:[]).map(String).sort();
+        if(originalStock!==Number(payload.expected?.originalStock)||transferredOut!==Number(payload.expected?.transferredOut)||transferRecordIds.length!==expectedIds.length||transferRecordIds.some((id,index)=>id!==expectedIds[index])) throw new Error('Mother Pond source data changed. Review the closure again.');
+        if(transferredOut>originalStock) throw new Error('Transferred Out cannot exceed Original Stock.');
+        const calculatedBalance=originalStock-transferredOut,actualRemaining=Number(payload.actualRemaining);
+        if(!Number.isFinite(actualRemaining)||actualRemaining<0||actualRemaining>calculatedBalance) throw new Error('Actual Remaining Stock is no longer valid for the current balance.');
+        const stockingDay=typeof motherPondClosureDay==='function'?motherPondClosureDay(livePond.stockingDate||livePond.date||''):NaN;
+        if(Number.isFinite(stockingDay)&&closureDay<stockingDay) throw new Error('Closure Date cannot be before the pond Stocking Date.');
+        const latestTransferDay=outgoingDocs.map(record=>typeof motherPondClosureDay==='function'?motherPondClosureDay(record.date||record.transferDate):NaN).filter(Number.isFinite).reduce((latest,day)=>Math.max(latest,day),-Infinity);
+        if(Number.isFinite(latestTransferDay)&&closureDay<latestTransferDay) throw new Error('Closure Date cannot be before the latest outgoing Stock Transfer date.');
+        const mortalityLoss=calculatedBalance-actualRemaining,transferSurvivalPct=(transferredOut/originalStock)*100;
+        const closureRecord={id:closureId,cycleId:cid,year:Number(active.year),crop:active.crop,pondId:pond.id,pondName:pond.name||subject,lockKey:key,closureDate:payload.closureDate,originalStock,transferredOut,calculatedBalance,actualRemaining,mortalityLoss,transferSurvivalPct,reason:payload.reason,notes:String(payload.notes||'').trim(),transferRecordIds,closedAt,closedBy:String(payload.uid||DEVICE)};
+        committedLock={id:key,closed:true,cycleId:cid,year:Number(active.year),crop:active.crop,pondId:subject,pondName:pond.name||subject,closedAt,closedBy:DEVICE,reason:'Mother Pond reconciliation closure',motherPondClosureId:closureId,closureSource:'motherPondReconciliation',updatedAt:closedAt};
+        tx.set(closureRef,closureRecord);
+        tx.set(lockRef,committedLock,{merge:true});
+      });
+    }catch(error){
+      throw error;
+    }
+    // This mirrors the established closePond immediate cache reflection. Both
+    // authoritative listeners still replace it from the committed documents.
+    pondLocks[key]=committedLock;saveLocal();
+    let auditError=null;
+    try{await writeAudit('MOTHER_POND_RECONCILIATION_CLOSED',{cycleId:cid,year:Number(active.year),crop:active.crop,pondId:pond.id,pondName:pond.name||subject},String(payload.reason));}
+    catch(error){auditError=error;console.warn('Mother Pond closure audit write failed after committed transaction:',error);}
+    return {closureId,lockKey:key,auditError};
+  };
   async function closeCrop(c,reason){
     assertFoundationWriteAllowed();
     const rec={closed:true,cycleId:String(c.id),year:Number(c.year),crop:c.crop,closedAt:todayIso(),closedBy:DEVICE,reason:reason||'All relevant ponds completed Full/Final Harvest'};
@@ -25914,7 +26636,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(didClose) await writeAudit('POND_CLOSED',{cycleId:cid,year:hy||p.year,crop:hc||p.crop,pondId:p.id,pondName:p.name},'Full/Final harvest recorded');
     }
     const c={id:cid,year:hy||p.year||p.cropYear,crop:hc||p.crop||p.cropCycle};
-    const rel=relevantPonds(c);
+    const rel=getActivePonds();
     // A reactivated pond is genuinely open. Do not close it again merely
     // because an old Full Harvest exists in history. Crop closure requires
     // every relevant pond to be actually locked.
@@ -27177,6 +27899,12 @@ window.openCashExpenseAnalysis=()=>{state.year='';state.scope='ALL';state.group=
       seen.add(id); supplied.add(id);
       prepared.push({ id, pondId: pond.id, date, testWeight, sampleWeight: testWeight, count, lastFeed, prevCumulativeFeed: lastFeed, currentFeed, currCumulativeFeed: currentFeed, notes: get(row, 'Notes'), year, crop, cycleId: derivedCycleId });
     }
+    for (const record of prepared) {
+      if (typeof window.blueCrestAssertOperationalWrite === 'function' &&
+          !window.blueCrestAssertOperationalWrite({ pondId: record.pondId, cycleId: record.cycleId })) {
+        throw new Error(`Pond ${record.pondId} is closed. No sampling records were imported.`);
+      }
+    }
     prepared.sort(sampleSort);
     for (const record of prepared) await firebaseFirstBatchWrite('sampling', record);
     samples.push(...prepared);
@@ -27321,6 +28049,12 @@ window.openCashExpenseAnalysis=()=>{state.year='';state.scope='ALL';state.group=
     }
     throwCsvProductMasterAuthorityErrors(productMasterCsvAuthorityErrors(unitValidationEntries, 'treatment'));
     prepared.sort(ordered);
+    for (const record of prepared) {
+      if (typeof window.blueCrestAssertOperationalWrite === 'function' &&
+          !window.blueCrestAssertOperationalWrite({ pondId: record.pondId, cycleId: record.cycleId, pondName: record.pond || record.pondId })) {
+        throw new Error(`Pond ${record.pond || record.pondId} is closed. No Treatment records were imported.`);
+      }
+    }
     await verifyTreatmentIds(prepared.map(record => record.id));
     const existingFingerprints = new Set((Array.isArray(treatments) ? treatments : []).map(fingerprint));
     const possibleDuplicates = prepared.filter(record => existingFingerprints.has(fingerprint(record))).length;

@@ -6609,6 +6609,7 @@ body.bc-return-modal-open{overflow:hidden!important}
             <label style="font-size:.75rem;font-weight:700;"><input type="checkbox" value="ALL" checked> All</label>
             <label style="font-size:.75rem;"><input type="checkbox" value="Purchase"> Purchase</label>
             <label style="font-size:.75rem;"><input type="checkbox" value="Payment"> Payment</label>
+            <label style="font-size:.75rem;"><input type="checkbox" value="Vendor Refund"> Vendor Refund</label>
             <label style="font-size:.75rem;"><input type="checkbox" value="Stock Return"> Stock Return</label>
             <label style="font-size:.75rem;"><input type="checkbox" value="Debit Note"> Debit Note</label>
             <label style="font-size:.75rem;"><input type="checkbox" value="Credit Note"> Credit Note</label>
@@ -6654,6 +6655,7 @@ body.bc-return-modal-open{overflow:hidden!important}
             <label><input type="checkbox" value="ALL" checked> All</label>
             <label><input type="checkbox" value="Purchase"> Purchase</label>
             <label><input type="checkbox" value="Payment"> Payment</label>
+            <label><input type="checkbox" value="Vendor Refund"> Vendor Refund</label>
             <label><input type="checkbox" value="Stock Return"> Stock Return</label>
             <label><input type="checkbox" value="Debit Note"> Debit Note</label>
             <label><input type="checkbox" value="Credit Note"> Credit Note</label>
@@ -6710,7 +6712,7 @@ body.bc-return-modal-open{overflow:hidden!important}
           <div class="form-group" style="margin:0;"><label>Date *</label><input type="date" id="advDate"></div>
           <div class="form-group" style="margin:0;"><label>Crop *</label><select id="advCrop"><option value="Crop 1">Crop 1</option><option value="Crop 2">Crop 2</option></select></div>
           <div class="form-group" style="margin:0;"><label>Accounting Side *</label><select id="advType"><option value="Credit">Credit</option><option value="Debit">Debit</option></select></div>
-          <div class="form-group" style="margin:0;"><label>Transaction Type *</label><select id="advTransactionKind" required><option value="">Select type…</option><option value="Payment">Payment</option><option value="Debit Note">Debit Note</option><option value="Credit Note">Credit Note</option><option value="Other Adjustment">Other Adjustment</option></select></div>
+          <div class="form-group" style="margin:0;"><label>Transaction Type *</label><select id="advTransactionKind" required><option value="">Select type…</option><option value="Payment">Payment</option><option value="Vendor Refund">Vendor Refund</option><option value="Debit Note">Debit Note</option><option value="Credit Note">Credit Note</option><option value="Other Adjustment">Other Adjustment</option></select></div>
           <div class="form-group" style="margin:0;"><label>Bill No. (Optional)</label><input type="text" id="advBillNo" placeholder="e.g. 1021"></div>
           <div class="form-group searchable-field" style="margin:0;"><label>Vendor *</label><input type="text" id="advVendor" placeholder="Search vendor..."><div id="advVendorSuggestions" class="ledger-suggestions" hidden></div></div>
           <div class="form-group searchable-field" style="margin:0;"><label>Account</label><input type="text" id="advAccount" placeholder="Search or add account..."><div id="advAccountSuggestions" class="ledger-suggestions" hidden></div></div>
@@ -7332,7 +7334,7 @@ document.addEventListener('click', function(e){ const m=document.getElementById(
       <h3 style="margin:0 0 .35rem;color:#0f2742;">Classify Manual Transaction</h3>
       <p style="margin:0 0 1rem;font-size:.8rem;color:#64748b;">This changes only the transaction classification; accounting side and amount remain unchanged.</p>
       <input id="vendorTransactionKindId" type="hidden">
-      <div class="form-group"><label for="vendorTransactionKindSelect">Transaction Type *</label><select id="vendorTransactionKindSelect" required><option value="Payment">Payment</option><option value="Debit Note">Debit Note</option><option value="Credit Note">Credit Note</option><option value="Other Adjustment">Other Adjustment</option></select></div>
+      <div class="form-group"><label for="vendorTransactionKindSelect">Transaction Type *</label><select id="vendorTransactionKindSelect" required><option value="Payment">Payment</option><option value="Vendor Refund">Vendor Refund</option><option value="Debit Note">Debit Note</option><option value="Credit Note">Credit Note</option><option value="Other Adjustment">Other Adjustment</option></select></div>
       <div style="display:flex;justify-content:flex-end;gap:.6rem;margin-top:1rem;"><button type="button" id="cancelVendorTransactionKind" class="pill-btn secondary-btn">Cancel</button><button type="submit" class="pill-btn action-blue">Save Classification</button></div>
     </form>
   </dialog>
@@ -11082,7 +11084,7 @@ function persistMasterCatalogueLocally(updatedAt = new Date().toISOString()) {
   writeOperationalStorage(STORAGE_KEYS.MASTER_CATALOGUE_UPDATED_AT, masterCatalogueUpdatedAt);
 }
 
-function mergeMasterCatalogueItemsForCloud(incomingItems, authoritativeItems) {
+function mergeMasterCatalogueItemsForCloud(incomingItems, authoritativeItems, { allowUsageChanges = false } = {}) {
   const authoritative = Array.isArray(authoritativeItems) ? authoritativeItems.filter(item => item && typeof item === 'object') : [];
   return (Array.isArray(incomingItems) ? incomingItems : []).map(incoming => {
     const source = incoming && typeof incoming === 'object' ? incoming : {};
@@ -11097,8 +11099,12 @@ function mergeMasterCatalogueItemsForCloud(incomingItems, authoritativeItems) {
         ? authoritative.filter(item => catalogueProductKey(item) === sourceKey)
         : [];
     }
-    const merged = matches.length === 1 ? { ...matches[0] } : {};
+    const authoritativeMatch = matches.length === 1 ? matches[0] : null;
+    const merged = authoritativeMatch ? { ...authoritativeMatch } : {};
     Object.entries(source).forEach(([key, value]) => {
+      // Usage classification belongs to the authoritative catalogue except for
+      // the dedicated classification import and Product Catalogue edit flows.
+      if (!allowUsageChanges && authoritativeMatch && (key === 'useInPondTreatment' || key === 'useInSupplement')) return;
       if (value !== undefined) merged[key] = value;
     });
     if (!String(merged.productId || '').trim()) merged.productId = getCatalogueProductId(merged);
@@ -11108,7 +11114,7 @@ function mergeMasterCatalogueItemsForCloud(incomingItems, authoritativeItems) {
   });
 }
 
-async function persistMasterCatalogueToCloud() {
+async function persistMasterCatalogueToCloud({ allowUsageChanges = false } = {}) {
   requireFirebaseConnection();
   assertProductCatalogueWriteAllowed();
   const updatedAt = masterCatalogueUpdatedAt || new Date().toISOString();
@@ -11117,7 +11123,7 @@ async function persistMasterCatalogueToCloud() {
   await db.runTransaction(async tx => {
     const snapshot = await tx.get(catalogueRef);
     const authoritativeItems = Array.isArray(snapshot.data()?.items) ? snapshot.data().items : [];
-    persistedItems = mergeMasterCatalogueItemsForCloud(masterCatalogue, authoritativeItems);
+    persistedItems = mergeMasterCatalogueItemsForCloud(masterCatalogue, authoritativeItems, { allowUsageChanges });
     tx.set(catalogueRef, {
       items: firestoreSafeValue(persistedItems),
       updatedAt,
@@ -13119,12 +13125,17 @@ function getProductInventorySummary() {
     const supp = entry.supplement;
     if (!supp) return;
     const key = String(supp.code || supp.name || '').trim().toLowerCase();
-    if (!key || !isFeedSupplementProduct(key)) return;
-    if (!inventoryMap[key]) {
+    if (!key || !(Number(supp.qty) > 0)) return;
+    const matchingInventoryItems = Object.entries(inventoryMap).filter(([, item]) => feedSupplementMatchesProduct(supp, item));
+    const matchingInventory = matchingInventoryItems.find(([, item]) =>
+      Number(item.openingStockQty) > 0 || Number(item.totalPurchasedQty) > 0
+    ) || matchingInventoryItems[0];
+    const inventoryKey = matchingInventory?.[0] || key;
+    if (!inventoryMap[inventoryKey]) {
       const directoryItem = (typeof MOBILE_FEED_SUPPLEMENTS !== 'undefined' && Array.isArray(MOBILE_FEED_SUPPLEMENTS))
         ? MOBILE_FEED_SUPPLEMENTS.find(x => String(x.code || x.name || '').trim().toLowerCase() === key)
         : null;
-      inventoryMap[key] = {
+      inventoryMap[inventoryKey] = {
         name: String(directoryItem?.name || supp.name || supp.code || key).trim(),
         company: '',
         supplier: '',
@@ -13141,7 +13152,11 @@ function getProductInventorySummary() {
       };
     }
     const rawQty = Number(supp.qty) || 0;
-    if (rawQty > 0) inventoryMap[key].totalUsedQty += rawQty / 1000;
+    if (rawQty > 0) {
+      const supplementQty = rawQty / 1000;
+      inventoryMap[inventoryKey].totalUsedQty += supplementQty;
+      inventoryMap[inventoryKey].feedSupplementUsedQty = (Number(inventoryMap[inventoryKey].feedSupplementUsedQty) || 0) + supplementQty;
+    }
   });
 
   // Crop 2 automatically receives Crop 1's manually entered closing packed stock.
@@ -13184,7 +13199,12 @@ function getProductInventorySummary() {
   return Object.values(inventoryMap).map(item => {
     const fifo = getInventoryFifoValuation(item);
     const isFeed = String(item.category || '').trim().toLowerCase() === 'feed';
-    const usedQty = isFeed ? fifo.usedQty : item.totalUsedQty;
+    // Feed FIFO accounts for normal feed consumption. Persisted Feed Entry
+    // supplements are separate consumption and must reduce stock regardless
+    // of the catalogue category assigned to the supplement product.
+    const usedQty = isFeed
+      ? fifo.usedQty + (Number(item.feedSupplementUsedQty) || 0)
+      : item.totalUsedQty;
     const carryForwardQty = String(activeCycle?.crop || '').trim().toLowerCase() === 'crop 1' && !isFeed
       ? getCrop1CarryForwardQty(item.name, Number(activeCycle?.year || 0))
       : 0;
@@ -13553,10 +13573,10 @@ async function importProductClassificationCsv(file) {
   const backup = changed.map(change => ({ item:change.item, category:change.item.category, useInPondTreatment:change.item.useInPondTreatment, useInSupplement:change.item.useInSupplement }));
   try {
     changed.forEach(change => { change.item.category=change.category; change.item.useInPondTreatment=change.useInPondTreatment; change.item.useInSupplement=change.useInSupplement; });
-    persistMasterCatalogueLocally(new Date().toISOString()); await persistMasterCatalogueToCloud(); renderProductCatalogue(); renderAll(); bcAlert(`Product Classification CSV imported. Rows read: ${rows.length}. Changed: ${changed.length}. Unchanged: ${rows.length-changed.length}.`);
+    persistMasterCatalogueLocally(new Date().toISOString()); await persistMasterCatalogueToCloud({ allowUsageChanges: true }); renderProductCatalogue(); renderAll(); bcAlert(`Product Classification CSV imported. Rows read: ${rows.length}. Changed: ${changed.length}. Unchanged: ${rows.length-changed.length}.`);
   } catch (error) {
     backup.forEach(previous => { previous.item.category=previous.category; previous.item.useInPondTreatment=previous.useInPondTreatment; previous.item.useInSupplement=previous.useInSupplement; });
-    persistMasterCatalogueLocally(new Date().toISOString()); try { await persistMasterCatalogueToCloud(); } catch (rollbackError) { console.error('Product Classification cloud rollback failed:', rollbackError); } renderProductCatalogue(); renderAll(); throw new Error(`Product Classification import failed and classification values were restored. ${error?.message || error}`);
+    persistMasterCatalogueLocally(new Date().toISOString()); try { await persistMasterCatalogueToCloud({ allowUsageChanges: true }); } catch (rollbackError) { console.error('Product Classification cloud rollback failed:', rollbackError); } renderProductCatalogue(); renderAll(); throw new Error(`Product Classification import failed and classification values were restored. ${error?.message || error}`);
   }
 }
 window.importProductClassificationCsv = importProductClassificationCsv;
@@ -13682,7 +13702,7 @@ async function saveNewCatalogueProduct(event) {
     persistMasterCatalogueLocally(new Date().toISOString());
     renderProductCatalogue();
     renderAll();
-    await persistMasterCatalogueToCloud();
+    await persistMasterCatalogueToCloud({ allowUsageChanges: true });
     closeAddCatalogueProductModal();
     bcAlert(`Product Master created: ${definition.name}`, 'success');
   } catch (error) {
@@ -13758,7 +13778,7 @@ async function saveEditedCatalogueProduct(event) {
   masterCatalogue[index] = { ...item, productId: getCatalogueProductId(item), name, company, category, unit, packSize: ['Bag/Pkt', 'Can/Pkt'].includes(unit) ? packSize : 1, stockUnit, useInPondTreatment: document.getElementById('editProductMasterUseTreatment')?.checked === true, useInSupplement: document.getElementById('editProductMasterUseSupplement')?.checked === true };
   persistMasterCatalogueLocally(new Date().toISOString());
   renderProductCatalogue(); renderAll();
-  try { await persistMasterCatalogueToCloud(); closeEditCatalogueProductModal(); bcAlert(`Catalogue product updated: ${name}`, 'success'); }
+  try { await persistMasterCatalogueToCloud({ allowUsageChanges: true }); closeEditCatalogueProductModal(); bcAlert(`Catalogue product updated: ${name}`, 'success'); }
   catch (err) { console.error('Product Catalogue cloud save failed:', err); fail('Saved locally, but cloud sync failed.'); }
 }
 
@@ -14646,7 +14666,7 @@ function setupVendorStatementScrollLock() {
   }, { passive: true });
 }
 
-const VENDOR_TRANSACTION_KINDS = ['Payment', 'Debit Note', 'Credit Note', 'Other Adjustment'];
+const VENDOR_TRANSACTION_KINDS = ['Payment', 'Vendor Refund', 'Debit Note', 'Credit Note', 'Other Adjustment'];
 function getSelectedStatementTransactionKinds() {
   if (!statementTransactionKindFilters) return [];
   const selected = [...statementTransactionKindFilters.querySelectorAll('input[type="checkbox"]:checked')].map(input => input.value);
@@ -19186,6 +19206,14 @@ function isFeedSupplementProduct(productName) {
   return list.some(s => String(s.code || s.name || '').trim().toLowerCase() === key);
 }
 
+function feedSupplementMatchesProduct(supplement, item) {
+  const supplementId = String(supplement?.productId || '').trim();
+  const itemId = String(item?.productId || '').trim();
+  if (supplementId && itemId) return supplementId === itemId;
+  const supplementKey = getTreatmentFifoProductKey(supplement?.code || supplement?.name);
+  return Boolean(supplementKey) && supplementKey === getTreatmentFifoProductKey(item?.name);
+}
+
 function getSupplementUsageDetails(productName) {
   const key = String(productName || '').trim().toLowerCase();
   const cycle = typeof getActiveCycle === 'function' ? getActiveCycle() : activeCycle;
@@ -21776,11 +21804,37 @@ function renderFinanceOverview() {
     if (!vendorMap[vendor]) vendorMap[vendor] = { debit: 0, credit: 0 };
     return vendorMap[vendor];
   };
-  purchases.forEach(purchase => { ensureVendor(purchase.supplier).debit += amountOf(purchase); });
-  stockReturns.forEach(item => { ensureVendor(item.supplier).credit += amountOf(item); });
+  purchases.forEach(purchase => {
+    const target = ensureVendor(purchase.supplier);
+    const isGrowelFeed = String(purchase.category || '').trim().toLowerCase() === 'feed'
+      && String(purchase.company || '').trim().toLowerCase() === 'growel';
+    const invoicePrice = parseFloat(purchase.invoiceUnitPrice);
+    const finalPrice = parseFloat(purchase.finalUnitPrice !== undefined && purchase.finalUnitPrice !== null ? purchase.finalUnitPrice : purchase.unitPrice);
+    const qty = isGrowelFeed ? getNormalizedStockQuantity(purchase) : 0;
+    target.debit += isGrowelFeed && invoicePrice > 0 ? qty * invoicePrice : amountOf(purchase);
+    const rateDifference = isGrowelFeed && Number.isFinite(invoicePrice) && Number.isFinite(finalPrice) ? invoicePrice - finalPrice : 0;
+    if (Math.abs(rateDifference) > 0.000001 && qty > 0) {
+      if (rateDifference > 0) target.credit += Math.abs(rateDifference) * qty;
+      else target.debit += Math.abs(rateDifference) * qty;
+    }
+  });
+  stockReturns.forEach(item => {
+    const target = ensureVendor(item.supplier);
+    const isGrowelFeed = String(item.category || '').trim().toLowerCase() === 'feed'
+      && String(item.company || '').trim().toLowerCase() === 'growel';
+    const invoicePrice = isGrowelFeed ? (Number(item.invoiceUnitPrice ?? item.unitPrice) || 0) : 0;
+    const finalPrice = isGrowelFeed ? (Number(item.finalUnitPrice ?? item.unitPrice) || 0) : 0;
+    const qty = isGrowelFeed ? getNormalizedStockQuantity(item) : 0;
+    target.credit += isGrowelFeed && invoicePrice > 0 ? qty * invoicePrice : amountOf(item);
+    const rateDifference = invoicePrice - finalPrice;
+    if (isGrowelFeed && Math.abs(rateDifference) > 0.000001 && qty > 0) {
+      if (rateDifference > 0) target.debit += Math.abs(rateDifference) * qty;
+      else target.credit += Math.abs(rateDifference) * qty;
+    }
+  });
   vendorTransactions.forEach(transaction => {
     const target = ensureVendor(transaction.vendor);
-    if (transaction.type === 'Debit') target.debit += parseFloat(transaction.amount) || 0;
+    if (transaction.type === 'Debit' || getManualVendorTransactionKind(transaction) === 'Debit Note') target.debit += parseFloat(transaction.amount) || 0;
     else target.credit += parseFloat(transaction.amount) || 0;
   });
   if (overviewVendorBody) {
@@ -23335,7 +23389,7 @@ function getPondwiseFeedCost(pondId, year, crop) {
 // to the product stock unit (Kg/Ltr). Each usage event consumes the oldest
 // available purchase lot first. Latest/weighted-average pricing is not used.
 function getPondwiseSupplementFifoCostDetails(pondId, year, crop, code) {
-  const key = String(code || '').trim().toLowerCase();
+  const key = getTreatmentFifoProductKey(code);
   if (!key) return { usedQty: 0, cost: 0, unitPrice: 0, source: 'No product', lots: [] };
   const targetYear = Number(year || 0);
   const targetCrop = pondwiseNormaliseCrop(crop || 'Crop 1');
@@ -23351,7 +23405,7 @@ function getPondwiseSupplementFifoCostDetails(pondId, year, crop, code) {
 
   // Crop 2 opening stock is the physically verified Crop 1 closing stock.
   if (targetCrop === 'Crop 2' && typeof getCrop2OpeningStockItems === 'function') {
-    getCrop2OpeningStockItems().filter(e => String(e.name || '').trim().toLowerCase() === key).forEach((e, i) => {
+    getCrop2OpeningStockItems().filter(e => getTreatmentFifoProductKey(e.name) === key).forEach((e, i) => {
       baseUnit = String(e.unit || '').trim().toLowerCase();
       const layers = Array.isArray(e.openingLots) && e.openingLots.length ? e.openingLots : [{
         qty: Number(e.openingQty ?? e.qty ?? 0),
@@ -23365,7 +23419,7 @@ function getPondwiseSupplementFifoCostDetails(pondId, year, crop, code) {
   (Array.isArray(purchases) ? purchases : []).filter(p =>
     getPondwiseYear(p) === targetYear &&
     pondwiseNormaliseCrop(p.crop) === targetCrop &&
-    String(p.name || '').trim().toLowerCase() === key
+    getTreatmentFifoProductKey(p.name) === key
   ).forEach((p, i) => {
     const info = getPackSizeInfo(p);
     if (!baseUnit) baseUnit = String(info.unit || '').trim().toLowerCase();
@@ -23406,19 +23460,19 @@ function getPondwiseSupplementFifoCostDetails(pondId, year, crop, code) {
   // A stock return removes available FIFO stock; it does not create a new cost lot.
   const events = [];
   (Array.isArray(purchases) ? purchases : []).forEach((p, i) => {
-    if (getPondwiseYear(p) === targetYear && pondwiseNormaliseCrop(p.crop) === targetCrop && String(p.name || '').trim().toLowerCase() === key) {
+    if (getPondwiseYear(p) === targetYear && pondwiseNormaliseCrop(p.crop) === targetCrop && getTreatmentFifoProductKey(p.name) === key) {
       events.push({ type:'purchase', time:eventTime(p.date), priority:1, seq:i, record:p });
     }
   });
   (Array.isArray(stockReturns) ? stockReturns : []).forEach((r, i) => {
-    if (getPondwiseYear(r) === targetYear && pondwiseNormaliseCrop(r.crop) === targetCrop && String(r.name || '').trim().toLowerCase() === key) {
+    if (getPondwiseYear(r) === targetYear && pondwiseNormaliseCrop(r.crop) === targetCrop && getTreatmentFifoProductKey(r.name) === key) {
       events.push({ type:'return', time:eventTime(r.date, true), priority:2, seq:i, record:r });
     }
   });
   (Array.isArray(feedEntries) ? feedEntries : []).forEach((entry, i) => {
     if (getPondwiseYear(entry) !== targetYear || pondwiseNormaliseCrop(entry.crop) !== targetCrop || entry.fasting) return;
     const supp = entry.supplement;
-    if (!supp || String(supp.code || supp.name || '').trim().toLowerCase() !== key) return;
+    if (!supp || getTreatmentFifoProductKey(supp.code || supp.name) !== key) return;
     events.push({ type:'usage', time:getEntryTimestamp(entry), priority:3, seq:i, record:entry });
   });
   events.sort((a,b) => a.time - b.time || a.priority - b.priority || a.seq - b.seq);
@@ -27522,7 +27576,26 @@ function exportClosingInventoryCsv(){const inventory=getProductInventorySummary(
 function stockLedgerSameProduct(r,i){return r.productId&&i.productId?String(r.productId)===String(i.productId):String(r.name||r.productName||r.product||'').trim().toLowerCase()===String(i.name||'').trim().toLowerCase()}
 function stockLedgerDate(value){return typeof normalizeStockReturnAvailabilityDate==='function'?normalizeStockReturnAvailabilityDate(value):String(value||'')}
 function stockLedgerDisplayDate(value){const d=stockLedgerDate(value);if(!d||d==='0000-00-00')return 'Opening Stock';const [y,m,day]=d.split('-').map(Number);return new Date(Date.UTC(y,m-1,day)).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})}
-function openStockLedger(n){const i=getProductInventorySummary().find(x=>String(x.name).toLowerCase()===String(n).toLowerCase());if(!i)return;const y=+activeCycle.year,c=pondwiseNormaliseCrop(activeCycle.crop),a=[];const add=(d,t,r,p,inn,out,order=0)=>{const rawDate=String(d||'0000-00-00');a.push({d:rawDate,nd:rawDate==='0000-00-00'?rawDate:stockLedgerDate(rawDate),t,r,p:p||'—',inn:+inn||0,out:+out||0,order,seq:a.length})};if(c==='Crop 2')getCrop2OpeningStockItems().filter(x=>stockLedgerSameProduct(x,i)).forEach(x=>add('0000-00-00','Opening Stock','Crop 1 Closing','—',x.openingQty||x.qty,0));if(c==='Crop 1'&&typeof getCrop1CarryForwardEntries==='function')getCrop1CarryForwardEntries(i.name,y).forEach(x=>add(x.date,'Carry Forward to Crop 2','Crop 1 Closing','—',0,x.qty,10));purchases.filter(x=>getPurchaseYear(x)===y&&getPurchaseCrop(x)===c&&stockLedgerSameProduct(x,i)).forEach(x=>add(x.date,'Purchase',x.invoiceNo,'—',getNormalizedStockQuantity(x),0));stockReturns.filter(x=>getPondwiseYear(x)===y&&pondwiseNormaliseCrop(x.crop)===c&&stockLedgerSameProduct(x,i)).forEach(x=>add(x.date,'Stock Return',x.invoiceNo,'—',0,getNormalizedStockQuantity(x)));if(String(i.category).toLowerCase()==='feed')feedEntries.filter(e=>getPondwiseYear(e)===y&&pondwiseNormaliseCrop(e.crop)===c&&!e.fasting).forEach(e=>(e.feeds||[]).forEach(f=>stockLedgerSameProduct({productId:f.productId,name:f.code||f.name},i)&&add(e.date,'Feed Usage',f.code||f.name,e.pond||e.pondId,0,f.qty)));else{treatments.filter(t=>getPondwiseYear(t)===y&&pondwiseNormaliseCrop(t.crop)===c&&stockLedgerSameProduct({productId:t.productId,name:t.productName||t.product},i)).forEach(t=>add(t.date,'Treatment Usage',t.id,t.pond||t.pondId,0,getPondwiseTreatmentBaseQty(+t.qty||0,t.unit||i.unit)));feedEntries.filter(e=>getPondwiseYear(e)===y&&pondwiseNormaliseCrop(e.crop)===c&&!e.fasting).forEach(e=>{let s=e.supplement;if(s&&stockLedgerSameProduct({productId:s.productId,name:s.code||s.name},i))add(e.date,'Feed Supplement Usage',s.code||s.name,e.pond||e.pondId,0,['g','gm','gms','ml'].includes(String(s.unit).toLowerCase())?(+s.qty||0)/1000:(+s.qty||0))})}a.sort((x,z)=>x.nd.localeCompare(z.nd)||x.order-z.order||x.seq-z.seq);let b=0,o=0,p=0,u=0,r=0;a.forEach(x=>{b+=x.inn-x.out;x.b=b;if(x.t==='Opening Stock')o+=x.inn;else if(x.t==='Purchase')p+=x.inn;else if(x.t==='Stock Return')r+=x.out;else if(x.t!=='Carry Forward to Crop 2')u+=x.out});let inv=+i.balanceStock||0,d=b-inv,f=x=>Number(x).toFixed(3);stockLedgerTitle.textContent=`Stock Ledger — ${i.name} (${y} ${c})`;stockLedgerBody.innerHTML=`<div class="sl-cards">${[['Opening Stock',o],['Purchases',p],['Usage',u],['Stock Returns',r],['Ledger Closing',b],['Inventory Closing',inv],['Difference',d]].map(([l,v])=>`<div class="sl-card"><small>${l}</small><strong>${f(v)} ${i.unit}</strong></div>`).join('')}</div><div class="sl-status ${Math.abs(d)>.000001?'bad':'ok'}">${Math.abs(d)>.000001?`Inventory Mismatch: ${f(d)} ${i.unit}`:'Matched'}</div><div class="sl-table-wrap"><table class="sl-table"><thead><tr><th>Date</th><th>Transaction</th><th>Reference</th><th>Pond</th><th class="num">In</th><th class="num">Out</th><th class="num">Running Balance</th></tr></thead><tbody>${a.map(x=>`<tr><td>${stockLedgerDisplayDate(x.d)}</td><td>${x.t}</td><td>${x.r||'—'}</td><td>${x.p||'—'}</td><td class="num">${x.inn?f(x.inn):'—'}</td><td class="num">${x.out?f(x.out):'—'}</td><td class="num">${f(x.b)}</td></tr>`).join('')||'<tr><td colspan="7">No transactions in this Year/Crop scope.</td></tr>'}</tbody></table></div>`;stockLedgerDialog.showModal()};window.openStockLedger=openStockLedger;
+function openStockLedger(n){
+  const i=getProductInventorySummary().find(x=>String(x.name).toLowerCase()===String(n).toLowerCase());
+  if(!i)return;
+  const y=+activeCycle.year,c=pondwiseNormaliseCrop(activeCycle.crop),a=[];
+  const add=(d,t,r,p,inn,out,order=0)=>{const rawDate=String(d||'0000-00-00');a.push({d:rawDate,nd:rawDate==='0000-00-00'?rawDate:stockLedgerDate(rawDate),t,r,p:p||'—',inn:+inn||0,out:+out||0,order,seq:a.length})};
+  if(c==='Crop 2')getCrop2OpeningStockItems().filter(x=>stockLedgerSameProduct(x,i)).forEach(x=>add('0000-00-00','Opening Stock','Crop 1 Closing','—',x.openingQty||x.qty,0));
+  if(c==='Crop 1'&&typeof getCrop1CarryForwardEntries==='function')getCrop1CarryForwardEntries(i.name,y).forEach(x=>add(x.date,'Carry Forward to Crop 2','Crop 1 Closing','—',0,x.qty,10));
+  purchases.filter(x=>getPurchaseYear(x)===y&&getPurchaseCrop(x)===c&&stockLedgerSameProduct(x,i)).forEach(x=>add(x.date,'Purchase',x.invoiceNo,'—',getNormalizedStockQuantity(x),0));
+  stockReturns.filter(x=>getPondwiseYear(x)===y&&pondwiseNormaliseCrop(x.crop)===c&&stockLedgerSameProduct(x,i)).forEach(x=>add(x.date,'Stock Return',x.invoiceNo,'—',0,getNormalizedStockQuantity(x)));
+  if(String(i.category).toLowerCase()==='feed')feedEntries.filter(e=>getPondwiseYear(e)===y&&pondwiseNormaliseCrop(e.crop)===c&&!e.fasting).forEach(e=>(e.feeds||[]).forEach(f=>stockLedgerSameProduct({productId:f.productId,name:f.code||f.name},i)&&add(e.date,'Feed Usage',f.code||f.name,e.pond||e.pondId,0,f.qty)));
+  else treatments.filter(t=>getPondwiseYear(t)===y&&pondwiseNormaliseCrop(t.crop)===c&&stockLedgerSameProduct({productId:t.productId,name:t.productName||t.product},i)).forEach(t=>add(t.date,'Treatment Usage',t.id,t.pond||t.pondId,0,getPondwiseTreatmentBaseQty(+t.qty||0,t.unit||i.unit)));
+  feedEntries.filter(e=>getPondwiseYear(e)===y&&pondwiseNormaliseCrop(e.crop)===c&&!e.fasting).forEach(e=>{const s=e.supplement;if(s&&Number(s.qty)>0&&feedSupplementMatchesProduct(s,i))add(e.date,'Feed Supplement Usage',s.code||s.name,e.pond||e.pondId,0,(+s.qty||0)/1000)});
+  a.sort((x,z)=>x.nd.localeCompare(z.nd)||x.order-z.order||x.seq-z.seq);
+  let b=0,o=0,p=0,u=0,r=0;
+  a.forEach(x=>{b+=x.inn-x.out;x.b=b;if(x.t==='Opening Stock')o+=x.inn;else if(x.t==='Purchase')p+=x.inn;else if(x.t==='Stock Return')r+=x.out;else if(x.t!=='Carry Forward to Crop 2')u+=x.out});
+  let inv=+i.balanceStock||0,d=b-inv,f=x=>Number(x).toFixed(3);
+  stockLedgerTitle.textContent=`Stock Ledger — ${i.name} (${y} ${c})`;
+  stockLedgerBody.innerHTML=`<div class="sl-cards">${[['Opening Stock',o],['Purchases',p],['Usage',u],['Stock Returns',r],['Ledger Closing',b],['Inventory Closing',inv],['Difference',d]].map(([l,v])=>`<div class="sl-card"><small>${l}</small><strong>${f(v)} ${i.unit}</strong></div>`).join('')}</div><div class="sl-status ${Math.abs(d)>.000001?'bad':'ok'}">${Math.abs(d)>.000001?`Inventory Mismatch: ${f(d)} ${i.unit}`:'Matched'}</div><div class="sl-table-wrap"><table class="sl-table"><thead><tr><th>Date</th><th>Transaction</th><th>Reference</th><th>Pond</th><th class="num">In</th><th class="num">Out</th><th class="num">Running Balance</th></tr></thead><tbody>${a.map(x=>`<tr><td>${stockLedgerDisplayDate(x.d)}</td><td>${x.t}</td><td>${x.r||'—'}</td><td>${x.p||'—'}</td><td class="num">${x.inn?f(x.inn):'—'}</td><td class="num">${x.out?f(x.out):'—'}</td><td class="num">${f(x.b)}</td></tr>`).join('')||'<tr><td colspan="7">No transactions in this Year/Crop scope.</td></tr>'}</tbody></table></div>`;
+  stockLedgerDialog.showModal();
+};window.openStockLedger=openStockLedger;
 </script>
 <script id="bluecrest-ledger-csv-tools">
 (() => {
@@ -27796,13 +27869,13 @@ function openStockLedger(n){const i=getProductInventorySummary().find(x=>String(
   window.openStockReturnAnalysis=()=>{const dialog=document.getElementById('stockReturnAnalysisDialog');if(!dialog)return;if(!dialog.open)dialog.showModal();requestAnimationFrame(render)};window.closeStockReturnAnalysis=()=>document.getElementById('stockReturnAnalysisDialog')?.close();document.addEventListener('click',e=>{if(!e.target.closest('[data-sra]'))document.querySelectorAll('[data-sra] .purchase-analysis-picker-menu').forEach(m=>m.hidden=true)});document.addEventListener('DOMContentLoaded',()=>document.querySelectorAll('[data-sra-dim]').forEach(b=>b.onclick=()=>{state.dimension=b.dataset.sraDim;render()}));
 })();
 </script>
-<style id="cash-expense-analysis-ui">#cashExpenseAnalysisDialog{width:min(1060px,calc(100vw - 28px));max-height:90vh;padding:0;border:0;border-radius:18px;color:#17395f;box-shadow:0 26px 75px rgba(15,35,64,.28)}#cashExpenseAnalysisDialog::backdrop{background:rgba(15,35,64,.46)}.cea-head{display:flex;justify-content:space-between;gap:1rem;padding:1rem 1.2rem;border-bottom:1px solid #dce7f0;background:#f8fbfe}.cea-head h2{margin:0;font-size:1.2rem}.cea-head p{margin:.25rem 0 0;color:#64809b;font-size:.78rem;font-weight:700}.cea-close{width:36px;height:36px;border:1px solid #d3e0eb;border-radius:50%;background:#fff;color:#244565;font-size:25px;cursor:pointer}.cea-body{padding:1rem 1.2rem;overflow:auto}.cea-filters{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr)) auto;gap:.55rem}.cea-filters select,.cea-clear{height:36px;border:1px solid #cddcea;border-radius:8px;background:#fff;color:#244565;padding:0 .55rem;font:inherit;font-size:.75rem}.cea-clear{cursor:pointer;font-weight:800}.cea-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:.85rem 0}.cea-position-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.7rem;margin:.85rem 0}.cea-kpi{padding:.8rem .95rem;border:1px solid #dbe7f1;border-radius:12px;background:#fff;box-shadow:0 4px 12px rgba(15,35,64,.04)}.cea-kpi span{display:block;color:#68809a;font-size:.68rem;font-weight:800}.cea-kpi strong{display:block;margin-top:.3rem;font-size:1.08rem;font-variant-numeric:tabular-nums}.cea-kpi small{display:block;margin-top:.18rem;color:#64809b;font-weight:700}.cea-position-note{margin:-.35rem 0 .7rem;color:#71869b;font-size:.7rem;font-weight:700}.cea-table{width:100%;border-collapse:collapse;font-size:.78rem}.cea-table th,.cea-table td{padding:.68rem .7rem;border-top:1px solid #e7eef4;text-align:left}.cea-table th{background:#eff5fa;color:#365779;font-size:.68rem;text-transform:uppercase}.cea-table .num{text-align:right;font-variant-numeric:tabular-nums}.cea-table tfoot td{font-weight:900;border-top:2px solid #bfd6e8}@media(max-width:760px){.cea-filters,.cea-kpis{grid-template-columns:1fr}.cea-body{padding:.85rem}.cea-head{padding:.9rem}}</style>
-<dialog id="cashExpenseAnalysisDialog" aria-labelledby="cashExpenseAnalysisTitle"><div class="cea-head"><div><h2 id="cashExpenseAnalysisTitle">Cash Expense Analysis</h2><p>Read-only reconciliation of Vendor Payments and Ledger Expenses</p></div><button class="cea-close" type="button" onclick="closeCashExpenseAnalysis()" aria-label="Close">×</button></div><div class="cea-body"><div class="cea-filters"><select id="ceaYear" aria-label="Year"></select><select id="ceaScope" aria-label="Crop or scope"><option value="ALL">All Scopes</option><option value="Crop 1">Crop 1</option><option value="Crop 2">Crop 2</option><option value="Infra">Infrastructure</option></select><select id="ceaGroup" aria-label="Payment group"><option value="ALL">All Vendor Payments</option><option value="KARAN">Karan</option><option value="SUKHPAL">Sukhpal</option><option value="SPOT">Med &amp; Fert (Spot Vendors)</option></select><select id="ceaCategory" aria-label="Category"></select><select id="ceaMonth" aria-label="Month"></select><button type="button" class="cea-clear" onclick="clearCashExpenseAnalysis()">Clear Filters</button></div><div class="cea-kpis"><div class="cea-kpi"><span>VENDOR PAYMENTS</span><strong id="ceaVendorTotal">₹0.00</strong><small id="ceaVendorCount">0 payment entries</small></div><div class="cea-kpi"><span>LEDGER EXPENSES</span><strong id="ceaLedgerTotal">₹0.00</strong><small id="ceaLedgerCount">0 ledger entries</small></div><div class="cea-kpi"><span>TOTAL CASH EXPENSE</span><strong id="ceaTotal">₹0.00</strong><small id="ceaCount">0 transactions</small></div></div><div class="cea-position-kpis"><div class="cea-kpi" id="ceaOpeningInventoryCard" hidden><span>OPENING INVENTORY VALUE</span><strong id="ceaOpeningInventoryValue">₹0.00</strong><small>Carried forward from Crop 1</small></div><div class="cea-kpi"><span id="ceaInventoryLabel">PRESENT INVENTORY VALUE</span><strong id="ceaInventoryValue">₹0.00</strong><small id="ceaInventoryNote">Current stock at FIFO/purchase cost</small></div><div class="cea-kpi"><span>NET VENDOR PAYABLE</span><strong id="ceaPayable">₹0.00</strong><small>Outstanding vendor liabilities</small></div><div class="cea-kpi"><span>VENDOR ADVANCE / CREDIT</span><strong id="ceaAdvance">₹0.00</strong><small>Net balances in farm's favour</small></div><div class="cea-kpi"><span>NET FARM COST POSITION</span><strong id="ceaNetPosition">₹0.00</strong><small>Cash adjusted for inventory &amp; vendor balances</small></div></div><div id="ceaPositionNote" class="cea-position-note" hidden>Position cards show current Year/Scope balances; Month filters cash transactions only.</div><table class="cea-table"><thead><tr><th>Category / Group</th><th>Type</th><th class="num">Amount</th><th class="num">% of Total</th><th class="num">Entries</th></tr></thead><tbody id="ceaBody"></tbody><tfoot id="ceaFoot"></tfoot></table></div></dialog>
+<style id="cash-expense-analysis-ui">#cashExpenseAnalysisDialog{width:min(1060px,calc(100vw - 28px));max-height:90vh;padding:0;border:0;border-radius:18px;color:#17395f;box-shadow:0 26px 75px rgba(15,35,64,.28)}#cashExpenseAnalysisDialog::backdrop{background:rgba(15,35,64,.46)}.cea-head{display:flex;justify-content:space-between;gap:1rem;padding:1rem 1.2rem;border-bottom:1px solid #dce7f0;background:#f8fbfe}.cea-head h2{margin:0;font-size:1.2rem}.cea-head p{margin:.25rem 0 0;color:#64809b;font-size:.78rem;font-weight:700}.cea-close{width:36px;height:36px;border:1px solid #d3e0eb;border-radius:50%;background:#fff;color:#244565;font-size:25px;cursor:pointer}.cea-body{padding:1rem 1.2rem;overflow:auto}.cea-filters{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr)) auto;gap:.55rem}.cea-filters select,.cea-clear{height:36px;border:1px solid #cddcea;border-radius:8px;background:#fff;color:#244565;padding:0 .55rem;font:inherit;font-size:.75rem}.cea-clear{cursor:pointer;font-weight:800}.cea-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:.85rem 0}.cea-position-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.7rem;margin:.85rem 0}.cea-kpi{padding:.8rem .95rem;border:1px solid #dbe7f1;border-radius:12px;background:#fff;box-shadow:0 4px 12px rgba(15,35,64,.04)}.cea-equation-row{display:flex;align-items:stretch;gap:.55rem}.cea-equation-row .cea-kpi{flex:1 1 155px;padding:.65rem .8rem}.cea-equation-op{align-self:center;color:#365779;font-size:1.3rem;font-weight:900;line-height:1}.cea-kpi span{display:block;color:#68809a;font-size:.68rem;font-weight:800}.cea-equation-row .cea-kpi span{min-height:2.4em}.cea-kpi strong{display:block;margin-top:.3rem;font-size:1.08rem;font-variant-numeric:tabular-nums}.cea-kpi small{display:block;margin-top:.18rem;color:#64809b;font-weight:700}.cea-position-note{margin:-.35rem 0 .7rem;color:#71869b;font-size:.7rem;font-weight:700}.cea-table{width:100%;border-collapse:collapse;font-size:.78rem}.cea-table th,.cea-table td{padding:.68rem .7rem;border-top:1px solid #e7eef4;text-align:left}.cea-table th{background:#eff5fa;color:#365779;font-size:.68rem;text-transform:uppercase}.cea-table .num{text-align:right;font-variant-numeric:tabular-nums}.cea-table tfoot td{font-weight:900;border-top:2px solid #bfd6e8}@media(max-width:760px){.cea-filters,.cea-kpis{grid-template-columns:1fr}.cea-body{padding:.85rem}.cea-head{padding:.9rem}}</style>
+<dialog id="cashExpenseAnalysisDialog" aria-labelledby="cashExpenseAnalysisTitle"><div class="cea-head"><div><h2 id="cashExpenseAnalysisTitle">Cash Expense Analysis</h2><p>Read-only reconciliation of Vendor Payments and Ledger Expenses</p></div><button class="cea-close" type="button" onclick="closeCashExpenseAnalysis()" aria-label="Close">×</button></div><div class="cea-body"><div class="cea-filters"><select id="ceaYear" aria-label="Year"></select><select id="ceaScope" aria-label="Crop or scope"><option value="ALL">All Scopes</option><option value="Crop 1">Crop 1</option><option value="Crop 2">Crop 2</option><option value="Infra">Infrastructure</option></select><select id="ceaGroup" aria-label="Payment group"><option value="ALL">All Vendor Payments</option><option value="KARAN">Karan</option><option value="SUKHPAL">Sukhpal</option><option value="SPOT">Med &amp; Fert (Spot Vendors)</option></select><select id="ceaCategory" aria-label="Category"></select><select id="ceaMonth" aria-label="Month"></select><button type="button" class="cea-clear" onclick="clearCashExpenseAnalysis()">Clear Filters</button></div><div class="cea-kpis cea-equation-row"><div class="cea-kpi"><span>ACTUAL VENDOR PAYMENTS</span><strong id="ceaVendorTotal">₹0.00</strong></div><span id="ceaInventoryAdjustmentOperator" class="cea-equation-op" hidden>−</span><div class="cea-kpi" id="ceaInventoryAdjustmentCard" hidden><span id="ceaInventoryAdjustmentLabel">INVENTORY CARRIED FORWARD</span><strong id="ceaInventoryAdjustmentValue">₹0.00</strong><small id="ceaInventoryAdjustmentNote" hidden>Carried forward from Crop 1</small></div><span class="cea-equation-op">+</span><div class="cea-kpi"><span>LEDGER EXPENSES</span><strong id="ceaLedgerTotal">₹0.00</strong></div><span class="cea-equation-op">=</span><div class="cea-kpi"><span>TOTAL EXPENSE</span><strong id="ceaTotal">₹0.00</strong></div></div><div class="cea-position-kpis cea-equation-row"><div class="cea-kpi"><span>TOTAL EXPENSE</span><strong id="ceaRow2TotalExpense">₹0.00</strong></div><span class="cea-equation-op">−</span><div class="cea-kpi"><span id="ceaInventoryLabel">PRESENT INVENTORY VALUE</span><strong id="ceaInventoryValue">₹0.00</strong></div><span class="cea-equation-op">+</span><div class="cea-kpi"><span>NET VENDOR PAYABLE</span><strong id="ceaPayable">₹0.00</strong></div><span class="cea-equation-op">−</span><div class="cea-kpi"><span>VENDOR ADVANCE / CREDIT</span><strong id="ceaAdvance">₹0.00</strong></div><span class="cea-equation-op">=</span><div class="cea-kpi"><span>NET FARM COST POSITION</span><strong id="ceaNetPosition">₹0.00</strong></div></div><div id="ceaPositionNote" class="cea-position-note" hidden>Position cards show current Year/Scope balances; Month filters cash transactions only.</div><table class="cea-table"><thead><tr><th>Category / Group</th><th>Type</th><th class="num">Amount</th><th class="num">% of Total</th><th class="num">Entries</th></tr></thead><tbody id="ceaBody"></tbody><tfoot id="ceaFoot"></tfoot></table></div></dialog>
 <script id="cash-expense-analysis">
 (()=>{const $=id=>document.getElementById(id),money=n=>`₹${(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}`,norm=v=>String(v||'').trim().toLowerCase(),scope=v=>{v=norm(v);return v==='crop 1'||v==='crop1'||v==='c1'?'Crop 1':v==='crop 2'||v==='crop2'||v==='c2'?'Crop 2':v==='infra'||v==='infrastructure'?'Infra':''},month=v=>{const x=String(v||'').trim(),iso=x.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/),slash=x.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);return iso?Number(iso[2]):slash?Number(slash[1]):0},state={year:'',scope:'ALL',group:'ALL',category:'ALL',month:'ALL'};
 function years(){const set=new Set([Number(activeCycle?.year)||new Date().getFullYear()]);[...(Array.isArray(vendorTransactions)?vendorTransactions:[]),...(Array.isArray(ledgerEntries)?ledgerEntries:[])].forEach(r=>{const y=Number(getRecordYear(r));if(y)set.add(y)});return [...set].filter(Boolean).sort((a,b)=>b-a)}
-function options(){const ys=years();if(!state.year)state.year=String(document.getElementById('globalYearSelect')?.value||activeCycle?.year||ys[0]);$('ceaYear').innerHTML=ys.map(y=>`<option value="${y}">${y}</option>`).join('');$('ceaYear').value=state.year;const cats=[...new Set((Array.isArray(ledgerEntries)?ledgerEntries:[]).map(r=>String(r.subCategory||r.category||'Other Ledger Expense').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$('ceaCategory').innerHTML='<option value="ALL">All Categories</option><option value="VENDOR">Vendor Payments</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');$('ceaCategory').value=state.category;const ms=['All Months',...Array.from({length:12},(_,i)=>new Date(2000,i,1).toLocaleDateString('en-US',{month:'long'}))];$('ceaMonth').innerHTML=ms.map((m,i)=>`<option value="${i?'M'+i:'ALL'}">${m}</option>`).join('');$('ceaMonth').value=state.month}
-function filtered(){const y=Number(state.year),specific=state.group!=='ALL',cat=state.category,mo=state.month==='ALL'?0:Number(state.month.slice(1)),base=r=>Number(getRecordYear(r))===y&&(state.scope==='ALL'||scope(r.crop||r.season)===state.scope)&&(!mo||month(r.date)===mo);let payments=(Array.isArray(vendorTransactions)?vendorTransactions:[]).filter(r=>getManualVendorTransactionKind(r)==='Payment'&&base(r));if(state.group==='KARAN')payments=payments.filter(r=>norm(r.vendor)==='karan');else if(state.group==='SUKHPAL')payments=payments.filter(r=>norm(r.vendor)==='sukhpal');else if(state.group==='SPOT')payments=payments.filter(r=>!['karan','sukhpal'].includes(norm(r.vendor)));if(cat!=='ALL'&&cat!=='VENDOR')payments=[];let ledger=specific||cat==='VENDOR'?[]:(Array.isArray(ledgerEntries)?ledgerEntries:[]).filter(r=>base(r)&&(cat==='ALL'||String(r.subCategory||r.category||'Other Ledger Expense').trim()===cat));return{payments,ledger}}
+function options(){const ys=years();if(!state.year)state.year=String(document.getElementById('globalYearSelect')?.value||activeCycle?.year||ys[0]);$('ceaYear').innerHTML=ys.map(y=>`<option value="${y}">${y}</option>`).join('');$('ceaYear').value=state.year;$('ceaScope').value=state.scope;const cats=[...new Set((Array.isArray(ledgerEntries)?ledgerEntries:[]).map(r=>String(r.subCategory||r.category||'Other Ledger Expense').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$('ceaCategory').innerHTML='<option value="ALL">All Categories</option><option value="VENDOR">Vendor Payments</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');$('ceaCategory').value=state.category;const ms=['All Months',...Array.from({length:12},(_,i)=>new Date(2000,i,1).toLocaleDateString('en-US',{month:'long'}))];$('ceaMonth').innerHTML=ms.map((m,i)=>`<option value="${i?'M'+i:'ALL'}">${m}</option>`).join('');$('ceaMonth').value=state.month}
+function filtered(){const y=Number(state.year),specific=state.group!=='ALL',cat=state.category,mo=state.month==='ALL'?0:Number(state.month.slice(1)),base=r=>Number(getRecordYear(r))===y&&(state.scope==='ALL'||scope(r.crop||r.season)===state.scope)&&(!mo||month(r.date)===mo);let payments=(Array.isArray(vendorTransactions)?vendorTransactions:[]).filter(r=>['Payment','Vendor Refund'].includes(getManualVendorTransactionKind(r))&&base(r));if(state.group==='KARAN')payments=payments.filter(r=>norm(r.vendor)==='karan');else if(state.group==='SUKHPAL')payments=payments.filter(r=>norm(r.vendor)==='sukhpal');else if(state.group==='SPOT')payments=payments.filter(r=>!['karan','sukhpal'].includes(norm(r.vendor)));if(cat!=='ALL'&&cat!=='VENDOR')payments=[];let ledger=specific||cat==='VENDOR'?[]:(Array.isArray(ledgerEntries)?ledgerEntries:[]).filter(r=>base(r)&&(cat==='ALL'||String(r.subCategory||r.category||'Other Ledger Expense').trim()===cat));return{payments,ledger}}
 function ceaCycle(year,crop){return{year:Number(year),crop, id:cycleIdFor(Number(year),crop)}}
 function latestSettlement(year,crop,name){const id=cycleIdFor(Number(year),crop),key=norm(name);return (typeof getPhysicalInventorySettlements==='function'?getPhysicalInventorySettlements():[]).filter(r=>String(r.cycleId||'')===String(id)&&norm(r.productName)===key).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0))[0]||null}
 function settledValueFromLots(valuation,physicalQty){const target=Math.max(0,Number(physicalQty)||0),lots=(Array.isArray(valuation?.lots)?valuation.lots:[]).map(l=>({...l,remaining:Math.max(0,Number(l.remaining)||0),price:Number(l.price)||0}));let current=lots.reduce((s,l)=>s+l.remaining,0),remove=Math.max(0,current-target);for(const l of lots){if(remove<=1e-9)break;const take=Math.min(l.remaining,remove);l.remaining-=take;remove-=take}return lots.reduce((s,l)=>s+l.remaining*l.price,0)}
@@ -27816,7 +27889,7 @@ function isClosedCropScope(year,selectedScope){const cycle=ceaCycle(year,selecte
 function closedCropInventoryValue(year,selectedScope){const cycle=ceaCycle(year,selectedScope);if(selectedScope==='Crop 1')return typeof calculateCropClosingStockValue==='function'?Math.max(0,Number(calculateCropClosingStockValue(cycle))||0):0;if(selectedScope==='Crop 2')return typeof calculateCrop2ClosingStockValue==='function'?Math.max(0,Number(calculateCrop2ClosingStockValue(cycle))||0):0;return 0}
 function vendorGroupMatches(vendor){const v=norm(vendor);if(state.group==='KARAN')return v==='karan';if(state.group==='SUKHPAL')return v==='sukhpal';if(state.group==='SPOT')return !['karan','sukhpal'].includes(v);return true}
 function vendorBalances(year,selectedScope){const y=Number(year),scopeMatch=c=>selectedScope==='ALL'||scope(c||'Crop 1')===selectedScope,balances=new Map,add=(vendor,type,amount,crop)=>{const v=String(vendor||'').trim();if(!v||!vendorGroupMatches(v)||!scopeMatch(crop))return;const k=norm(v),row=balances.get(k)||{vendor:v,balance:0};row.balance+=(type==='Debit'?1:-1)*(Number(amount)||0);balances.set(k,row)};(Array.isArray(purchases)?purchases:[]).filter(p=>Number(getRecordYear(p))===y).forEach(p=>{const isGrowelFeed=norm(p.category)==='feed'&&norm(p.company)==='growel',invoicePrice=parseFloat(p.invoiceUnitPrice),finalPrice=parseFloat(p.finalUnitPrice!==undefined&&p.finalUnitPrice!==null?p.finalUnitPrice:p.unitPrice),qty=isGrowelFeed?getNormalizedStockQuantity(p):0,amount=isGrowelFeed&&invoicePrice>0?qty*invoicePrice:((p.totalAmount!==undefined&&p.totalAmount!==null)?parseFloat(p.totalAmount)||0:(parseFloat(p.qty)||0)*(parseFloat(p.unitPrice)||0));add(p.supplier,'Debit',amount,p.crop||'Crop 1');if(isGrowelFeed&&Number.isFinite(invoicePrice)&&Number.isFinite(finalPrice)&&qty>0){const diff=invoicePrice-finalPrice;if(Math.abs(diff)>1e-6)add(p.supplier,diff>0?'Credit':'Debit',Math.abs(diff)*qty,p.crop||'Crop 1')}});(Array.isArray(stockReturns)?stockReturns:[]).filter(r=>Number(getRecordYear(r))===y).forEach(r=>{const isGrowelFeed=norm(r.category)==='feed'&&norm(r.company)==='growel',invoicePrice=isGrowelFeed?(Number(r.invoiceUnitPrice??r.unitPrice)||0):0,qty=isGrowelFeed?getNormalizedStockQuantity(r):0,amount=isGrowelFeed&&invoicePrice>0?qty*invoicePrice:((r.totalAmount!==undefined&&r.totalAmount!==null)?parseFloat(r.totalAmount)||0:(parseFloat(r.qty)||0)*(parseFloat(r.unitPrice)||0));add(r.supplier,'Credit',amount,r.crop||'Crop 1');if(isGrowelFeed&&qty>0){const finalPrice=Number(r.finalUnitPrice??r.unitPrice)||0,diff=invoicePrice-finalPrice;if(Math.abs(diff)>1e-6)add(r.supplier,diff>0?'Debit':'Credit',Math.abs(diff)*qty,r.crop||'Crop 1')}});(Array.isArray(vendorTransactions)?vendorTransactions:[]).filter(t=>Number(getRecordYear(t))===y).forEach(t=>add(t.vendor,t.type||'Credit',parseFloat(t.amount)||0,t.crop||'Crop 1'));let payable=0,advance=0;balances.forEach(r=>{if(r.balance>0)payable+=r.balance;else if(r.balance<0)advance+=-r.balance});return{payable,advance}}
-function render(){options();const{payments,ledger}=filtered(),pv=payments.reduce((s,r)=>s+(Number(r.amount)||0),0),lv=ledger.reduce((s,r)=>s+(Number(r.amount)||0),0),rawTotal=pv+lv,closed=isClosedCropScope(Number(state.year),state.scope),crop1=state.scope==='Crop 1',crop2=state.scope==='Crop 2',opening=crop2&&typeof getCrop2OpeningStockItems==='function'?getCrop2OpeningStockItems(ceaCycle(Number(state.year),state.scope)).reduce((sum,item)=>sum+(Number(item.openingValue)||0),0):0;$('ceaVendorTotal').textContent=money(pv);$('ceaLedgerTotal').textContent=money(lv);$('ceaTotal').textContent=money(rawTotal);$('ceaVendorCount').textContent=`${payments.length} payment entr${payments.length===1?'y':'ies'}`;$('ceaLedgerCount').textContent=`${ledger.length} ledger entr${ledger.length===1?'y':'ies'}`;$('ceaCount').textContent=`${payments.length+ledger.length} transactions`;let inventory=0,payable=0,advance=0;try{inventory=closed?closedCropInventoryValue(Number(state.year),state.scope):scopeInventoryValue(Number(state.year),state.scope);const vb=vendorBalances(Number(state.year),state.scope);payable=vb.payable;advance=vb.advance}catch(err){console.error('Cash Expense position-card calculation failed:',err)}const adjustedPayments=crop1&&closed?pv-inventory:pv,total=adjustedPayments+lv,endingInventory=crop1&&closed?0:inventory;$('ceaVendorTotal').textContent=money(adjustedPayments);$('ceaTotal').textContent=money(total);$('ceaOpeningInventoryCard').hidden=!crop2;$('ceaOpeningInventoryValue').textContent=money(opening);$('ceaInventoryLabel').textContent=crop1&&closed?'INVENTORY CARRIED FORWARD (LESS)':closed?'CLOSING INVENTORY VALUE':'PRESENT INVENTORY VALUE';$('ceaInventoryNote').textContent=crop1&&closed?'Settled Crop 1 inventory carried to Crop 2':closed?'Settled closing inventory for this closed crop':'Current stock at FIFO/purchase cost';$('ceaInventoryValue').textContent=money(inventory);$('ceaPayable').textContent=money(payable);$('ceaAdvance').textContent=money(advance);$('ceaNetPosition').textContent=money(total+opening-endingInventory+payable-advance);$('ceaPositionNote').hidden=state.month==='ALL';const groups=new Map,add=(label,type,amount)=>{const k=type+'|'+label,g=groups.get(k)||{label,type,amount:0,count:0};g.amount+=Number(amount)||0;g.count++;groups.set(k,g)};payments.forEach(r=>add(state.group==='ALL'?'Vendor Payments':state.group==='SPOT'?'Med & Fert (Spot Vendors)':state.group==='KARAN'?'Karan':'Sukhpal','Vendor',r.amount));ledger.forEach(r=>add(String(r.subCategory||r.category||'Other Ledger Expense').trim(),'Ledger',r.amount));const rows=[...groups.values()].sort((a,b)=>b.amount-a.amount);$('ceaBody').innerHTML=rows.length?rows.map(r=>`<tr><td><strong>${escapeHtml(r.label)}</strong></td><td>${r.type}</td><td class="num">${money(r.amount)}</td><td class="num">${total?((r.amount/total)*100).toFixed(1)+'%':'—'}</td><td class="num">${r.count}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:1.2rem;color:#6b8299">No cash expenses match these filters.</td></tr>';$('ceaFoot').innerHTML=`<tr><td colspan="2">TOTAL</td><td class="num">${money(total)}</td><td class="num">${total?'100.0%':'—'}</td><td class="num">${payments.length+ledger.length}</td></tr>`}
+function render(){options();const{payments,ledger}=filtered(),pv=payments.reduce((s,r)=>s+(getManualVendorTransactionKind(r)==='Vendor Refund'?-1:1)*(Number(r.amount)||0),0),lv=ledger.reduce((s,r)=>s+(Number(r.amount)||0),0),rawTotal=pv+lv,closed=isClosedCropScope(Number(state.year),state.scope),crop1=state.scope==='Crop 1',crop2=state.scope==='Crop 2',opening=crop2&&typeof getCrop2OpeningStockItems==='function'?getCrop2OpeningStockItems(ceaCycle(Number(state.year),state.scope)).reduce((sum,item)=>sum+(Number(item.openingValue)||0),0):0;$('ceaVendorTotal').textContent=money(pv);$('ceaLedgerTotal').textContent=money(lv);$('ceaTotal').textContent=money(rawTotal);let inventory=0,payable=0,advance=0;try{inventory=closed?closedCropInventoryValue(Number(state.year),state.scope):scopeInventoryValue(Number(state.year),state.scope);const vb=vendorBalances(Number(state.year),state.scope);payable=vb.payable;advance=vb.advance}catch(err){console.error('Cash Expense position-card calculation failed:',err)}const hasCarryForward=crop1&&closed&&inventory>0.000001,hasOpeningInventory=crop2&&opening>0.000001,inventoryAdjustment=hasCarryForward?inventory:hasOpeningInventory?opening:0,total=pv+(hasCarryForward?-inventoryAdjustment:hasOpeningInventory?inventoryAdjustment:0)+lv,presentInventory=hasCarryForward?0:inventory,vendorPaymentTooltip=hasCarryForward?'Vendor payments made during this crop. Carry-forward inventory value is excluded.':'Vendor payments made during this crop.';$('ceaVendorTotal').textContent=money(pv);$('ceaVendorTotal').closest('.cea-kpi').title=vendorPaymentTooltip;$('ceaTotal').textContent=money(total);$('ceaRow2TotalExpense').textContent=money(total);$('ceaInventoryAdjustmentCard').hidden=!(hasCarryForward||hasOpeningInventory);$('ceaInventoryAdjustmentOperator').hidden=!(hasCarryForward||hasOpeningInventory);if(hasCarryForward||hasOpeningInventory){$('ceaInventoryAdjustmentOperator').textContent=hasCarryForward?'−':'+';$('ceaInventoryAdjustmentLabel').textContent=hasCarryForward?'INVENTORY CARRIED FORWARD':'OPENING INVENTORY';$('ceaInventoryAdjustmentValue').textContent=money(inventoryAdjustment);$('ceaInventoryAdjustmentNote').hidden=hasCarryForward;$('ceaInventoryAdjustmentNote').textContent='Carried forward from Crop 1';}$('ceaInventoryLabel').textContent='PRESENT INVENTORY VALUE';$('ceaInventoryValue').textContent=money(presentInventory);$('ceaPayable').textContent=money(payable);$('ceaAdvance').textContent=money(advance);$('ceaNetPosition').textContent=money(total-presentInventory+payable-advance);$('ceaPositionNote').hidden=state.month==='ALL';const groups=new Map,add=(label,type,amount)=>{const k=type+'|'+label,g=groups.get(k)||{label,type,amount:0,count:0};g.amount+=Number(amount)||0;g.count++;groups.set(k,g)};payments.forEach(r=>add(state.group==='ALL'?'Vendor Payments':state.group==='SPOT'?'Med & Fert (Spot Vendors)':state.group==='KARAN'?'Karan':'Sukhpal','Vendor',(getManualVendorTransactionKind(r)==='Vendor Refund'?-1:1)*(Number(r.amount)||0)));ledger.forEach(r=>add(String(r.subCategory||r.category||'Other Ledger Expense').trim(),'Ledger',r.amount));const rows=[...groups.values()].sort((a,b)=>b.amount-a.amount);$('ceaBody').innerHTML=rows.length?rows.map(r=>`<tr><td><strong>${escapeHtml(r.label)}</strong></td><td>${r.type}</td><td class="num">${money(r.amount)}</td><td class="num">${total?((r.amount/total)*100).toFixed(1)+'%':'—'}</td><td class="num">${r.count}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:1.2rem;color:#6b8299">No cash expenses match these filters.</td></tr>';$('ceaFoot').innerHTML=`<tr><td colspan="2">TOTAL</td><td class="num">${money(total)}</td><td class="num">${total?'100.0%':'—'}</td><td class="num">${payments.length+ledger.length}</td></tr>`}
 window.openCashExpenseAnalysis=()=>{state.year='';state.scope='ALL';state.group='ALL';state.category='ALL';state.month='ALL';$('cashExpenseAnalysisDialog').showModal();render()};window.closeCashExpenseAnalysis=()=>$('cashExpenseAnalysisDialog').close();window.clearCashExpenseAnalysis=()=>{state.scope='ALL';state.group='ALL';state.category='ALL';state.month='ALL';render()};document.addEventListener('change',e=>{const map={ceaYear:'year',ceaScope:'scope',ceaGroup:'group',ceaCategory:'category',ceaMonth:'month'};if(map[e.target.id]){state[map[e.target.id]]=e.target.value;render()}})})();
 </script>
 <script id="ledger-filtered-statement">document.addEventListener('DOMContentLoaded',()=>document.getElementById('ledgerEntryAccountFilter')?.addEventListener('change',renderLedgerEntries));window.printFilteredLedgerStatement=()=>{const rows=Array.isArray(window.bcFilteredLedgerEntries)?window.bcFilteredLedgerEntries:[];if(!rows.length){bcAlert('No Ledger records found for the selected filters.');return}const val=id=>document.getElementById(id)?.value||'ALL',esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),money=v=>`₹${Number(v||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}`,total=rows.reduce((s,r)=>s+(Number(r.amount)||0),0),context=[['Category',val('ledgerEntryCategoryFilter')],['Sub-Category',val('ledgerEntrySubCategoryFilter')],['Season',val('ledgerEntrySeasonFilter')],['Account',val('ledgerEntryAccountFilter')],['Search',document.getElementById('ledgerEntrySearch')?.value.trim()||'—']].map(([k,v])=>`${k}: ${v==='ALL'?'All':esc(v)}`).join(' &nbsp; | &nbsp; '),w=window.open('','_blank','width=1000,height=700');if(!w)return;w.document.write(`<!doctype html><title>Ledger Statement</title><style>body{font:13px Arial;color:#17395f;padding:28px}h1{margin:0}p{color:#526b85}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{padding:9px;border-bottom:1px solid #dbe5ee;text-align:left}th{background:#eff5fa}.num{text-align:right}tfoot td{font-weight:bold;border-top:2px solid #9db9d0}@media print{body{padding:0}}</style><h1>LEDGER STATEMENT</h1><p>${context}</p><table><thead><tr><th>Date</th><th>Category</th><th>Sub-Category</th><th>Season</th><th>Account</th><th>Note / Description</th><th class="num">Amount</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(formatDate(r.date))}</td><td>${esc(r.category||'—')}</td><td>${esc(r.subCategory||'—')}</td><td>${esc(r.season||'—')}</td><td>${esc(r.account||'—')}</td><td>${esc(r.note||'—')}</td><td class="num">${money(r.amount)}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="6">TOTAL AMOUNT • Total Entries: ${rows.length}</td><td class="num">${money(total)}</td></tr></tfoot></table>`);w.document.close();w.focus();w.print()};</script>

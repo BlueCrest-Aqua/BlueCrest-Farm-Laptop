@@ -5726,7 +5726,7 @@ body.bc-return-modal-open{overflow:hidden!important}
                   <input type="number" id="testWeight" value="1000" step="any" required>
                 </div>
                 <div class="form-group">
-                  <label for="shrimpCount">Shrimp Count (Pcs) *</label>
+                  <label for="shrimpCount">Shrimp Sampled (pcs) *</label>
                   <input type="number" id="shrimpCount" placeholder="e.g. 53" step="any" required>
                   <div class="stepper-actions">
                     <button type="button" class="step-btn" data-step="-5">-5</button>
@@ -5751,6 +5751,7 @@ body.bc-return-modal-open{overflow:hidden!important}
 
               <div class="preview-metrics-banner">
                 <div class="banner-stat"><span>ABW</span><strong id="previewAbw">—</strong></div>
+                <div class="banner-stat"><span>Count/kg</span><strong id="previewCountPerKg">—</strong></div>
                 <div class="banner-stat"><span>DOC</span><strong id="previewDoc">—</strong></div>
                 <div class="banner-stat"><span>Weekly Gain</span><strong id="previewGrowth">—</strong></div>
                 <div class="banner-stat"><span>Est. FCR</span><strong id="previewFcr">—</strong></div>
@@ -7470,7 +7471,7 @@ let blueCrestVendorListenerUnsubscribe=null, blueCrestVendorBoundRoute=null;
 function getVendorMigrationState(){return blueCrestOperationalMigrationControl?.groups?.vendors?.state||'legacy';}
 function isVendorScoped(){return OPERATIONAL_MIGRATION_ROUTING_ENABLED===true&&['scoped-read','scoped-active'].includes(getVendorMigrationState())&&blueCrestOperationalMigrationControl?.groups?.vendors?.routing==='scoped';}
 function isVendorScopedActive(){return getVendorMigrationState()==='scoped-active'&&isVendorScoped();}
-function isVendorScopedWriteAuthorized(){const s=blueCrestSession;return !!s&&s.farmId===blueCrestOperationalMigrationControl?.farmId&&s.membershipStatus==='active'&&s.role==='owner'&&s.canWrite===true&&s.entitlementStatus==='active'&&s.plan==='activated'&&s.setupStatus===FARM_SETUP_STATUS.ACTIVE;}
+function isVendorScopedWriteAuthorized(){const s=blueCrestSession;return !!s&&s.farmId===blueCrestOperationalMigrationControl?.farmId&&s.membershipStatus==='active'&&s.role==='owner'&&s.canWrite===true&&s.hasFullEntitlementAccess===true&&s.setupStatus===FARM_SETUP_STATUS.ACTIVE;}
 function vendorCollection(){if(!db||typeof db.collection!=='function')throw new Error('Firebase Firestore is unavailable.');return db.collection('farms').doc(getActiveFarmId()).collection('vendors');}
 function getVendorWriteMode(){const state=getVendorMigrationState();if(state==='freeze'||(isVendorScoped()&&state==='scoped-read'))return OPERATIONAL_WRITE_MODE.VERIFY_READ_ONLY;return isVendorScopedActive()&&isVendorScopedWriteAuthorized()?OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE:(isVendorScoped()?OPERATIONAL_WRITE_MODE.VERIFY_READ_ONLY:OPERATIONAL_WRITE_MODE.LEGACY);}
 function assertVendorMasterWriteAllowed(){if(getVendorWriteMode()===OPERATIONAL_WRITE_MODE.VERIFY_READ_ONLY)throw new Error('Vendor Master writes are not authorized.');}
@@ -7482,7 +7483,7 @@ const applyOperationalMigrationControlBeforeLedgerConfig=applyOperationalMigrati
 function getLedgerConfigMigrationState(){return blueCrestOperationalMigrationControl?.groups?.ledgerConfig?.state||'legacy';}
 function isLedgerConfigScoped(){return OPERATIONAL_MIGRATION_ROUTING_ENABLED===true&&['scoped-read','scoped-active'].includes(getLedgerConfigMigrationState())&&blueCrestOperationalMigrationControl?.groups?.ledgerConfig?.routing==='scoped';}
 function isLedgerConfigActive(){return getLedgerConfigMigrationState()==='scoped-active'&&isLedgerConfigScoped();}
-function ledgerConfigWriteAuthorized(){const s=blueCrestSession;return !!s&&s.farmId===blueCrestOperationalMigrationControl?.farmId&&s.membershipStatus==='active'&&s.role==='owner'&&s.canWrite===true&&s.entitlementStatus==='active'&&s.plan==='activated'&&s.setupStatus===FARM_SETUP_STATUS.ACTIVE;}
+function ledgerConfigWriteAuthorized(){const s=blueCrestSession;return !!s&&s.farmId===blueCrestOperationalMigrationControl?.farmId&&s.membershipStatus==='active'&&s.role==='owner'&&s.canWrite===true&&s.hasFullEntitlementAccess===true&&s.setupStatus===FARM_SETUP_STATUS.ACTIVE;}
 function ledgerConfigDocument(name){if(!['customSubcategories','customAccounts'].includes(name))throw new Error('Ledger configuration document is invalid.');return db.collection('farms').doc(getActiveFarmId()).collection('ledgerConfig').doc(name);}
 let blueCrestLedgerConfigUnsubscribes=[];
 let farmSetupLedgerAccounts=[];
@@ -7495,7 +7496,7 @@ const applyOperationalMigrationControlBeforeFeedMinimumStock=applyOperationalMig
 function getFeedMinimumStockMigrationState(){return blueCrestOperationalMigrationControl?.groups?.feedMinimumStock?.state||'legacy';}
 function isFeedMinimumStockScoped(){return OPERATIONAL_MIGRATION_ROUTING_ENABLED===true&&['scoped-read','scoped-active'].includes(getFeedMinimumStockMigrationState())&&blueCrestOperationalMigrationControl?.groups?.feedMinimumStock?.routing==='scoped';}
 function isFeedMinimumStockActive(){return getFeedMinimumStockMigrationState()==='scoped-active'&&isFeedMinimumStockScoped();}
-function feedMinimumStockWriteAuthorized(){const s=blueCrestSession;return !!s&&s.farmId===blueCrestOperationalMigrationControl?.farmId&&s.membershipStatus==='active'&&s.role==='owner'&&s.canWrite===true&&s.entitlementStatus==='active'&&s.plan==='activated'&&s.setupStatus===FARM_SETUP_STATUS.ACTIVE;}
+function feedMinimumStockWriteAuthorized(){const s=blueCrestSession;return !!s&&s.farmId===blueCrestOperationalMigrationControl?.farmId&&s.membershipStatus==='active'&&s.role==='owner'&&s.canWrite===true&&s.hasFullEntitlementAccess===true&&s.setupStatus===FARM_SETUP_STATUS.ACTIVE;}
 function feedMinimumStockDocument(){if(!db||typeof db.collection!=='function')throw new Error('Firebase Firestore is unavailable.');return db.collection('farms').doc(getActiveFarmId()).collection('inventoryConfig').doc('feedMinimumStock');}
 let blueCrestFeedMinimumStockUnsubscribe=null;
 function stopFeedMinimumStockListener(){if(typeof blueCrestFeedMinimumStockUnsubscribe==='function')try{blueCrestFeedMinimumStockUnsubscribe();}catch(e){console.warn('Feed minimum stock listener teardown failed:',e);}blueCrestFeedMinimumStockUnsubscribe=null;}
@@ -7524,19 +7525,19 @@ function getClosingReconciliationWriteMode() { const state=getClosingReconciliat
 function getFinancialSummaryMigrationState() { return blueCrestOperationalMigrationControl?.groups?.financialSummary?.state || 'legacy'; }
 function isFinancialSummaryScoped() { return OPERATIONAL_MIGRATION_ROUTING_ENABLED === true && ['scoped-read','scoped-active'].includes(getFinancialSummaryMigrationState()) && blueCrestOperationalMigrationControl?.groups?.financialSummary?.routing === 'scoped'; }
 function isFinancialSummaryActive() { return getFinancialSummaryMigrationState() === 'scoped-active' && isFinancialSummaryScoped(); }
-function isFinancialSummaryScopedWriteAuthorized() { const session=blueCrestSession; return !!session && session.farmId === blueCrestOperationalMigrationControl?.farmId && session.membershipStatus === 'active' && session.role === 'owner' && session.canWrite === true && session.entitlementStatus === 'active' && session.plan === 'activated' && session.setupStatus === FARM_SETUP_STATUS.ACTIVE; }
+function isFinancialSummaryScopedWriteAuthorized() { const session=blueCrestSession; return !!session && session.farmId === blueCrestOperationalMigrationControl?.farmId && session.membershipStatus === 'active' && session.role === 'owner' && session.canWrite === true && session.hasFullEntitlementAccess === true && session.setupStatus === FARM_SETUP_STATUS.ACTIVE; }
 function getFinancialSummaryWriteMode() { const state=getFinancialSummaryMigrationState(); if (state === 'freeze' || (isFinancialSummaryScoped() && state === 'scoped-read')) return OPERATIONAL_WRITE_MODE.VERIFY_READ_ONLY; return isFinancialSummaryActive() && isFinancialSummaryScopedWriteAuthorized() ? OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE : (isFinancialSummaryScoped() ? OPERATIONAL_WRITE_MODE.VERIFY_READ_ONLY : OPERATIONAL_WRITE_MODE.LEGACY); }
 function financialSummaryCollectionOrLegacy(collectionName) { if (!FINANCIAL_SUMMARY_MIGRATION_COLLECTIONS.includes(collectionName)) throw new Error('Financial-summary collection is invalid.'); if (!db || typeof db.collection !== 'function') throw new Error('Firebase Firestore is unavailable.'); return isFinancialSummaryScoped() ? db.collection('farms').doc(getActiveFarmId()).collection(collectionName) : db.collection(collectionName); }
 function assertFinancialSummaryWriteAllowed() { const mode=getFinancialSummaryWriteMode(); if (mode !== OPERATIONAL_WRITE_MODE.LEGACY && mode !== OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Financial-summary writes are not authorized.'); }
 function getProductCatalogueMigrationState() { return blueCrestOperationalMigrationControl?.groups?.productCatalogue?.state || 'legacy'; }
 function isProductCatalogueScoped() { return OPERATIONAL_MIGRATION_ROUTING_ENABLED === true && ['scoped-read','scoped-active'].includes(getProductCatalogueMigrationState()) && blueCrestOperationalMigrationControl?.groups?.productCatalogue?.routing === 'scoped'; }
 function isProductCatalogueActive() { return getProductCatalogueMigrationState() === 'scoped-active' && isProductCatalogueScoped(); }
-function isProductCatalogueScopedWriteAuthorized() { const s=blueCrestSession; return !!s && s.farmId===blueCrestOperationalMigrationControl?.farmId && s.membershipStatus==='active' && s.role==='owner' && s.canWrite===true && s.entitlementStatus==='active' && s.plan==='activated' && s.setupStatus===FARM_SETUP_STATUS.ACTIVE; }
+function isProductCatalogueScopedWriteAuthorized() { const s=blueCrestSession; return !!s && s.farmId===blueCrestOperationalMigrationControl?.farmId && s.membershipStatus==='active' && s.role==='owner' && s.canWrite===true && s.hasFullEntitlementAccess===true && s.setupStatus===FARM_SETUP_STATUS.ACTIVE; }
 function getProductCatalogueWriteMode() { const state=getProductCatalogueMigrationState(); if (state==='freeze' || (isProductCatalogueScoped() && state==='scoped-read')) return OPERATIONAL_WRITE_MODE.VERIFY_READ_ONLY; return isProductCatalogueActive() && isProductCatalogueScopedWriteAuthorized() ? OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE : (isProductCatalogueScoped() ? OPERATIONAL_WRITE_MODE.VERIFY_READ_ONLY : OPERATIONAL_WRITE_MODE.LEGACY); }
 function assertProductCatalogueWriteAllowed() { const mode=getProductCatalogueWriteMode(); if (mode!==OPERATIONAL_WRITE_MODE.LEGACY && mode!==OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Product catalogue writes are not authorized.'); }
 function productCatalogueDocumentOrLegacy(name) { if (!db || typeof db.collection!=='function') throw new Error('Firebase Firestore is unavailable.'); const scoped={masterCatalogue:['masterData','productCatalogue']}[name]; if (!scoped) throw new Error('Product catalogue document is invalid.'); if (!isProductCatalogueScoped()) throw new Error('Scoped Product Catalogue authority is unavailable.'); return db.collection('farms').doc(getActiveFarmId()).collection(scoped[0]).doc(scoped[1]); }
 
-function assertOperationalWriteAllowed(collectionName) { if (CLOSING_RECONCILIATION_MIGRATION_COLLECTIONS.includes(collectionName)) { if (getClosingReconciliationWriteMode() !== OPERATIONAL_WRITE_MODE.LEGACY && getClosingReconciliationWriteMode() !== OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Closing-reconciliation writes are not authorized.'); return; } if (collectionName === 'crop2ClosingPackedStock') { if (getCrop2ClosingStockWriteMode() !== OPERATIONAL_WRITE_MODE.LEGACY && getCrop2ClosingStockWriteMode() !== OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Crop 2 closing-stock writes are not authorized.'); return; } if (CLOSING_STOCK_MIGRATION_COLLECTIONS.includes(collectionName)) { if (getClosingStockWriteMode() !== OPERATIONAL_WRITE_MODE.LEGACY && getClosingStockWriteMode() !== OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Closing-stock writes are not authorized.'); return; } if (!OPERATIONAL_MIGRATION_GROUPS.accountingSource.includes(collectionName)) return; if (getOperationalWriteMode(collectionName) !== OPERATIONAL_WRITE_MODE.LEGACY && getOperationalWriteMode(collectionName) !== OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Accounting-source writes are not authorized.'); }
+function assertOperationalWriteAllowed(collectionName) { assertEntitlementWriteAllowed(); if (CLOSING_RECONCILIATION_MIGRATION_COLLECTIONS.includes(collectionName)) { if (getClosingReconciliationWriteMode() !== OPERATIONAL_WRITE_MODE.LEGACY && getClosingReconciliationWriteMode() !== OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Closing-reconciliation writes are not authorized.'); return; } if (collectionName === 'crop2ClosingPackedStock') { if (getCrop2ClosingStockWriteMode() !== OPERATIONAL_WRITE_MODE.LEGACY && getCrop2ClosingStockWriteMode() !== OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Crop 2 closing-stock writes are not authorized.'); return; } if (CLOSING_STOCK_MIGRATION_COLLECTIONS.includes(collectionName)) { if (getClosingStockWriteMode() !== OPERATIONAL_WRITE_MODE.LEGACY && getClosingStockWriteMode() !== OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Closing-stock writes are not authorized.'); return; } if (!OPERATIONAL_MIGRATION_GROUPS.accountingSource.includes(collectionName)) return; if (getOperationalWriteMode(collectionName) !== OPERATIONAL_WRITE_MODE.LEGACY && getOperationalWriteMode(collectionName) !== OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE) throw new Error('Accounting-source writes are not authorized.'); }
 function getOperationalWriteMode(collectionName) { const group=getOperationalMigrationGroup(collectionName), state=getOperationalGroupState(group); if (state === 'freeze' || (isOperationalGroupScoped(collectionName) && state === 'scoped-read')) return OPERATIONAL_WRITE_MODE.VERIFY_READ_ONLY; return isOperationalGroupScoped(collectionName) && state === 'scoped-active' && blueCrestOperationalGroupReadiness.get(group)?.verified === true ? OPERATIONAL_WRITE_MODE.SCOPED_WRITABLE : (isOperationalGroupScoped(collectionName) ? OPERATIONAL_WRITE_MODE.VERIFY_READ_ONLY : OPERATIONAL_WRITE_MODE.LEGACY); }
 function registerOperationalGroupUnsubscribe(groupName, unsubscribe) { if (!OPERATIONAL_MIGRATION_GROUPS[groupName] || typeof unsubscribe !== 'function') return unsubscribe; const set=blueCrestOperationalGroupListeners.get(groupName) || new Set(); set.add(unsubscribe); blueCrestOperationalGroupListeners.set(groupName,set); return unsubscribe; }
 function bindGroup1OperationalListener(collectionName, onSnapshot, onError, generation) { return registerOperationalGroupUnsubscribe('biological', farmOperationalCollection(collectionName).onSnapshot(snapshot => { recordOperationalGroupHydration('biological', collectionName, generation); onSnapshot(snapshot); }, onError)); }
@@ -7724,11 +7725,25 @@ function isFoundationMigrationFrozen(){return FOUNDATION_MIGRATION_FREEZE===true
 function isFoundationScopedRoutingEnabled(){return FOUNDATION_SCOPED_ROUTING===true;}
 function setFoundationWriteMode(nextMode) { if (!Object.values(FOUNDATION_WRITE_MODE).includes(nextMode)) throw new Error('Unknown Foundation write mode.'); blueCrestFoundationWriteMode = nextMode; return nextMode; }
 function foundationCacheIsVerified() { try { const farmId = getActiveFarmId(); const historicalEliteSession = farmId === LEGACY_ELITE_FARM_ID && blueCrestSession?.uid === LEGACY_ELITE_OWNER_UID; if (!historicalEliteSession) return true; const result = inspectFoundationStorageMigrationState({ farmId, mode: 'post-cutover' }); return result?.classification === 'verified' && Array.isArray(result.failures) && result.failures.length === 0; } catch (error) { return false; } }
+function hasFullEntitlementAccess(entitlement) {
+  if (!entitlement || entitlement.status !== 'active') return false;
+  if (entitlement.plan === 'activated') return true;
+  if (entitlement.plan !== 'trial') return false;
+  const rawEndsAt = entitlement.trialEndsAt;
+  const endsAt = rawEndsAt && typeof rawEndsAt.toDate === 'function' ? rawEndsAt.toDate() : (rawEndsAt instanceof Date ? rawEndsAt : null);
+  return endsAt instanceof Date && !Number.isNaN(endsAt.getTime()) && endsAt.getTime() > Date.now();
+}
+function assertEntitlementWriteAllowed() {
+  const session = blueCrestSession;
+  const hasAccess = hasFullEntitlementAccess({ status:session?.entitlementStatus, plan:session?.plan, trialEndsAt:session?.trialEndsAt });
+  if (session) session.hasFullEntitlementAccess = hasAccess;
+  if (!hasAccess) throw new Error('This farm is currently view-only.');
+}
 function isFoundationScopedWritableAuthorized() {
   const control = blueCrestFoundationValidatedControl, session = blueCrestSession, readiness = getFoundationReadiness();
   if (!control || blueCrestFoundationMigrationControlStatus.controlHealthy !== true || control.version !== 1 || control.state !== 'active' || control.routing !== 'scoped') return false;
   if (isFoundationMigrationFrozen() || !isFoundationScopedRoutingEnabled() || blueCrestFoundationMigrationControlFarmId !== control.farmId) return false;
-  if (!session || session.farmId !== control.farmId || session.membershipStatus !== 'active' || session.role !== 'owner' || session.canWrite !== true || session.entitlementStatus !== 'active' || session.plan !== 'activated' || session.setupStatus !== FARM_SETUP_STATUS.ACTIVE) return false;
+  if (!session || session.farmId !== control.farmId || session.membershipStatus !== 'active' || session.role !== 'owner' || session.canWrite !== true || session.hasFullEntitlementAccess !== true || session.setupStatus !== FARM_SETUP_STATUS.ACTIVE) return false;
   if (readiness.state !== FOUNDATION_READINESS.FIRESTORE_VERIFIED || readiness.route !== 'scoped' || readiness.verified !== true || !Array.isArray(readiness.expected) || !Array.isArray(readiness.snapshots) || readiness.expected.length !== FOUNDATION_HYDRATION_SOURCES.length || FOUNDATION_HYDRATION_SOURCES.some(source => !readiness.expected.includes(source) || !readiness.snapshots.includes(source))) return false;
   return foundationCacheIsVerified();
 }
@@ -8051,11 +8066,9 @@ async function resolveBlueCrestSession(user) {
   if (membershipData.status !== 'active') throw accessError('MEMBERSHIP_INACTIVE', 'This membership is not active.');
   if (!['owner', 'admin', 'viewer', 'investor'].includes(role)) throw accessError('MEMBERSHIP_ROLE_INVALID', 'This membership role is not authorized.');
   if (!entitlement.exists) throw accessError('ENTITLEMENT_NOT_FOUND', 'The farm entitlement record was not found.');
-  if (entitlementData.status !== 'active') throw accessError('ENTITLEMENT_INACTIVE', 'The farm entitlement is not active.');
-  if (entitlementData.plan !== 'activated') throw accessError('ENTITLEMENT_NOT_ACTIVATED', 'The farm entitlement plan is not activated.');
   const normalizedSetupStatus = resolveFarmSetupStatus(farmData);
   // Provisioning metadata for future startup routing; it does not alter current startup behavior.
-  blueCrestSession = { uid, email:user.email||'', farmId, farmName:farmData.farmName||'BlueCrest Farm', role, membershipStatus:membershipData.status, plan:entitlementData.plan||'', entitlementStatus:entitlementData.status, setupStatus:normalizedSetupStatus, canWrite:['owner', 'admin'].includes(role) };
+  blueCrestSession = { uid, email:user.email||'', farmId, farmName:farmData.farmName||'BlueCrest Farm', role, membershipStatus:membershipData.status, plan:entitlementData.plan||'', entitlementStatus:entitlementData.status, trialEndsAt:entitlementData.trialEndsAt||null, hasFullEntitlementAccess:hasFullEntitlementAccess(entitlementData), setupStatus:normalizedSetupStatus, canWrite:['owner', 'admin'].includes(role) };
   document.getElementById('blueCrestFarmName').textContent = blueCrestSession.farmName;
 }
 function setBlueCrestAuthMessage(message) { const el=document.getElementById('blueCrestAuthMessage'); if(el) el.textContent=message||''; }
@@ -8526,6 +8539,9 @@ function startBlueCrestApp(initialRoute = 'dashboard') {
       // Refresh the already initialized controls after cloud reconciliation.
       renderGlobalCycleSelector();
       scheduleFirebaseRender();
+      // Publish the existing authoritative Crop 1/Crop 2 Finance results once
+      // the startup catalogue/accounting reconciliation has completed.
+      if (typeof renderFinanceOverview === 'function') renderFinanceOverview();
       autoPopulateLastFeed();
     };
     const scopedCatalogueStartup = pullScopedProductCatalogueFromCloud().catch(err => {
@@ -9043,6 +9059,7 @@ const feedRecordCountEl = document.getElementById('feedRecordCount');
 const feedHistoryPondSelect = document.getElementById('feedHistoryPond');
 const feedHistorySortSelect = document.getElementById('feedHistorySort'); const feedExportButton = document.getElementById('feedExportButton'); const feedImportButton = document.getElementById('feedImportButton'); const feedImportFileInput = document.getElementById('feedImportFileInput');
 const previewAbw = document.getElementById('previewAbw');
+const previewCountPerKg = document.getElementById('previewCountPerKg');
 const previewDoc = document.getElementById('previewDoc');
 const previewGrowth = document.getElementById('previewGrowth');
 const previewFcr = document.getElementById('previewFcr');
@@ -11278,7 +11295,7 @@ async function pullFarmFromCloud() {
 }
 
 async function pullScopedProductCatalogueFromCloud() {
-  if (isFoundationVerifyReadOnly() || !isProductCatalogueScoped()) return false;
+  if (!isProductCatalogueScoped()) return false;
   if (typeof db === 'undefined' || !db) return false;
   const catalogue = await productCatalogueDocumentOrLegacy('masterCatalogue').get();
   const catalogueData = catalogue.data() || {};
@@ -17890,6 +17907,25 @@ function calculateMetrics(pondId, dateStr, testWeight, count, lastFeed, currentF
   return { abw, doc, growth, adg, netFeed, daysBetween, weeklyAvgFeed, expectedWeeklyFeed, fcr, estSurvivalPct };
 }
 
+function getSamplingCountPerKg(sample) {
+  const sampleWeight = Number(sample?.sampleWeight);
+  const testWeight = Number(sample?.testWeight);
+  const rawWeight = Number.isFinite(sampleWeight) && sampleWeight > 0
+    ? sampleWeight
+    : (Number.isFinite(testWeight) && testWeight > 0 ? testWeight : null);
+  const rawShrimpCount = Number(sample?.count);
+  if (rawWeight !== null && Number.isFinite(rawShrimpCount) && rawShrimpCount > 0) {
+    return (rawShrimpCount * 1000) / rawWeight;
+  }
+  const abw = Number(sample?.abw);
+  return Number.isFinite(abw) && abw > 0 ? 1000 / abw : null;
+}
+
+function formatSamplingCountPerKg(sample) {
+  const countPerKg = getSamplingCountPerKg(sample);
+  return Number.isFinite(countPerKg) ? String(Math.round(countPerKg)) : '—';
+}
+
 function updateFormCalculations() {
   if (!samplePondSelect) return;
   const currentId = sampleIdInput ? sampleIdInput.value : null;
@@ -17899,6 +17935,7 @@ function updateFormCalculations() {
   );
 
   if (previewAbw) previewAbw.textContent = abw > 0 ? `${abw.toFixed(2)}g` : '—';
+  if (previewCountPerKg) previewCountPerKg.textContent = formatSamplingCountPerKg({ testWeight: testWeightInput.value, count: shrimpCountInput.value });
   if (previewDoc) previewDoc.textContent = doc !== null ? `${doc} d` : '—';
   if (previewGrowth) previewGrowth.textContent = growth !== null ? `${growth >= 0 ? '+' : ''}${growth.toFixed(2)}g` : '—';
   const selectedPond = ponds.find(p => String(p.id) === String(samplePondSelect.value));
@@ -17910,13 +17947,24 @@ async function handleSampleSubmit(e) {
   e.preventDefault();
   if (formMessage) formMessage.textContent = '';
 
+  const sampleWeight = Number(testWeightInput.value);
+  const shrimpSampled = Number(shrimpCountInput.value);
+  if (!Number.isFinite(sampleWeight) || sampleWeight <= 0) {
+    if (formMessage) formMessage.textContent = 'Enter a valid sample weight greater than zero.';
+    return;
+  }
+  if (!Number.isFinite(shrimpSampled) || shrimpSampled <= 0) {
+    if (formMessage) formMessage.textContent = 'Enter a valid shrimp sampled value greater than zero.';
+    return;
+  }
+
   const record = {
     id: sampleIdInput.value || `s_${Date.now()}`,
     pondId: samplePondSelect.value,
     date: sampleDateInput.value,
-    testWeight: parseFloat(testWeightInput.value),
-    sampleWeight: parseFloat(testWeightInput.value),
-    count: parseFloat(shrimpCountInput.value),
+    testWeight: sampleWeight,
+    sampleWeight,
+    count: shrimpSampled,
     lastFeed: lastFeedInput.value !== '' ? parseFloat(lastFeedInput.value) : 0,
     prevCumulativeFeed: lastFeedInput.value !== '' ? parseFloat(lastFeedInput.value) : 0,
     currentFeed: currentFeedInput.value !== '' ? parseFloat(currentFeedInput.value) : null,
@@ -17966,8 +18014,14 @@ function editSample(id) {
   );
   if (!s) return;
 
+  const pond = getPondForSample(s, getActivePonds());
+  if (!pond || !Array.from(samplePondSelect.options).some(option => String(option.value) === String(pond.id))) {
+    bcAlert('This sampling record\'s pond cannot be resolved in the selected Year / Crop. The record was not opened for editing.');
+    return;
+  }
+
   sampleIdInput.value = s.id;
-  samplePondSelect.value = s.pondId;
+  samplePondSelect.value = pond.id;
   sampleDateInput.value = s.date;
   testWeightInput.value = s.testWeight;
   shrimpCountInput.value = s.count;
@@ -18491,6 +18545,7 @@ function renderClinicalTable() {
     const m = calculateMetrics(s.pondId, s.date, s.testWeight, s.count, s.lastFeed, s.currentFeed, s.id);
     const caseId = `CR${s.date.replace(/-/g, '')}${s.id.replace(/\D/g, '').padEnd(4, '0')}`;
     const abwText = m.abw > 0 ? `${m.abw.toFixed(2)}g` : '—';
+    const countPerKg = formatSamplingCountPerKg(s);
     const gainText = m.growth !== null ? `${m.growth >= 0 ? '+' : ''}${m.growth.toFixed(2)}g` : 'First sample';
 
     return `
@@ -18509,8 +18564,8 @@ function renderClinicalTable() {
           <span class="cell-sub">${pond && pond.pondType === 'transferIn' ? ('Transferred in: ' + (getPondTransferInSummary(pond.id).number > 0 ? getPondTransferInSummary(pond.id).number.toLocaleString() : '—') + ' pcs') : (pond && String(pond.pondType || '').trim() === 'mother' ? (() => { const st = getPondStockMovementSummary(pond.id); return 'Original: ' + st.original.toLocaleString() + ' • Out: ' + st.outgoing.toLocaleString() + ' • Current: ' + st.current.toLocaleString() + ' pcs'; })() : ('Stocked: ' + (pond && (pond.stockingCount || pond.initialStockingNumber) ? Number(pond.stockingCount || pond.initialStockingNumber).toLocaleString() : '—') + ' pcs'))}</span>
         </td>
         <td>
-          <span class="cell-title">${s.count} pcs</span>
-          <span class="cell-sub" style="color:var(--brand-green); font-weight:600;">${gainText}</span>
+          <span class="cell-title">Shrimp Sampled: ${s.count} pcs</span>
+          <span class="cell-sub" style="color:var(--brand-green); font-weight:600;">Count/kg: ${countPerKg} • ${gainText}</span>
         </td>
         <td>
           <span class="cell-title">${formatDate(s.date)}</span>
@@ -18554,6 +18609,7 @@ function renderSampleCard(s) {
   const pondIdForMetrics = pond ? pond.id : (s.pondId ?? s.pond);
   const m = calculateMetrics(pondIdForMetrics, s.date, s.testWeight, s.count, s.lastFeed, s.currentFeed, s.id);
   const abwStr = m.abw > 0 ? `${m.abw.toFixed(2)}g` : '—';
+  const countPerKg = formatSamplingCountPerKg(s);
   const adgStr = m.adg !== null && Number.isFinite(m.adg) ? `${m.adg.toFixed(3)} g/day` : '—';
   const growthStr = m.growth !== null ? `${m.growth >= 0 ? '+' : ''}${m.growth.toFixed(2)}g` : '—';
   const fcrStr = pond && String(pond.pondType || '').trim() === 'mother' ? '—' : (m.fcr !== null ? m.fcr.toFixed(2) : '—');
@@ -18572,7 +18628,8 @@ function renderSampleCard(s) {
           </div>
         </div>
         <div class="record-values">
-          <div class="sample-value"><span>Count</span><strong>${s.count} pcs</strong></div>
+          <div class="sample-value"><span>Shrimp Sampled</span><strong>${s.count} pcs</strong></div>
+          <div class="sample-value"><span>Count/kg</span><strong>${countPerKg === '—' ? '—' : `${countPerKg} pcs/kg`}</strong></div>
           <div class="sample-value"><span>ABW</span><strong>${abwStr}</strong></div>
           <div class="sample-value"><span>ADG</span><strong>${adgStr}</strong></div>
           <div class="sample-value"><span>Gain</span><strong style="color:var(--brand-green);">${growthStr}</strong></div>
@@ -23806,444 +23863,6 @@ function renderPondwisePnl() {
   const totalProfit = totalRevenue - totalCost;
   const totalFcr = totalBiomass > 0 && totalFeed > 0 ? totalFeed / totalBiomass : null;
 
-  // Retired reconciliation diagnostic retained only as source history; never execute it.
-  // It deliberately repeats Finance's Crop 1 source rules without altering any application state.
-  if (false && selectedCrop === 'Crop 1') {
-    const debugAmount = row => row?.totalAmount !== undefined && row?.totalAmount !== null
-      ? (parseFloat(row.totalAmount) || 0)
-      : ((parseFloat(row?.qty) || 0) * (parseFloat(row?.unitPrice) || 0));
-    const debugCategoryTotals = {};
-    const debugAdd = (key, amount) => {
-      const label = String(key || 'Other Product');
-      debugCategoryTotals[label] = (debugCategoryTotals[label] || 0) + (Number(amount) || 0);
-    };
-    const debugProductTotals = new Map();
-    const debugProductKey = (name, category) => `${String(category || 'Other Product').trim().toLowerCase()}|${String(name || '').trim().toLowerCase()}`;
-    const debugAddProduct = (name, category, amount) => {
-      const key = debugProductKey(name, category);
-      const current = debugProductTotals.get(key) || { name: String(name || ''), category: String(category || 'Other Product'), netPurchase: 0, closingQty: 0, closingValue: 0, treatmentAll: 0, treatmentPnl: 0, uncoveredQty: 0, excludedTreatment: 0 };
-      current.netPurchase += Number(amount) || 0;
-      debugProductTotals.set(key, current);
-      return current;
-    };
-    (Array.isArray(purchases) ? purchases : []).filter(p =>
-      getPurchaseYear(p) === activePnlYear && pondwiseNormaliseCrop(getPurchaseCrop(p)) === selectedCrop
-    ).forEach(p => {
-      debugAdd(p.category, debugAmount(p));
-      debugAddProduct(p.name, p.category, debugAmount(p));
-    });
-    (Array.isArray(stockReturns) ? stockReturns : []).filter(r =>
-      getRecordYear(r) === activePnlYear && pondwiseNormaliseCrop(getRecordCrop(r)) === selectedCrop
-    ).forEach(r => {
-      const category = r.category || 'Other Product';
-      let amount = -debugAmount(r);
-      const isGrowelFeedReturn = String(category).trim().toLowerCase() === 'feed'
-        && String(r.company || '').trim().toLowerCase() === 'growel';
-      const invoiceRate = Number(r.invoiceUnitPrice ?? r.unitPrice) || 0;
-      const finalRate = Number(r.finalUnitPrice ?? r.unitPrice) || 0;
-      const returnedQty = isGrowelFeedReturn ? getNormalizedStockQuantity(r) : 0;
-      if (isGrowelFeedReturn && invoiceRate > 0 && finalRate > 0 && returnedQty > 0) {
-        amount += (invoiceRate - finalRate) * returnedQty;
-      }
-      debugAdd(category, amount);
-      debugAddProduct(r.name, category, amount);
-    });
-    const debugClosingItems = getActiveCropClosingStockItems({
-      id: cycleIdFor(activePnlYear, selectedCrop), year: activePnlYear, crop: selectedCrop
-    });
-    const debugClosingCategories = {};
-    debugClosingItems.forEach(item => {
-      const category = String(item.category || 'Other Product');
-      debugClosingCategories[category] = (debugClosingCategories[category] || 0) + (Number(item.closingValue) || 0);
-      const product = debugAddProduct(item.name, category, 0);
-      product.closingQty += Number(item.closingQty ?? item.qty) || 0;
-      product.closingValue += Number(item.closingValue ?? item.value) || 0;
-    });
-    const debugPondIds = new Set(rows.map(p => String(p.id)));
-    const debugTreatmentRows = (Array.isArray(treatments) ? treatments : []).filter(t =>
-      getPondwiseYear(t) === activePnlYear && pondwiseNormaliseCrop(t.crop) === selectedCrop
-    );
-    debugTreatmentRows.forEach(t => {
-      const details = getTreatmentCostDetails(t, activePnlYear, selectedCrop);
-      const category = String((Array.isArray(purchases) ? purchases : []).find(p =>
-        pondwiseNormaliseCrop(p.crop) === selectedCrop && String(p.name || '').trim().toLowerCase() === String(t.productName || t.product || '').trim().toLowerCase()
-      )?.category || 'Unmatched');
-      const product = debugAddProduct(t.productName || t.product, category, 0);
-      const cost = Number(details.cost) || 0;
-      product.treatmentAll += cost;
-      product.uncoveredQty += Number(details.uncoveredQty) || 0;
-      if (debugPondIds.has(String(t.pondId || t.pond || ''))) product.treatmentPnl += cost;
-      else product.excludedTreatment += cost;
-      if ((Number(details.uncoveredQty) || 0) > 0 || !debugPondIds.has(String(t.pondId || t.pond || ''))) {
-        const treatmentName = String(t.productName || t.product || '').trim();
-        const exactKey = treatmentName.toLowerCase();
-        const looseKey = exactKey
-          .replace(/[-\s]*(?:\d+(?:\.\d+)?\s*)?(?:kg|gm|gms|ltr|l|ml)$/i, '')
-          .replace(/[^a-z0-9]/g, '');
-        const treatmentUnit = String(t.unit || 'Kg').trim().toLowerCase();
-        const treatmentBaseUnit = ['ml', 'milliliter', 'milliliters', 'ltr', 'l'].includes(treatmentUnit) ? 'ltr' : 'kg';
-        const candidates = (Array.isArray(purchases) ? purchases : []).filter(p => {
-          const purchaseName = String(p.name || '').trim().toLowerCase();
-          const purchaseLooseKey = purchaseName
-            .replace(/[-\s]*(?:\d+(?:\.\d+)?\s*)?(?:kg|gm|gms|ltr|l|ml)$/i, '')
-            .replace(/[^a-z0-9]/g, '');
-          return purchaseLooseKey === looseKey;
-        });
-        console.log(`[PNL RECON DEBUG] Treatment exception | id=${t.id || ''} | product=${treatmentName} | productId=${t.productId || ''} | fifoName=${exactKey} | pondId=${t.pondId || t.pond || ''} | date=${t.date || ''} | year=${getPondwiseYear(t)} | crop=${pondwiseNormaliseCrop(t.crop)} | cycleId=${t.cycleId || ''} | qty=${Number(t.qty || 0).toFixed(3)} | unit=${t.unit || ''} | baseUnit=${treatmentBaseUnit} | cost=${cost.toFixed(2)} | coveredQty=${Number(details.coveredQty || 0).toFixed(3)} | uncoveredQty=${Number(details.uncoveredQty || 0).toFixed(3)} | source=${details.source || ''} | includedInPnl=${debugPondIds.has(String(t.pondId || t.pond || ''))}`);
-        if (!candidates.length) console.log(`[PNL RECON DEBUG] FIFO candidate | treatmentId=${t.id || ''} | result=NO_SIMILAR_PURCHASE_NAME`);
-        candidates.forEach(p => {
-          const pack = getPackSizeInfo(p);
-          const purchaseStockUnit = String(pack.unit || '').trim().toLowerCase();
-          const purchaseBaseUnit = ['ltr', 'l', 'ml'].includes(purchaseStockUnit) ? 'ltr' : 'kg';
-          const sameYear = getPondwiseYear(p) === activePnlYear;
-          const sameCrop = pondwiseNormaliseCrop(p.crop) === selectedCrop;
-          const sameName = String(p.name || '').trim().toLowerCase() === exactKey;
-          const nonFeed = String(p.category || '').trim().toLowerCase() !== 'feed';
-          console.log(`[PNL RECON DEBUG] FIFO candidate | treatmentId=${t.id || ''} | purchaseId=${p.id || ''} | product=${p.name || ''} | productId=${p.productId || ''} | fifoName=${String(p.name || '').trim().toLowerCase()} | date=${p.date || ''} | year=${getPondwiseYear(p)} | crop=${pondwiseNormaliseCrop(p.crop)} | cycleId=${p.cycleId || ''} | category=${p.category || ''} | qty=${Number(p.qty || 0).toFixed(3)} | normalizedQty=${Number(getNormalizedStockQuantity(p) || 0).toFixed(3)} | unit=${p.unit || ''} | stockUnit=${pack.unit || ''} | baseUnit=${purchaseBaseUnit} | exactName=${sameName} | sameYear=${sameYear} | sameCrop=${sameCrop} | nonFeed=${nonFeed} | unitCompatible=${purchaseBaseUnit === treatmentBaseUnit} | fifoEligible=${sameYear && sameCrop && sameName && nonFeed && purchaseBaseUnit === treatmentBaseUnit}`);
-        });
-      }
-    });
-    const debugLedger = (Array.isArray(ledgerEntries) ? ledgerEntries : []).filter(entry =>
-      getRecordYear(entry) === activePnlYear && pondwiseNormaliseCrop(entry.season) === selectedCrop
-    );
-    const debugLedgerTotal = debugLedger.reduce((s, entry) => s + (Number(entry.amount) || 0), 0);
-    const debugClosing = Number(calculateCropClosingStockValue?.({
-      id: cycleIdFor(activePnlYear, selectedCrop), year: activePnlYear, crop: selectedCrop
-    })) || 0;
-    const debugFinanceProductTotal = Object.values(debugCategoryTotals).reduce((s, value) => s + Math.max(0, Number(value) || 0), 0);
-    const debugFinanceTotal = debugFinanceProductTotal + Math.max(0, debugLedgerTotal) - debugClosing;
-    const debugLine = (label, value) => `${label}=${Number(value || 0).toFixed(2)}`;
-    console.log(`[PNL RECON DEBUG] Finance | year=${activePnlYear} | crop=${selectedCrop} | ${debugLine('productsNet', debugFinanceProductTotal)} | ${debugLine('ledger', Math.max(0, debugLedgerTotal))} | ${debugLine('closingInventoryLess', debugClosing)} | ${debugLine('totalExpense', debugFinanceTotal)}`);
-    Object.entries(debugCategoryTotals).sort(([a], [b]) => a.localeCompare(b)).forEach(([category, value]) => {
-      console.log(`[PNL RECON DEBUG] Finance product | category=${category} | ${debugLine('net', value)}`);
-    });
-    Object.entries(debugClosingCategories).sort(([a], [b]) => a.localeCompare(b)).forEach(([category, value]) => {
-      console.log(`[PNL RECON DEBUG] Closing inventory category | category=${category} | ${debugLine('value', value)}`);
-    });
-    debugClosingItems.forEach(item => {
-      console.log(`[PNL RECON DEBUG] Closing inventory item | id=${item.id || ''} | product=${item.name || ''} | category=${item.category || ''} | qty=${Number(item.closingQty ?? item.qty ?? 0).toFixed(3)} | unit=${item.unit || ''} | value=${Number(item.closingValue ?? item.value ?? 0).toFixed(2)}`);
-    });
-    [...debugProductTotals.values()].filter(product => {
-      const category = product.category.trim().toLowerCase();
-      return (category === 'medicine' || category === 'fertilizer' || product.treatmentAll || product.uncoveredQty) && (product.netPurchase || product.closingValue || product.treatmentAll || product.uncoveredQty);
-    }).sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name)).forEach(product => {
-      const expectedConsumed = product.netPurchase - product.closingValue;
-      console.log(`[PNL RECON DEBUG] Medicine/Fertilizer product | product=${product.name} | category=${product.category} | netPurchase=${product.netPurchase.toFixed(2)} | closingQty=${product.closingQty.toFixed(3)} | closingValue=${product.closingValue.toFixed(2)} | expectedConsumed=${expectedConsumed.toFixed(2)} | treatmentAll=${product.treatmentAll.toFixed(2)} | treatmentPnl=${product.treatmentPnl.toFixed(2)} | excludedTreatment=${product.excludedTreatment.toFixed(2)} | uncoveredQty=${product.uncoveredQty.toFixed(3)} | expectedMinusPnl=${(expectedConsumed - product.treatmentPnl).toFixed(2)}`);
-    });
-    debugLedger.forEach(entry => {
-      console.log(`[PNL RECON DEBUG] Finance ledger | id=${entry.id || ''} | category=${entry.category || ''} | subCategory=${entry.subCategory || ''} | amount=${Number(entry.amount || 0).toFixed(2)} | season=${entry.season || ''}`);
-    });
-    result.forEach(r => {
-      console.log(`[PNL RECON DEBUG] Pond | pond=${getPondDisplayName(r.pond)} | id=${r.pond.id} | ${debugLine('feed', r.feedCost)} | ${debugLine('treatment', r.treatmentCost)} | ${debugLine('supplement', r.supplementCost)} | ${debugLine('seed', r.seedCost)} | ${debugLine('ledgerShare', r.ledgerShare)} | ${debugLine('physicalAdjustment', r.physicalAdjustment)} | ${debugLine('total', r.totalCost)}`);
-    });
-    console.log(`[PNL RECON DEBUG] Pond totals | ${debugLine('feed', sum('feedCost'))} | ${debugLine('treatment', sum('treatmentCost'))} | ${debugLine('supplement', sum('supplementCost'))} | ${debugLine('seed', sum('seedCost'))} | ${debugLine('ledgerShare', sum('ledgerShare'))} | ${debugLine('physicalAdjustment', sum('physicalAdjustment'))} | ${debugLine('totalCost', totalCost)}`);
-    console.log(`[PNL RECON DEBUG] Reconciliation | ${debugLine('financeExpense', debugFinanceTotal)} | ${debugLine('pondwiseCost', totalCost)} | ${debugLine('financeMinusPondwise', debugFinanceTotal - totalCost)}`);
-
-    // Temporary read-only Crop 1 product-unit quality audit. All maps and
-    // simulated records are local copies; no application data is changed.
-    const unitAuditKey = value => String(value || '').trim().toLowerCase();
-    const unitAuditLooseKey = value => unitAuditKey(value)
-      .replace(/[-\s]*(?:\d+(?:\.\d+)?\s*)?(?:kg|gm|gms|ltr|l|ml)$/i, '')
-      .replace(/[^a-z0-9]/g, '');
-    const unitAuditBase = unit => ['ltr', 'l', 'ml', 'milliliter', 'milliliters'].includes(String(unit || '').trim().toLowerCase()) ? 'ltr' : 'kg';
-    const unitAuditPurchaseBase = purchase => unitAuditBase(getPackSizeInfo(purchase).unit || purchase.stockUnit || purchase.unit);
-    const unitAuditRows = new Map();
-    const unitAuditRow = (name, category = '') => {
-      const key = unitAuditKey(name);
-      if (!unitAuditRows.has(key)) unitAuditRows.set(key, { name: String(name || ''), categories: new Set(), purchases: [], returns: [], treatments: [], closing: [] });
-      const row = unitAuditRows.get(key);
-      if (category) row.categories.add(String(category));
-      return row;
-    };
-    (Array.isArray(purchases) ? purchases : []).filter(p => getPondwiseYear(p) === activePnlYear && pondwiseNormaliseCrop(p.crop) === selectedCrop && String(p.category || '').trim().toLowerCase() !== 'feed').forEach(p => unitAuditRow(p.name, p.category).purchases.push(p));
-    (Array.isArray(stockReturns) ? stockReturns : []).filter(r => getPondwiseYear(r) === activePnlYear && pondwiseNormaliseCrop(r.crop) === selectedCrop && String(r.category || '').trim().toLowerCase() !== 'feed').forEach(r => unitAuditRow(r.name, r.category).returns.push(r));
-    debugClosingItems.forEach(item => unitAuditRow(item.name, item.category).closing.push(item));
-    debugTreatmentRows.forEach(t => unitAuditRow(t.productName || t.product).treatments.push(t));
-    console.log(`[UNIT AUDIT DEBUG] Summary | year=${activePnlYear} | crop=${selectedCrop} | nonFeedProducts=${unitAuditRows.size} | treatments=${debugTreatmentRows.length}`);
-    let auditUnderCostCount = 0, auditUnitMismatchCount = 0, auditUnitImpact = 0, auditOtherImpact = 0;
-    [...unitAuditRows.values()].sort((a, b) => a.name.localeCompare(b.name)).forEach(row => {
-      const catalogue = (Array.isArray(masterCatalogue) ? masterCatalogue : []).find(item => unitAuditKey(item.name) === unitAuditKey(row.name));
-      const purchaseBases = [...new Set(row.purchases.map(unitAuditPurchaseBase))];
-      const treatmentBases = [...new Set(row.treatments.map(t => unitAuditBase(t.unit || 'Kg')))];
-      const closingBases = [...new Set(row.closing.map(item => unitAuditBase(item.unit || item.stockUnit || 'Kg')))];
-      console.log(`[UNIT AUDIT DEBUG] Product | product=${row.name} | categories=${[...row.categories].join('/') || ''} | catalogueId=${catalogue?.productId || ''} | catalogueUnit=${catalogue?.unit || ''} | catalogueStockUnit=${catalogue?.stockUnit || ''} | cataloguePackSize=${catalogue?.packSize ?? ''} | purchaseBases=${purchaseBases.join('/') || 'NONE'} | treatmentBases=${treatmentBases.join('/') || 'NONE'} | closingBases=${closingBases.join('/') || 'NONE'} | purchases=${row.purchases.length} | returns=${row.returns.length} | treatments=${row.treatments.length} | closingEntries=${row.closing.length}`);
-      if (purchaseBases.length > 1) row.purchases.forEach(p => console.log(`[UNIT AUDIT DEBUG] Conflicting purchase | id=${p.id || ''} | date=${p.date || ''} | invoice=${p.invoiceNo || ''} | vendor=${p.supplier || ''} | product=${p.name || ''} | productId=${p.productId || ''} | qty=${Number(p.qty || 0).toFixed(3)} | packSize=${p.packSize ?? ''} | normalizedQty=${Number(getNormalizedStockQuantity(p) || 0).toFixed(3)} | unit=${p.unit || ''} | stockUnit=${getPackSizeInfo(p).unit || p.stockUnit || ''} | baseUnit=${unitAuditPurchaseBase(p)} | year=${getPondwiseYear(p)} | crop=${pondwiseNormaliseCrop(p.crop)}`));
-      if (row.closing.length && purchaseBases.length === 1 && closingBases.some(base => base !== purchaseBases[0])) row.closing.forEach(item => console.log(`[UNIT AUDIT DEBUG] Closing unit conflict | id=${item.id || ''} | product=${item.name || ''} | closingUnit=${item.unit || item.stockUnit || ''} | closingBaseUnit=${unitAuditBase(item.unit || item.stockUnit || 'Kg')} | purchaseBaseUnit=${purchaseBases[0]} | qty=${Number(item.closingQty ?? item.qty ?? 0).toFixed(3)} | value=${Number(item.closingValue ?? item.value ?? 0).toFixed(2)}`));
-      row.treatments.forEach(t => {
-        const details = getTreatmentCostDetails(t, activePnlYear, selectedCrop);
-        const required = getPondwiseTreatmentBaseQty(Number(t.qty || 0), t.unit || 'Kg');
-        if (!(Number(details.uncoveredQty) > 0 || Number(details.cost) <= 0)) return;
-        auditUnderCostCount++;
-        const treatmentBase = unitAuditBase(t.unit || 'Kg');
-        const exactScoped = row.purchases.filter(p => String(p.category || '').trim().toLowerCase() !== 'feed');
-        const compatible = exactScoped.filter(p => unitAuditPurchaseBase(p) === treatmentBase);
-        const alternateBases = [...new Set(exactScoped.map(unitAuditPurchaseBase).filter(base => base !== treatmentBase))];
-        const simulations = alternateBases.map(base => ({ base, details: getTreatmentCostDetails({ ...t, unit: base === 'ltr' ? 'Ltr' : 'Kg' }, activePnlYear, selectedCrop) }));
-        const best = simulations.reduce((winner, candidate) => Number(candidate.details.cost || 0) > Number(winner.details.cost || 0) ? candidate : winner, { base: treatmentBase, details });
-        const unitOnlyImpact = Math.max(0, Number(best.details.cost || 0) - Number(details.cost || 0));
-        const exactOtherScope = (Array.isArray(purchases) ? purchases : []).filter(p => unitAuditKey(p.name) === unitAuditKey(row.name) && (getPondwiseYear(p) !== activePnlYear || pondwiseNormaliseCrop(p.crop) !== selectedCrop));
-        const looseOtherName = (Array.isArray(purchases) ? purchases : []).filter(p => unitAuditLooseKey(p.name) === unitAuditLooseKey(row.name) && unitAuditKey(p.name) !== unitAuditKey(row.name));
-        let cause = 'OTHER';
-        if (unitOnlyImpact > 0.005 && alternateBases.length) { cause = 'UNIT_MISMATCH'; auditUnitMismatchCount++; auditUnitImpact += unitOnlyImpact; }
-        else if (!exactScoped.length && looseOtherName.length) cause = 'PRODUCT_NAME_MISMATCH';
-        else if (!exactScoped.length && exactOtherScope.length) cause = 'CROP_OR_YEAR_MISMATCH';
-        else if (!exactScoped.length) cause = 'NO_PURCHASE';
-        else if (compatible.length) cause = 'INSUFFICIENT_STOCK';
-        auditOtherImpact += Math.max(0, Number(details.uncoveredQty || 0) > 0 ? 0 : 0);
-        console.log(`[UNIT AUDIT DEBUG] Under-cost treatment | cause=${cause} | treatmentId=${t.id || ''} | date=${t.date || ''} | pond=${t.pond || t.pondId || ''} | product=${row.name} | productId=${t.productId || ''} | qty=${Number(t.qty || 0).toFixed(3)} | unit=${t.unit || ''} | baseUnit=${treatmentBase} | fifoCost=${Number(details.cost || 0).toFixed(2)} | coveredQty=${Number(details.coveredQty || 0).toFixed(3)} | uncoveredQty=${Number(details.uncoveredQty || 0).toFixed(3)} | purchaseBases=${purchaseBases.join('/')} | compatiblePurchases=${compatible.length} | alternateBases=${alternateBases.join('/')} | unitOnlyBase=${best.base} | unitOnlyCost=${Number(best.details.cost || 0).toFixed(2)} | unitOnlyImpact=${unitOnlyImpact.toFixed(2)} | exactOtherScopePurchases=${exactOtherScope.length} | similarDifferentNamePurchases=${looseOtherName.length}`);
-      });
-    });
-    console.log(`[UNIT AUDIT DEBUG] Totals | underCostTreatments=${auditUnderCostCount} | unitMismatchTreatments=${auditUnitMismatchCount} | unitOnlyAdditionalCost=${auditUnitImpact.toFixed(2)} | otherImpactNotInferred=${auditOtherImpact.toFixed(2)}`);
-
-    // Temporary, strictly read-only correction manifest and FIFO dry run. Only
-    // physical units explicitly confirmed by the user are included here.
-    const confirmedPhysicalUnits = new Map([
-      ['himalayagel','ltr'], ['provetrhodobac','ltr'], ['calgophos','ltr'], ['challengersanti','ltr'], ['biomarinevirbac','ltr'], ['bloombooster','kg'], ['avantdflow','ltr'], ['keminacidlac','kg'], ['keminaquastemc','kg'], ['keminpathrol','ltr'], ['pondplus','kg'], ['ponddtox','kg'], ['nommonia','kg'], ['provetbenzatec80','ltr'], ['cpfzeoliteultra','kg'], ['pisancogrocid','kg'], ['pisancosanityz','ltr'], ['posidonfreeze80','ltr'], ['posidonlactact','kg'], ['posidonreleifsani','ltr']
-    ]);
-    const physicalUnitFor = name => confirmedPhysicalUnits.get(unitAuditLooseKey(name)) || '';
-    const displayPhysicalUnit = base => base === 'ltr' ? 'Ltr' : 'Kg';
-    const isScopeRecord = record => getPondwiseYear(record) === activePnlYear && pondwiseNormaliseCrop(record.crop) === selectedCrop;
-    const dryRunManifest = [], virtualPurchases = new Map(), virtualReturns = new Map(), virtualTreatments = new Map();
-    const addDryRun = (dataset, record, confirmed, correctionType, proposed) => {
-      const currentUnit = record.unit || '';
-      const currentStockUnit = record.stockUnit || getPackSizeInfo(record).unit || '';
-      const normalizedQty = Number(getNormalizedStockQuantity(record) || 0);
-      dryRunManifest.push({ dataset, record, confirmed, correctionType, proposed, currentUnit, currentStockUnit, normalizedQty });
-      console.log(`[UNIT CORRECTION DRY RUN] dataset=${dataset} | recordId=${record.id || ''} | date=${record.date || ''} | pond=${record.pond || record.pondId || ''} | vendor=${record.supplier || record.company || ''} | invoice=${record.invoiceNo || ''} | product=${record.name || record.productName || record.product || ''} | year=${getPondwiseYear(record)} | crop=${pondwiseNormaliseCrop(record.crop)} | quantity=${Number(record.qty || 0).toFixed(3)} | packSize=${record.packSize ?? ''} | normalizedQty=${normalizedQty.toFixed(3)} | currentUnit=${currentUnit} | currentStockUnit=${currentStockUnit} | currentBaseUnit=${dataset === 'Treatment' ? unitAuditBase(currentUnit) : unitAuditPurchaseBase(record)} | confirmedPhysicalUnit=${displayPhysicalUnit(confirmed)} | proposedUnit=${proposed.unit || currentUnit} | proposedStockUnit=${proposed.stockUnit || currentStockUnit} | correctionType=${correctionType}`);
-    };
-    const correctedPurchase = (record, confirmed) => {
-      const next = { ...record, stockUnit: displayPhysicalUnit(confirmed) };
-      if (['kg', 'ltr'].includes(String(record.unit || '').trim().toLowerCase())) next.unit = displayPhysicalUnit(confirmed);
-      return next;
-    };
-    (Array.isArray(purchases) ? purchases : []).filter(isScopeRecord).forEach(record => {
-      const confirmed = physicalUnitFor(record.name); if (!confirmed || String(record.category || '').trim().toLowerCase() === 'feed') return;
-      const current = unitAuditPurchaseBase(record); if (current === confirmed) return;
-      const proposed = correctedPurchase(record, confirmed);
-      const type = Math.abs(Number(getNormalizedStockQuantity(proposed) || 0) - Number(getNormalizedStockQuantity(record) || 0)) <= 0.000001 ? 'SAFE_PURCHASE_CORRECTION' : 'AMBIGUOUS_DO_NOT_CHANGE';
-      addDryRun('Purchase', record, confirmed, type, proposed);
-      if (type === 'SAFE_PURCHASE_CORRECTION') virtualPurchases.set(record, proposed);
-    });
-    (Array.isArray(stockReturns) ? stockReturns : []).filter(isScopeRecord).forEach(record => {
-      const confirmed = physicalUnitFor(record.name); if (!confirmed || String(record.category || '').trim().toLowerCase() === 'feed') return;
-      const current = unitAuditPurchaseBase(record); if (current === confirmed) return;
-      const proposed = correctedPurchase(record, confirmed);
-      const type = Math.abs(Number(getNormalizedStockQuantity(proposed) || 0) - Number(getNormalizedStockQuantity(record) || 0)) <= 0.000001 ? 'SAFE_STOCK_RETURN_CORRECTION' : 'AMBIGUOUS_DO_NOT_CHANGE';
-      addDryRun('Stock Return', record, confirmed, type, proposed);
-      if (type === 'SAFE_STOCK_RETURN_CORRECTION') virtualReturns.set(record, proposed);
-    });
-    debugTreatmentRows.forEach(record => {
-      const confirmed = physicalUnitFor(record.productName || record.product); if (!confirmed) return;
-      const current = unitAuditBase(record.unit || 'Kg'); if (current === confirmed) return;
-      const proposed = { ...record, unit: displayPhysicalUnit(confirmed) };
-      const type = Math.abs(getPondwiseTreatmentBaseQty(Number(proposed.qty || 0), proposed.unit) - getPondwiseTreatmentBaseQty(Number(record.qty || 0), record.unit)) <= 0.000001 ? 'SAFE_TREATMENT_CORRECTION' : 'AMBIGUOUS_DO_NOT_CHANGE';
-      addDryRun('Treatment', record, confirmed, type, proposed);
-      if (type === 'SAFE_TREATMENT_CORRECTION') virtualTreatments.set(record, proposed);
-    });
-    debugClosingItems.forEach(record => {
-      const confirmed = physicalUnitFor(record.name); if (!confirmed) return;
-      const current = unitAuditBase(record.unit || record.stockUnit || 'Kg'); if (current === confirmed) return;
-      const proposed = { ...record, unit: displayPhysicalUnit(confirmed), stockUnit: displayPhysicalUnit(confirmed) };
-      const type = Math.abs(Number(proposed.qty || 0) - Number(record.qty || 0)) <= 0.000001 ? 'SAFE_CLOSING_CORRECTION' : 'AMBIGUOUS_DO_NOT_CHANGE';
-      addDryRun('Closing Inventory', record, confirmed, type, proposed);
-    });
-    const virtualTreatmentCost = sourceRecord => {
-      const record = virtualTreatments.get(sourceRecord) || sourceRecord;
-      const key = unitAuditKey(record.productName || record.product), required = getPondwiseTreatmentBaseQty(Number(record.qty || 0), record.unit || 'Kg');
-      const targetUnit = unitAuditBase(record.unit || 'Kg'), lots = [];
-      (Array.isArray(purchases) ? purchases : []).filter(p => isScopeRecord(p) && unitAuditKey(p.name) === key && String(p.category || '').trim().toLowerCase() !== 'feed').forEach((source, sequence) => {
-        const p = virtualPurchases.get(source) || source;
-        if (unitAuditPurchaseBase(p) !== targetUnit) return;
-        const qty = Number(getNormalizedStockQuantity(p) || 0), price = Number(p.totalAmount || 0) > 0 ? Number(p.totalAmount) / qty : Number(p.unitPrice || 0);
-        if (qty > 0 && price > 0) lots.push({ date: String(p.date || '9999-12-31'), sequence, remaining: qty, price });
-      });
-      lots.sort((a,b) => a.date.localeCompare(b.date) || a.sequence - b.sequence);
-      const consume = qty => { let remaining = Number(qty || 0), cost = 0; for (const lot of lots) { if (remaining <= 0) break; const take = Math.min(lot.remaining, remaining); lot.remaining -= take; remaining -= take; cost += take * lot.price; } return { remaining, cost }; };
-      (Array.isArray(stockReturns) ? stockReturns : []).filter(r => isScopeRecord(r) && unitAuditKey(r.name) === key && String(r.date || '9999-12-31') <= String(record.date || '9999-12-31')).sort((a,b) => String(a.date || '').localeCompare(String(b.date || ''))).forEach(source => consume(getNormalizedStockQuantity(virtualReturns.get(source) || source)));
-      debugTreatmentRows.filter(t => String(t.id) !== String(sourceRecord.id) && unitAuditKey(t.productName || t.product) === key && (String(t.date || '9999-12-31') < String(record.date || '9999-12-31') || (String(t.date || '') === String(record.date || '') && String(t.id || '').localeCompare(String(sourceRecord.id || '')) < 0))).sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')) || String(a.id || '').localeCompare(String(b.id || ''))).forEach(source => { const t = virtualTreatments.get(source) || source; consume(getPondwiseTreatmentBaseQty(Number(t.qty || 0), t.unit || 'Kg')); });
-      return consume(required).cost;
-    };
-    let currentScopedTreatmentCost = 0, simulatedScopedTreatmentCost = 0;
-    debugTreatmentRows.forEach(record => {
-      const current = Number(getTreatmentCostDetails(record, activePnlYear, selectedCrop).cost || 0), simulated = virtualTreatmentCost(record);
-      if (debugPondIds.has(String(record.pondId || record.pond || ''))) { currentScopedTreatmentCost += current; simulatedScopedTreatmentCost += simulated; }
-      if (virtualTreatments.has(record) || physicalUnitFor(record.productName || record.product)) console.log(`[UNIT CORRECTION DRY RUN] FIFO | treatmentId=${record.id || ''} | product=${record.productName || record.product || ''} | currentCost=${current.toFixed(2)} | simulatedCost=${simulated.toFixed(2)} | delta=${(simulated - current).toFixed(2)} | status=${simulated > current + 0.005 ? 'UNIT_MISMATCH_RESOLVED' : (Number(getTreatmentCostDetails(record, activePnlYear, selectedCrop).uncoveredQty || 0) > 0 ? 'INSUFFICIENT_STOCK_REMAINS' : 'UNCHANGED')}`);
-    });
-    const simulatedPondCost = totalCost - currentScopedTreatmentCost + simulatedScopedTreatmentCost;
-    const manifestCounts = dryRunManifest.reduce((counts, item) => { counts[item.correctionType] = (counts[item.correctionType] || 0) + 1; return counts; }, {});
-    console.log(`[UNIT CORRECTION DRY RUN] SUMMARY | totalRecordsReviewed=${dryRunManifest.length} | safeTreatment=${manifestCounts.SAFE_TREATMENT_CORRECTION || 0} | safePurchase=${manifestCounts.SAFE_PURCHASE_CORRECTION || 0} | safeClosing=${manifestCounts.SAFE_CLOSING_CORRECTION || 0} | safeStockReturn=${manifestCounts.SAFE_STOCK_RETURN_CORRECTION || 0} | ambiguous=${manifestCounts.AMBIGUOUS_DO_NOT_CHANGE || 0} | currentTreatment=${currentScopedTreatmentCost.toFixed(2)} | simulatedTreatment=${simulatedScopedTreatmentCost.toFixed(2)} | treatmentIncrease=${(simulatedScopedTreatmentCost-currentScopedTreatmentCost).toFixed(2)} | expectedMedFert=542983.85 | remainingMedFertGap=${(542983.85-simulatedScopedTreatmentCost).toFixed(2)} | currentPondwise=${totalCost.toFixed(2)} | simulatedPondwise=${simulatedPondCost.toFixed(2)} | financeExpense=3789801.35 | remainingFinanceMinusPondwise=${(3789801.35-simulatedPondCost).toFixed(2)} | seedBasisDifference=-3000.00`);
-
-    // Temporary post-confirmed-unit residual reconciliation. Seed is deliberately
-    // excluded: this compares only Crop 1 Medicine/Fertilizer products.
-    const remainingProducts = new Map();
-    const remainingRow = (name, category = '') => {
-      const key = unitAuditKey(name);
-      if (!remainingProducts.has(key)) remainingProducts.set(key, { name: String(name || ''), category: String(category || ''), purchases: [], returns: [], closing: [], treatmentRows: [] });
-      const row = remainingProducts.get(key); if (category && !row.category) row.category = String(category); return row;
-    };
-    (Array.isArray(purchases) ? purchases : []).filter(p => isScopeRecord(p) && ['medicine','fertilizer'].includes(String(p.category || '').trim().toLowerCase())).forEach(p => remainingRow(p.name, p.category).purchases.push(p));
-    (Array.isArray(stockReturns) ? stockReturns : []).filter(r => isScopeRecord(r) && ['medicine','fertilizer'].includes(String(r.category || '').trim().toLowerCase())).forEach(r => remainingRow(r.name, r.category).returns.push(r));
-    debugClosingItems.filter(item => ['medicine','fertilizer'].includes(String(item.category || '').trim().toLowerCase())).forEach(item => remainingRow(item.name, item.category).closing.push(item));
-    debugTreatmentRows.forEach(t => { const row = remainingProducts.get(unitAuditKey(t.productName || t.product)); if (row) row.treatmentRows.push(t); });
-    let residualFinanceConsumed = 0, residualSimulatedTreatment = 0, unconfirmedUnitImpact = 0;
-    const residualRows = [];
-    [...remainingProducts.values()].forEach(row => {
-      const purchaseNet = row.purchases.reduce((s, p) => s + debugAmount(p), 0) - row.returns.reduce((s, r) => s + debugAmount(r), 0);
-      const closingValue = row.closing.reduce((s, item) => s + (Number(item.closingValue ?? item.value) || 0), 0);
-      const financeConsumed = purchaseNet - closingValue;
-      const treatmentCurrent = row.treatmentRows.filter(t => debugPondIds.has(String(t.pondId || t.pond || ''))).reduce((s, t) => s + (Number(getTreatmentCostDetails(t, activePnlYear, selectedCrop).cost) || 0), 0);
-      const treatmentSimulated = row.treatmentRows.filter(t => debugPondIds.has(String(t.pondId || t.pond || ''))).reduce((s, t) => s + virtualTreatmentCost(t), 0);
-      const difference = financeConsumed - treatmentSimulated;
-      const purchaseQty = row.purchases.reduce((s,p) => s + Number(getNormalizedStockQuantity(virtualPurchases.get(p) || p) || 0), 0);
-      const returnQty = row.returns.reduce((s,r) => s + Number(getNormalizedStockQuantity(virtualReturns.get(r) || r) || 0), 0);
-      const closingQty = row.closing.reduce((s,item) => s + Number(item.closingQty ?? item.qty ?? 0), 0);
-      const purchaseUnits = [...new Set(row.purchases.map(p => unitAuditPurchaseBase(virtualPurchases.get(p) || p)))];
-      const treatmentUnits = [...new Set(row.treatmentRows.map(t => unitAuditBase((virtualTreatments.get(t) || t).unit || 'Kg')))];
-      const unconfirmedConflict = !physicalUnitFor(row.name) && purchaseUnits.length && treatmentUnits.length && treatmentUnits.some(unit => !purchaseUnits.includes(unit));
-      let cause = 'OTHER_REMAINS';
-      if (Math.abs(difference) <= 0.005) cause = 'RECONCILED';
-      else if (unconfirmedConflict) cause = 'UNIT_MISMATCH_UNCONFIRMED';
-      else if (!row.treatmentRows.length) cause = 'NO_TREATMENT_USAGE_REMAINS';
-      else if (row.returns.length) cause = 'STOCK_RETURN_OR_INSUFFICIENT_STOCK_REMAINS';
-      else cause = 'INSUFFICIENT_STOCK_OR_UNRECORDED_USAGE_REMAINS';
-      residualFinanceConsumed += financeConsumed; residualSimulatedTreatment += treatmentSimulated;
-      if (unconfirmedConflict) unconfirmedUnitImpact += Math.max(0, difference);
-      residualRows.push({ row, financeConsumed, treatmentCurrent, treatmentSimulated, difference, cause, purchaseQty, returnQty, closingQty, purchaseUnits, treatmentUnits, unconfirmedConflict });
-    });
-    residualRows.sort((a,b) => b.difference - a.difference).forEach(item => {
-      const { row } = item;
-      console.log(`[REMAINING PNL GAP DEBUG] product=${row.name} | treatmentId=PRODUCT_TOTAL | date= | pond= | qty= | unit=${item.treatmentUnits.join('/') || ''} | currentFIFOcost=${item.treatmentCurrent.toFixed(2)} | expectedFIFOcost=${item.treatmentSimulated.toFixed(2)} | missingCost=${item.difference.toFixed(2)} | cause=${item.cause} | purchaseQtyAvailable=${(item.purchaseQty-item.returnQty).toFixed(3)} | purchaseUnit=${item.purchaseUnits.join('/') || ''} | treatmentUnit=${item.treatmentUnits.join('/') || ''} | closingQty=${item.closingQty.toFixed(3)} | stockReturnQty=${item.returnQty.toFixed(3)} | notes=financeConsumed:${item.financeConsumed.toFixed(2)}`);
-      if (item.unconfirmedConflict) console.log(`[UNCONFIRMED UNIT PRODUCTS] product=${row.name} | purchaseUnit=${item.purchaseUnits.join('/')} | treatmentUnit=${item.treatmentUnits.join('/')} | missingCost=${Math.max(0,item.difference).toFixed(2)} | recordCount=${row.treatmentRows.length}`);
-    });
-    const residualGap = residualFinanceConsumed - residualSimulatedTreatment;
-    console.log(`[REMAINING PNL GAP DEBUG] SUMMARY | financeMedFertConsumed=${residualFinanceConsumed.toFixed(2)} | currentPondwiseTreatment=${currentScopedTreatmentCost.toFixed(2)} | simulatedAfterConfirmedUnits=${simulatedScopedTreatmentCost.toFixed(2)} | remainingGap=${residualGap.toFixed(2)} | unconfirmedUnitProductsImpact=${unconfirmedUnitImpact.toFixed(2)} | expectedBaselineRemainingGap=19347.55 | seedExcluded=true`);
-
-    // Temporary record-level dry run for the three explicitly requested products.
-    // Posidon Releif Sani intentionally remains a separate exact identity from
-    // Posidon Relief Sani-1Ltr.
-    const finalAuditProducts = [
-      { label: 'Himalaya Gel', key: 'himalayagel', unit: 'ltr' },
-      { label: 'Kemin Pathrol', key: 'keminpathrol', unit: 'ltr' },
-      { label: 'Posidon Releif Sani', key: 'posidonreleifsani', unit: 'ltr' }
-    ];
-    const finalAuditMatch = (record, target, field = 'name') => unitAuditLooseKey(record?.[field] || record?.productName || record?.product) === target.key;
-    const finalAuditStatus = (dataset, record, target) => {
-      const currentBase = dataset === 'Treatment' ? unitAuditBase(record.unit || 'Kg') : unitAuditPurchaseBase(record);
-      if (currentBase === target.unit) return 'CORRECT_ALREADY';
-      if (dataset === 'Treatment') return virtualTreatments.has(record) ? 'SAFE_UNIT_CORRECTION' : 'AMBIGUOUS_DO_NOT_CHANGE';
-      if (dataset === 'Purchase') return virtualPurchases.has(record) ? 'SAFE_UNIT_CORRECTION' : 'AMBIGUOUS_DO_NOT_CHANGE';
-      if (dataset === 'Stock Return') return virtualReturns.has(record) ? 'SAFE_UNIT_CORRECTION' : 'AMBIGUOUS_DO_NOT_CHANGE';
-      const proposed = { ...record, unit: displayPhysicalUnit(target.unit), stockUnit: displayPhysicalUnit(target.unit) };
-      return Math.abs(Number(getNormalizedStockQuantity(proposed) || 0) - Number(getNormalizedStockQuantity(record) || 0)) <= 0.000001 ? 'SAFE_UNIT_CORRECTION' : 'AMBIGUOUS_DO_NOT_CHANGE';
-    };
-    const finalAuditValue = record => Number(record?.totalAmount ?? record?.value ?? record?.closingValue ?? ((Number(record?.qty) || 0) * (Number(record?.unitPrice) || 0))) || 0;
-    let finalAuditRecovered = 0;
-    finalAuditProducts.forEach(target => {
-      const purchaseRows = (Array.isArray(purchases) ? purchases : []).filter(r => getPurchaseYear(r) === activePnlYear && pondwiseNormaliseCrop(getPurchaseCrop(r)) === selectedCrop && finalAuditMatch(r, target));
-      const fifoPurchaseRows = purchaseRows.filter(isScopeRecord);
-      const treatmentRows = debugTreatmentRows.filter(r => finalAuditMatch(r, target, 'productName'));
-      const returnRows = (Array.isArray(stockReturns) ? stockReturns : []).filter(r => isScopeRecord(r) && finalAuditMatch(r, target));
-      const closingRows = debugClosingItems.filter(r => finalAuditMatch(r, target));
-      purchaseRows.forEach(r => {
-        const status = isScopeRecord(r) ? finalAuditStatus('Purchase', r, target) : 'SCOPE_MISMATCH_DO_NOT_CHANGE';
-        console.log(`[THREE PRODUCT FINAL AUDIT] dataset=Purchase | product=${target.label} | recordId=${r.id || ''} | date=${r.date || ''} | vendor=${r.supplier || ''} | invoice=${r.invoiceNo || ''} | quantity=${Number(r.qty || 0).toFixed(3)} | unit=${r.unit || ''} | stockUnit=${r.stockUnit || ''} | packSize=${r.packSize ?? ''} | normalizedQty=${Number(getNormalizedStockQuantity(r) || 0).toFixed(3)} | rate=${Number(r.unitPrice || 0).toFixed(2)} | value=${finalAuditValue(r).toFixed(2)} | financeYear=${getPurchaseYear(r)} | financeCrop=${getPurchaseCrop(r)} | fifoYear=${getPondwiseYear(r)} | fifoCrop=${pondwiseNormaliseCrop(r.crop)} | fifoScopeIncluded=${isScopeRecord(r)} | status=${status}`);
-      });
-      treatmentRows.forEach(r => console.log(`[THREE PRODUCT FINAL AUDIT] dataset=Treatment | product=${target.label} | recordId=${r.id || ''} | date=${r.date || ''} | pond=${r.pond || r.pondId || ''} | quantity=${Number(r.qty || 0).toFixed(3)} | unit=${r.unit || ''} | year=${getPondwiseYear(r)} | crop=${pondwiseNormaliseCrop(r.crop)} | currentFIFOcost=${Number(getTreatmentCostDetails(r, activePnlYear, selectedCrop).cost || 0).toFixed(2)} | status=${finalAuditStatus('Treatment', r, target)}`));
-      returnRows.forEach(r => console.log(`[THREE PRODUCT FINAL AUDIT] dataset=Stock Return | product=${target.label} | recordId=${r.id || ''} | date=${r.date || ''} | vendor=${r.supplier || ''} | invoice=${r.invoiceNo || ''} | quantity=${Number(r.qty || 0).toFixed(3)} | unit=${r.unit || ''} | stockUnit=${r.stockUnit || ''} | packSize=${r.packSize ?? ''} | normalizedQty=${Number(getNormalizedStockQuantity(r) || 0).toFixed(3)} | rate=${Number(r.unitPrice || 0).toFixed(2)} | value=${finalAuditValue(r).toFixed(2)} | year=${getPondwiseYear(r)} | crop=${pondwiseNormaliseCrop(r.crop)} | status=${finalAuditStatus('Stock Return', r, target)}`));
-      closingRows.forEach(r => console.log(`[THREE PRODUCT FINAL AUDIT] dataset=Closing Inventory | product=${target.label} | recordId=${r.id || ''} | quantity=${Number(r.closingQty ?? r.qty ?? 0).toFixed(3)} | unit=${r.unit || r.stockUnit || ''} | value=${finalAuditValue(r).toFixed(2)} | status=${finalAuditStatus('Closing Inventory', r, target)}`));
-      const financeConsumed = purchaseRows.reduce((s,r) => s + debugAmount(r), 0) - returnRows.reduce((s,r) => s + debugAmount(r), 0) - closingRows.reduce((s,r) => s + (Number(r.closingValue ?? r.value) || 0), 0);
-      const current = treatmentRows.filter(r => debugPondIds.has(String(r.pondId || r.pond || ''))).reduce((s,r) => s + (Number(getTreatmentCostDetails(r, activePnlYear, selectedCrop).cost) || 0), 0);
-      const simulated = treatmentRows.filter(r => debugPondIds.has(String(r.pondId || r.pond || ''))).reduce((s,r) => s + virtualTreatmentCost(r), 0);
-      finalAuditRecovered += simulated - current;
-      console.log(`[THREE PRODUCT FINAL AUDIT] product=${target.label} | financeConsumed=${financeConsumed.toFixed(2)} | fifoScopePurchases=${fifoPurchaseRows.length} | excludedFinancePurchases=${(purchaseRows.length-fifoPurchaseRows.length)} | current=${current.toFixed(2)} | simulated=${simulated.toFixed(2)} | recovered=${(simulated-current).toFixed(2)} | remaining=${(financeConsumed-simulated).toFixed(2)}`);
-    });
-    console.log(`[THREE PRODUCT FINAL AUDIT] combinedRecovered=${finalAuditRecovered.toFixed(2)} | previousResidual=19347.55 | newResidual=${(19347.55-finalAuditRecovered).toFixed(2)} | fullResidualAfterAllConfirmed=${residualGap.toFixed(2)}`);
-
-    // Temporary zero-scope raw search for diagnosing name/scope differences in
-    // the focused three-product audit. It reads every loaded record before any
-    // Finance or FIFO scope predicate is applied.
-    const rawAuditEntries = [
-      ['Purchase', Array.isArray(purchases) ? purchases : []],
-      ['Treatment', Array.isArray(treatments) ? treatments : []],
-      ['Stock Return', Array.isArray(stockReturns) ? stockReturns : []],
-      ['Closing Inventory', getCrop1ClosingPackedStockEntries()],
-      ['Catalogue', Array.isArray(masterCatalogue) ? masterCatalogue : []]
-    ];
-    ['himalaya', 'pathrol'].forEach(search => {
-      const variants = new Map();
-      const matchesByDataset = new Map();
-      rawAuditEntries.forEach(([dataset, rows]) => {
-        const matches = rows.filter(record => unitAuditKey(record.name || record.productName || record.product).includes(search));
-        matchesByDataset.set(dataset, matches);
-        matches.forEach(record => {
-          const rawName = String(record.name || record.productName || record.product || '');
-          variants.set(rawName, (variants.get(rawName) || 0) + 1);
-          const financeIncluded = dataset === 'Purchase' ? getPurchaseYear(record) === activePnlYear && pondwiseNormaliseCrop(getPurchaseCrop(record)) === selectedCrop : (dataset === 'Stock Return' ? getRecordYear(record) === activePnlYear && pondwiseNormaliseCrop(getRecordCrop(record)) === selectedCrop : false);
-          const fifoIncluded = dataset === 'Purchase' || dataset === 'Stock Return' || dataset === 'Treatment' ? isScopeRecord(record) : String(record.cycleId || '') === cycleIdFor(activePnlYear, selectedCrop);
-          console.log(`[RAW PRODUCT RECORD SEARCH] dataset=${dataset} | recordId=${record.id || record.productId || ''} | rawProductName=${rawName} | date=${record.date || ''} | rawYear=${record.year ?? record.cropYear ?? ''} | rawCrop=${record.crop || record.cropCycle || ''} | cycleId=${record.cycleId || ''} | pond=${record.pond || record.pondId || ''} | vendor=${record.supplier || record.company || ''} | invoice=${record.invoiceNo || ''} | quantity=${Number(record.qty || 0).toFixed(3)} | unit=${record.unit || ''} | stockUnit=${record.stockUnit || ''} | packSize=${record.packSize ?? ''} | normalizedQty=${Number(getNormalizedStockQuantity(record) || 0).toFixed(3)} | rate=${Number(record.unitPrice || 0).toFixed(2)} | value=${Number(record.totalAmount ?? record.value ?? record.closingValue ?? 0).toFixed(2)} | financeDerivedYear=${dataset === 'Purchase' ? getPurchaseYear(record) : getRecordYear(record)} | financeDerivedCrop=${dataset === 'Purchase' ? getPurchaseCrop(record) : getRecordCrop(record)} | fifoDerivedYear=${getPondwiseYear(record)} | fifoRawCrop=${pondwiseNormaliseCrop(record.crop)} | financeIncludesIn2026Crop1=${financeIncluded} | fifoIncludesIn2026Crop1=${fifoIncluded}`);
-          if (financeIncluded && !fifoIncluded) console.log(`[RAW PRODUCT RECORD SEARCH] recordId=${record.id || ''} | result=SCOPE_MISMATCH_FOUND | field=p.crop/cropCycle differs from Finance cycleId-aware purchase scope`);
-        });
-      });
-      [...variants.entries()].sort((a,b) => a[0].localeCompare(b[0])).forEach(([name, count]) => console.log(`[PRODUCT NAME VARIANT] search=${search} | storedName=${name} | count=${count}`));
-      const rawPurchases = matchesByDataset.get('Purchase') || [], rawReturns = matchesByDataset.get('Stock Return') || [], rawClosings = matchesByDataset.get('Closing Inventory') || [], rawTreatments = matchesByDataset.get('Treatment') || [];
-      const financePurchase = rawPurchases.filter(r => getPurchaseYear(r) === activePnlYear && pondwiseNormaliseCrop(getPurchaseCrop(r)) === selectedCrop).reduce((s,r) => s + debugAmount(r), 0);
-      const financeReturn = rawReturns.filter(r => getRecordYear(r) === activePnlYear && pondwiseNormaliseCrop(getRecordCrop(r)) === selectedCrop).reduce((s,r) => s + debugAmount(r), 0);
-      const closingValue = rawClosings.filter(r => String(r.cycleId || '') === cycleIdFor(activePnlYear, selectedCrop)).reduce((s,r) => s + (Number(r.closingValue ?? r.value) || 0), 0);
-      const fifoCost = rawTreatments.filter(isScopeRecord).reduce((s,r) => s + (Number(getTreatmentCostDetails(r, activePnlYear, selectedCrop).cost) || 0), 0);
-      console.log(`[HIMALAYA PATHROL ROOT CAUSE] productSearch=${search} | rawPurchaseRecords=${rawPurchases.length} | rawTreatmentRecords=${rawTreatments.length} | rawClosingRecords=${rawClosings.length} | financeConsumed=${(financePurchase-financeReturn-closingValue).toFixed(2)} | fifoCost=${fifoCost.toFixed(2)} | residual=${(financePurchase-financeReturn-closingValue-fifoCost).toFixed(2)}`);
-    });
-
-    // Temporary approved-record manifest. This is ID-targeted, read-only, and
-    // intentionally refuses to infer replacements for absent or unsafe records.
-    const finalManifestSpecs = [
-      ['Purchase','pur_1789753815909_36_8mmf5y','Himalaya Gel','stockUnit','Ltr'], ['Purchase','pur_1789753815909_59_jtbspe','Himalaya Gel','stockUnit','Ltr'],
-      ['Treatment','t_1790241987181_380','Himalaya Gel','unit','Ltr'], ['Treatment','t_1790241987181_430','Himalaya Gel','unit','Ltr'], ['Treatment','t_1790241987181_484','Himalaya Gel','unit','Ltr'], ['Treatment','t_1790241987181_511','Himalaya Gel','unit','Ltr'], ['Treatment','t_1790241987181_542','Himalaya Gel','unit','Ltr'],
-      ['Purchase','pur_1789753815909_11_ryfqgz','Kemin Pathrol','stockUnit','Ltr'],
-      ['Purchase','pur_1789753815909_118_jvmyfk','Posidon Releif Sani','stockUnit','Ltr'], ['Closing Inventory','c1close-1790272853196-0-cf19v','Posidon Releif Sani','unit','Ltr']
-    ];
-    const finalManifestLookup = dataset => dataset === 'Purchase' ? purchases : dataset === 'Treatment' ? treatments : dataset === 'Closing Inventory' ? getCrop1ClosingPackedStockEntries() : [];
-    const finalManifestRecords = [];
-    finalManifestSpecs.forEach(([dataset, id, product, field, newValue]) => {
-      const record = finalManifestLookup(dataset).find(row => String(row.id || '') === id);
-      if (!record) { console.log(`[FINAL CORRECTION MANIFEST] dataset=${dataset} | recordId=${id} | product=${product} | field=${field} | SAFE=false | reason=RECORD_NOT_FOUND`); return; }
-      const proposed = { ...record, [field]: newValue };
-      const quantityBefore = Number(record.qty ?? record.closingQty ?? 0), quantityAfter = Number(proposed.qty ?? proposed.closingQty ?? 0);
-      const normalizedBefore = Number(getNormalizedStockQuantity(record) || 0), normalizedAfter = Number(getNormalizedStockQuantity(proposed) || 0);
-      const valueBefore = finalAuditValue(record), valueAfter = finalAuditValue(proposed);
-      const financeScope = dataset === 'Purchase' ? getPurchaseYear(record) === activePnlYear && pondwiseNormaliseCrop(getPurchaseCrop(record)) === selectedCrop : dataset === 'Treatment' ? isScopeRecord(record) : String(record.cycleId || '') === cycleIdFor(activePnlYear, selectedCrop);
-      const unchanged = quantityBefore === quantityAfter && Math.abs(normalizedBefore-normalizedAfter) <= 0.000001 && Math.abs(valueBefore-valueAfter) <= 0.000001;
-      const safe = financeScope && unchanged;
-      console.log(`[FINAL CORRECTION MANIFEST] dataset=${dataset} | recordId=${id} | product=${product} | field=${field} | oldValue=${record[field] ?? ''} | newValue=${newValue} | quantityBefore=${quantityBefore.toFixed(3)} | quantityAfter=${quantityAfter.toFixed(3)} | normalizedQtyBefore=${normalizedBefore.toFixed(3)} | normalizedQtyAfter=${normalizedAfter.toFixed(3)} | valueBefore=${valueBefore.toFixed(2)} | valueAfter=${valueAfter.toFixed(2)} | SAFE=${safe} | reason=${safe ? 'UNIT_METADATA_ONLY_INVARIANTS_VERIFIED' : 'AMBIGUOUS_DO_NOT_CHANGE_SCOPE_OR_INVARIANT_FAILURE'}`);
-      if (safe) {
-        if (dataset === 'Purchase') virtualPurchases.set(record, proposed);
-        if (dataset === 'Treatment') virtualTreatments.set(record, proposed);
-        finalManifestRecords.push({ dataset, record, product });
-      }
-    });
-    if (finalManifestRecords.length !== 10) console.log(`[FINAL CORRECTION MANIFEST] DISCREPANCY | expectedSafeRecords=10 | actualSafeRecords=${finalManifestRecords.length} | action=STOP_DO_NOT_ASSUME`);
-    const finalProductIds = {
-      'Himalaya Gel': ['t_1790241987181_380','t_1790241987181_430','t_1790241987181_484','t_1790241987181_511','t_1790241987181_542'],
-      'Kemin Pathrol': ['t_1790241987181_390','t_1790241987181_436','t_1790241987181_490','t_1790241987181_520','t_1790241987181_548'],
-      'Posidon Releif Sani': ['t_1790241987181_232','t_1790241987181_444','t_1790241987181_498']
-    };
-    const finalProductPurchaseIds = {
-      'Himalaya Gel': ['pur_1789797164934_0_g8txdl','pur_1789753815909_36_8mmf5y','pur_1789753815909_59_jtbspe'],
-      'Kemin Pathrol': ['pur_1789753815909_11_ryfqgz'],
-      'Posidon Releif Sani': ['pur_1789753815909_118_jvmyfk']
-    };
-    const finalProductClosingIds = { 'Himalaya Gel': [], 'Kemin Pathrol': [], 'Posidon Releif Sani': ['c1close-1790272853196-0-cf19v'] };
-    let manifestRecovered = 0;
-    Object.entries(finalProductIds).forEach(([product, ids]) => {
-      const rows = ids.map(id => treatments.find(t => String(t.id || '') === id)).filter(Boolean);
-      const before = rows.reduce((s,r) => s + (Number(getTreatmentCostDetails(r, activePnlYear, selectedCrop).cost) || 0), 0);
-      const after = rows.reduce((s,r) => s + virtualTreatmentCost(r), 0);
-      const financeConsumed = finalProductPurchaseIds[product].map(id => purchases.find(p => String(p.id || '') === id)).filter(Boolean).reduce((s,r) => s + debugAmount(r), 0) - finalProductClosingIds[product].map(id => getCrop1ClosingPackedStockEntries().find(r => String(r.id || '') === id)).filter(Boolean).reduce((s,r) => s + (Number(r.closingValue ?? r.value) || 0), 0);
-      manifestRecovered += after - before;
-      console.log(`[FINAL THREE PRODUCT SIMULATION] product=${product} | before=${before.toFixed(2)} | after=${after.toFixed(2)} | recovered=${(after-before).toFixed(2)} | remaining=${(financeConsumed-after).toFixed(2)} | treatmentRecordsFound=${rows.length}`);
-    });
-    console.log(`[FINAL THREE PRODUCT SIMULATION] combinedRecovered=${manifestRecovered.toFixed(2)} | startingMedFertResidual=19347.55 | newMedFertResidual=${(19347.55-manifestRecovered).toFixed(2)} | expectedSafeManifestRecords=10 | actualSafeManifestRecords=${finalManifestRecords.length}`);
-  }
-
   body.innerHTML = result.map(r => `
     <tr>
       <td><strong>${escapeHtml(getPondDisplayName(r.pond))}</strong><div style="font-size:.65rem;color:#64748b;">${escapeHtml(r.crop)} • ${escapeHtml(String(r.pond.pondType || 'Pond'))}</div></td>
@@ -24362,17 +23981,234 @@ function getFarmDashboardSelectedCycleRecords(records) {
   });
 }
 
-function getPondAttentionDecision({ hasPreviousSample, adg, targetAdg, growthTrend, feedStatus, survivalTrend }) {
-  const growthPoor = adg !== null && targetAdg !== null && adg < targetAdg * .7;
-  let status = 'On Track', message = 'Growth, feed response and estimated survival are within the current expected range.';
-  if (!hasPreviousSample || adg === null) { status = 'Insufficient Data'; message = 'A further sampling is needed before current growth can be judged.'; }
-  else if (growthPoor && feedStatus === 'Adequate' && survivalTrend === 'Declining') { status = 'Attention'; message = 'Growth is below target while feed is adequate and estimated survival is declining.'; }
-  else if (growthPoor && feedStatus === 'Below requirement') { status = 'Check Feeding'; message = 'Feed is below the chart requirement; check feeding before judging pond growth.'; }
-  else if (growthPoor || growthTrend === 'Slowing') { status = 'Watch'; message = feedStatus === 'Adequate' ? 'Growth is slowing despite adequate feed. Watch the next sampling.' : 'Growth needs review at the next sampling.'; }
-  else if (survivalTrend === 'Declining') { status = 'Watch'; message = 'Estimated survival is declining beyond the practical tolerance. Monitor the next sampling.'; }
-  return { status, message };
+
+function piV1Text(value) { return String(value ?? '').trim(); }
+function piV1Crop(value) { return piV1Text(value).toLowerCase(); }
+function piV1Has(value) { return value !== undefined && value !== null && value !== ''; }
+function piV1Finite(value, positive = false) { const n = Number(value); return Number.isFinite(n) && (positive ? n > 0 : n >= 0) ? n : null; }
+function piV1Date(value) {
+  const raw = piV1Text(value);
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const y = Number(match[1]), m = Number(match[2]), d = Number(match[3]);
+    const ms = Date.UTC(y, m - 1, d);
+    const check = new Date(ms);
+    if (check.getUTCFullYear() !== y || check.getUTCMonth() !== m - 1 || check.getUTCDate() !== d) return null;
+    return { ms, key: raw.slice(0, 10) };
+  }
+  const ms = Date.parse(raw);
+  if (!Number.isFinite(ms)) return null;
+  const date = new Date(ms);
+  return { ms: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()), key: date.toISOString().slice(0, 10) };
+}
+function piV1SavedMillis(record) {
+  for (const key of ['updatedAt', 'savedAt', 'createdAt', 'timestamp']) {
+    const value = record?.[key];
+    if (value && typeof value.toMillis === 'function') { const ms = Number(value.toMillis()); if (Number.isFinite(ms)) return ms; }
+    if (value instanceof Date) { const ms = value.getTime(); if (Number.isFinite(ms)) return ms; }
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string' && value.trim()) { const ms = Date.parse(value); if (Number.isFinite(ms)) return ms; }
+  }
+  return null;
+}
+function piV1RecordId(record) { return piV1Text(record?.firestoreId ?? record?.id ?? record?.legacyRecordId); }
+function piV1ParseCycle(value) {
+  const match = piV1Text(value).match(/^(\d{4})\|(.+)$/i);
+  if (!match) return null;
+  const year = Number(match[1]), crop = piV1Crop(match[2]);
+  return Number.isInteger(year) && year >= 2000 && crop ? { year, crop, id: year + '|' + crop } : null;
+}
+function piV1Ref(value) {
+  const raw = piV1Text(value);
+  if (!raw) return null;
+  let match = raw.match(/^POND_(\d{4})_CROP_(\d+)_(P\d+)$/i);
+  if (match) return { key: match[3].toUpperCase(), embedded: { year: Number(match[1]), crop: 'crop ' + Number(match[2]) } };
+  match = raw.match(/^(\d{4})\|crop\s*(\d+)__(P\d+)$/i);
+  if (match) return { key: match[3].toUpperCase(), embedded: { year: Number(match[1]), crop: 'crop ' + Number(match[2]) } };
+  if (/^P\d+$/i.test(raw)) return { key: raw.toUpperCase(), embedded: null };
+  return { key: raw.toLowerCase(), embedded: null };
+}
+function piV1PondRefs(pond) {
+  return [pond?.id, pond?.name, pond?.pondName].map(piV1Ref).filter(Boolean);
+}
+function piV1PondMatchesValues(pond, values) {
+  const refs = (values || []).map(piV1Ref).filter(Boolean);
+  if (!refs.length) return false;
+  const pondRefs = piV1PondRefs(pond);
+  return refs.every(ref => pondRefs.some(candidate => candidate.key === ref.key));
+}
+function piV1RecordRefs(record, transfer = false) {
+  return transfer ? [record?.toPondId, record?.toPond] : [record?.pondId, record?.pond, record?.pondName];
+}
+function piV1RecordMatchesPond(record, pond, transfer = false) { return piV1PondMatchesValues(pond, piV1RecordRefs(record, transfer)); }
+function piV1ExplicitCycle(record) {
+  const years = ['year', 'cropYear'].filter(key => piV1Has(record?.[key])).map(key => Number(record[key]));
+  const crops = ['crop', 'cropCycle'].filter(key => piV1Has(record?.[key])).map(key => piV1Crop(record[key]));
+  if (years.some(year => !Number.isInteger(year) || year < 2000) || crops.some(crop => !crop)) return { invalid: true };
+  if (new Set(years).size > 1 || new Set(crops).size > 1) return { invalid: true };
+  return { year: years[0] ?? null, crop: crops[0] ?? null };
+}
+function piV1ResolveCycle(record, activeCycle, allPonds, transfer = false) {
+  const explicit = piV1ExplicitCycle(record);
+  if (explicit.invalid) return null;
+  const recordRefs = piV1RecordRefs(record, transfer).map(piV1Ref).filter(Boolean);
+  const embeddedCycles = recordRefs.map(ref => ref.embedded).filter(Boolean);
+  if (embeddedCycles.length && new Set(embeddedCycles.map(c => c.year + '|' + c.crop)).size > 1) return null;
+  const embedded = embeddedCycles[0] || null;
+  const parsed = piV1ParseCycle(record?.cycleId);
+  const candidates = [
+    explicit.year !== null && explicit.crop ? { year: explicit.year, crop: explicit.crop } : null,
+    parsed,
+    embedded
+  ].filter(Boolean);
+  if (candidates.length && new Set(candidates.map(c => c.year + '|' + c.crop)).size > 1) return null;
+  let resolved = candidates[0] || null;
+  if (!resolved) {
+    const matches = (Array.isArray(allPonds) ? allPonds : []).filter(pond => piV1RecordMatchesPond(record, pond, transfer));
+    const cycles = matches.map(pond => {
+      const year = Number(pond?.year ?? pond?.cropYear);
+      const crop = piV1Crop(pond?.crop ?? pond?.cropCycle);
+      return Number.isInteger(year) && year >= 2000 && crop ? { year, crop } : null;
+    }).filter(Boolean);
+    if (cycles.length !== 1) return null;
+    resolved = cycles[0];
+  }
+  if (explicit.year !== null && explicit.year !== resolved.year) return null;
+  if (explicit.crop !== null && explicit.crop !== resolved.crop) return null;
+  const active = { year: Number(activeCycle?.year), crop: piV1Crop(activeCycle?.crop) };
+  if (!Number.isInteger(active.year) || !active.crop || resolved.year !== active.year || resolved.crop !== active.crop) return null;
+  return { ...resolved, id: resolved.year + '|' + resolved.crop };
+}
+function piV1Abw(record) {
+  const weightFields = ['sampleWeight', 'testWeight'].filter(key => piV1Has(record?.[key]));
+  const weights = weightFields.map(key => piV1Finite(record[key], true));
+  const count = piV1Finite(record?.count, true);
+  const validWeights = weights.filter(value => value !== null);
+  if (validWeights.length > 1 && validWeights.some(value => Math.abs(value - validWeights[0]) > 1e-9)) return null;
+  if (validWeights.length && count !== null) return validWeights[0] / count;
+  const saved = piV1Finite(record?.abw, true);
+  return saved === null ? null : saved;
+}
+function piV1FeedValue(record, primary, alias) {
+  const present = [primary, alias].filter(key => piV1Has(record?.[key]));
+  if (!present.length) return null;
+  const values = present.map(key => piV1Finite(record[key], false));
+  if (values.some(value => value === null)) return null;
+  return values.every(value => Math.abs(value - values[0]) <= 1e-9) ? values[0] : null;
+}
+function piV1Feed(record) {
+  const previous = piV1FeedValue(record, 'prevCumulativeFeed', 'lastFeed');
+  const current = piV1FeedValue(record, 'currCumulativeFeed', 'currentFeed');
+  if (previous === null || current === null || current < previous) return { previous, current, net: null };
+  return { previous, current, net: current - previous };
+}
+function piV1ChooseSameDate(records) {
+  const groups = new Map();
+  records.forEach(record => { const list = groups.get(record.dateKey) || []; list.push(record); groups.set(record.dateKey, list); });
+  return [...groups.values()].map(list => {
+    if (list.length === 1) return list[0];
+    const identifiable = list.filter(item => piV1RecordId(item.sample));
+    if (identifiable.length !== list.length) return null;
+    return identifiable.sort((a, b) => {
+      const at = piV1SavedMillis(a.sample), bt = piV1SavedMillis(b.sample);
+      if (at !== null || bt !== null) {
+        if (at === null) return 1;
+        if (bt === null) return -1;
+        if (at !== bt) return bt - at;
+      }
+      return piV1RecordId(b.sample).localeCompare(piV1RecordId(a.sample));
+    })[0];
+  }).filter(Boolean).sort((a, b) => a.dateMs - b.dateMs || piV1RecordId(a.sample).localeCompare(piV1RecordId(b.sample)));
+}
+function piV1StockedPopulation(pond, dateKey, activeCycle, allPonds, transfers) {
+  const type = piV1Crop(pond?.pondType ?? pond?.type).replace(/\s+/g, '');
+  if (type === 'transferin') {
+    return (Array.isArray(transfers) ? transfers : []).filter(transfer => piV1ResolveCycle(transfer, activeCycle, allPonds, true) && piV1RecordMatchesPond(transfer, pond, true) && (!piV1Date(transfer?.date) || piV1Date(transfer.date).key <= dateKey)).reduce((sum, transfer) => sum + Number(transfer.number ?? transfer.transferredNumber ?? transfer.count ?? 0), 0) || null;
+  }
+  for (const key of ['initialStockingNumber', 'stockingCount', 'stockedCount', 'pieces']) {
+    if (piV1Has(pond?.[key])) { const value = piV1Finite(pond[key], false); return value !== null && value > 0 ? value : null; }
+  }
+  return null;
+}
+function piV1HarvestPieces(harvest) {
+  const stored = Number(harvest?.totalPieces ?? harvest?.pieces);
+  if (Number.isFinite(stored) && stored > 0) return stored;
+  const biomass = Number(harvest?.biomass ?? harvest?.biomassKg ?? harvest?.weight);
+  const count = Number(harvest?.count ?? harvest?.piecesPerKg);
+  return Number.isFinite(biomass) && biomass > 0 && Number.isFinite(count) && count > 0 ? biomass * count : 0;
+}
+function piV1Decision(input) {
+  const missing = [!input.feedAvailable && 'Feed Unavailable', !input.survivalAvailable && 'Survival Unavailable'].filter(Boolean);
+  const suffix = missing.length ? ' ' + missing.join('. ') + '.' : '';
+  const fmt = value => Number.isFinite(value) ? value.toFixed(2) : '—';
+  if (!input.hasAdg) return { status: 'Insufficient Data', message: 'At least two valid chronological sampling records with calculable ADG are required.' + suffix };
+  if (input.persistentPoorGrowth) return { status: 'Attention', message: 'ADG ' + fmt(input.adg) + ' g/day stayed below 70% of target for two consecutive valid intervals.' + suffix };
+  if (input.repeatedSurvivalDecline) return { status: 'Attention', message: 'Estimated survival declined by at least 15 percentage points in two consecutive valid intervals.' + suffix };
+  if (input.growthPoor && input.feedStatus === 'Above range') return { status: 'Attention', message: 'ADG ' + fmt(input.adg) + ' g/day is below target while feed is above the requirement.' + suffix };
+  if (input.growthPoor && input.feedStatus === 'Below requirement' && input.survivalDecline) return { status: 'Watch', message: 'ADG is below target, feed is below requirement, and estimated survival declined by ' + Math.abs(input.survivalChange).toFixed(1) + ' percentage points. Recheck the next valid sampling before escalation.' + suffix };
+  if (input.growthPoor && input.feedStatus === 'Below requirement') return { status: 'Check Feeding', message: 'ADG ' + fmt(input.adg) + ' g/day is below target while feed is below the chart requirement.' + suffix };
+  if (input.growthPoor && input.survivalDecline) return { status: 'Attention', message: 'ADG ' + fmt(input.adg) + ' g/day is below target and estimated survival declined by ' + Math.abs(input.survivalChange).toFixed(1) + ' percentage points.' + suffix };
+  if (input.growthPoor) return { status: 'Watch', message: 'ADG ' + fmt(input.adg) + ' g/day is below 70% of the ' + fmt(input.targetAdg) + ' g/day target.' + suffix };
+  if (input.feedStatus === 'Below requirement') return { status: 'Watch', message: 'Feed is below 80% of the present requirement.' + suffix };
+  if (input.feedStatus === 'Above range') return { status: 'Watch', message: 'Feed is above 120% of the present requirement.' + suffix };
+  if (input.survivalDecline) return { status: 'Watch', message: 'Estimated survival declined by ' + Math.abs(input.survivalChange).toFixed(1) + ' percentage points.' + suffix };
+  return { status: 'On Track', message: 'Available growth, feed and estimated-survival indicators are within the approved range.' + suffix };
+}
+function piV1Build(pond, config) {
+  const { activeCycle, allPonds, samples, harvests, transfers, expectedFeedPerLakh, isClosed } = config;
+  const candidates = (Array.isArray(samples) ? samples : []).map(sample => {
+    const cycle = piV1ResolveCycle(sample, activeCycle, allPonds, false);
+    const date = piV1Date(sample?.date);
+    const abw = piV1Abw(sample);
+    return cycle && date && abw !== null && piV1RecordMatchesPond(sample, pond, false) ? { sample, dateMs: date.ms, dateKey: date.key, abw } : null;
+  }).filter(Boolean);
+  const selected = piV1ChooseSameDate(candidates);
+  const records = selected.map(item => item.sample);
+  const samePondHarvests = (Array.isArray(harvests) ? harvests : []).filter(harvest => piV1ResolveCycle(harvest, activeCycle, allPonds, false) && piV1RecordMatchesPond(harvest, pond, false));
+  const harvestedThrough = dateKey => samePondHarvests.filter(h => { const date = piV1Date(h?.date); return date && date.key <= dateKey; }).reduce((sum, h) => sum + piV1HarvestPieces(h), 0);
+  const history = [];
+  selected.forEach((entry, index) => {
+    const previous = history[index - 1] || null;
+    const priorDateKey = previous?.dateKey || piV1Date(pond?.stockingDate)?.key || null;
+    const priorDateMs = previous?.dateMs ?? piV1Date(pond?.stockingDate)?.ms ?? null;
+    const feedIntervalDays = priorDateMs !== null ? Math.max(1, Math.round((entry.dateMs - priorDateMs) / 86400000)) : null;
+    const feed = piV1Feed(entry.sample);
+    const actualFeedPerDay = feed.net !== null && feed.net > 0 && feedIntervalDays ? feed.net / feedIntervalDays : null;
+    const chartFeedPerLakh = entry.abw >= 3 && entry.abw <= 30 ? Number(expectedFeedPerLakh(entry.abw)) : null;
+    const estimatedLivePieces = actualFeedPerDay !== null && Number.isFinite(chartFeedPerLakh) && chartFeedPerLakh > 0 ? actualFeedPerDay / chartFeedPerLakh * 100000 : null;
+    const denominator = piV1StockedPopulation(pond, entry.dateKey, activeCycle, allPonds, transfers);
+    const estimatedSurvivalPct = estimatedLivePieces !== null && denominator !== null ? (estimatedLivePieces + harvestedThrough(entry.dateKey)) / denominator * 100 : null;
+    const intervalDays = previous ? (entry.dateMs - previous.dateMs) / 86400000 : null;
+    const hasAdg = !!previous && Number.isFinite(intervalDays) && intervalDays > 0;
+    const gain = hasAdg ? entry.abw - previous.abw : null;
+    const adg = hasAdg ? gain / intervalDays : null;
+    const targetAdg = hasAdg ? (previous.abw < 5 ? .18 : previous.abw < 10 ? .21 : .29) : null;
+    const growthPoor = Number.isFinite(adg) && targetAdg !== null && adg < targetAdg * .7;
+    const previousAdg = index > 1 ? history[index - 1].adg : null;
+    const growthTrend = !Number.isFinite(adg) || !Number.isFinite(previousAdg) ? '—' : adg > previousAdg + .03 ? 'Improving' : adg < previousAdg - .03 ? 'Slowing' : 'Stable';
+    const intervalHarvestedPieces = previous ? samePondHarvests.filter(h => { const date = piV1Date(h?.date); return date && date.key > previous.dateKey && date.key <= entry.dateKey; }).reduce((sum, h) => sum + piV1HarvestPieces(h), 0) : harvestedThrough(entry.dateKey);
+    let expectedPopulationBasis = previous?.estimatedLivePieces ?? denominator;
+    if (expectedPopulationBasis !== null) expectedPopulationBasis -= intervalHarvestedPieces;
+    if (!(expectedPopulationBasis >= 0)) expectedPopulationBasis = null;
+    const expectedFeedPerDay = Number.isFinite(chartFeedPerLakh) && expectedPopulationBasis !== null ? chartFeedPerLakh * expectedPopulationBasis / 100000 : null;
+    const feedRatio = actualFeedPerDay !== null && expectedFeedPerDay !== null && expectedFeedPerDay > 0 ? actualFeedPerDay / expectedFeedPerDay : null;
+    const feedStatus = entry.abw > 30 ? 'Outside feed-chart range' : feedRatio === null ? 'Feed Unavailable' : feedRatio < .8 ? 'Below requirement' : feedRatio > 1.2 ? 'Above range' : 'Adequate';
+    const survivalChange = estimatedSurvivalPct !== null && previous?.estimatedSurvivalPct != null ? estimatedSurvivalPct - previous.estimatedSurvivalPct : null;
+    const survivalDecline = survivalChange !== null && survivalChange <= -15;
+    const survivalTrend = survivalChange === null ? 'Survival Unavailable' : survivalDecline ? 'Declining' : 'Stable';
+    const decision = piV1Decision({ hasAdg: Number.isFinite(adg), adg, targetAdg, growthPoor, persistentPoorGrowth: growthPoor && previous?.growthPoor === true, feedStatus, feedAvailable: feedRatio !== null, survivalAvailable: estimatedSurvivalPct !== null, survivalDecline, repeatedSurvivalDecline: survivalDecline && previous?.survivalDecline === true, survivalChange });
+    history.push({ sample: entry.sample, date: entry.sample.date, dateKey: entry.dateKey, dateMs: entry.dateMs, abw: entry.abw, gain, adg, targetAdg, growthTrend, growthPoor, persistentPoorGrowth: growthPoor && previous?.growthPoor === true, actualFeedPerDay, chartFeedPerLakh, expectedFeedPerDay, expectedPopulationBasis, feedStatus, feedRatio, feedAvailable: feedRatio !== null, estimatedLivePieces, estimatedSurvivalPct, effectiveStockedPopulation: denominator, survivalChange, survivalTrend, survivalDecline, repeatedSurvivalDecline: survivalDecline && previous?.survivalDecline === true, intervalDays, intervalFeed: feed.net, cumulativeFeed: feed.current, previousEstimatedLivePieces: previous?.estimatedLivePieces ?? null, intervalHarvestedPieces, cumulativeHarvestedPieces: harvestedThrough(entry.dateKey), pondAttention: decision.status, pondAttentionMessage: decision.message });
+  });
+  const latestRow = history[history.length - 1] || null;
+  const previousRow = history[history.length - 2] || null;
+  const finalHarvest = samePondHarvests.some(h => ['full', 'final harvest'].includes(piV1Crop(h?.type ?? h?.harvestType)));
+  const closed = !!isClosed || finalHarvest;
+  if (!latestRow) return { pond, records: [], history: [], latest: null, previous: null, status: 'Insufficient Data', message: 'No valid sampling data is available for this pond.', due: !closed, isClosed: closed, samplingStatus: closed ? 'Closed / Not Due' : 'Sampling required' };
+  const due = !closed && Math.floor((Date.now() - latestRow.dateMs) / 86400000) > 7;
+  return { pond, records, history, latest: latestRow.sample, previous: previousRow?.sample || null, abw: latestRow.abw, doc: null, adg: latestRow.adg, target: latestRow.targetAdg, growthTrend: latestRow.growthTrend, actualFeed: latestRow.actualFeedPerDay, expectedFeed: latestRow.expectedFeedPerDay, feedStatus: latestRow.feedStatus, feedRatio: latestRow.feedRatio, survival: latestRow.estimatedSurvivalPct, survivalTrend: latestRow.survivalTrend, survivalChange: latestRow.survivalChange, status: latestRow.pondAttention, message: latestRow.pondAttentionMessage, due, isClosed: closed, samplingStatus: closed ? 'Closed / Not Due' : due ? 'Sampling Due' : 'Current', previousEstimatedLivePieces: previousRow?.estimatedLivePieces ?? null, intervalHarvestedPieces: latestRow.intervalHarvestedPieces, expectedPopulationBasis: latestRow.expectedPopulationBasis, estimatedLivePieces: latestRow.estimatedLivePieces, cumulativeHarvestedPieces: latestRow.cumulativeHarvestedPieces, chartFeedPerLakh: latestRow.chartFeedPerLakh };
 }
 
+function getPondAttentionDecision(input) { return piV1Decision(input || {}); }
 function getSurvivalTrendDisplay(row, previousRow) {
   const numeric = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
   const abw = Number(row?.abw);
@@ -24381,103 +24217,18 @@ function getSurvivalTrendDisplay(row, previousRow) {
   if (row?.survivalTrend === 'Stable' || row?.survivalTrend === 'Declining') return row.survivalTrend;
   return 'Data Required';
 }
-
 function buildPondIntelligence(pond, samplesForCycle, harvestsForCycle, transfersForCycle) {
-  const dayMs = 24 * 60 * 60 * 1000;
-  const records = (Array.isArray(samplesForCycle) ? samplesForCycle : []).filter(sample => {
-    const ref = String(sample.pondId || sample.pond || sample.pondName || '').trim();
-    return ref === String(pond.id) || ref === String(pond.name || pond.pondName || '');
-  }).sort((a, b) => new Date(a.date) - new Date(b.date));
-  const samePondHarvests = (Array.isArray(harvestsForCycle) ? harvestsForCycle : []).filter(harvest => {
-    const ref = String(harvest.pondId || harvest.pond || harvest.pondName || '').trim();
-    return ref === String(pond.id) || ref === String(pond.name || pond.pondName || '');
+  const model = piV1Build(pond, {
+    activeCycle,
+    allPonds: ponds,
+    samples: Array.isArray(samples) ? samples : samplesForCycle,
+    harvests: Array.isArray(harvests) ? harvests : harvestsForCycle,
+    transfers: Array.isArray(stockTransfers) ? stockTransfers : transfersForCycle,
+    expectedFeedPerLakh: getExpectedFeedPer1Lakh,
+    isClosed: typeof window.blueCrestIsPondClosed === 'function' && window.blueCrestIsPondClosed(pond.id, activeCycle.id)
   });
-  const harvestPieces = harvest => {
-    const stored = Number(harvest.totalPieces || harvest.pieces || 0);
-    if (stored > 0) return stored;
-    return calculateHarvestPiecesAndAbw(harvest.biomass ?? harvest.biomassKg ?? harvest.weight, harvest.count ?? harvest.piecesPerKg).pieces;
-  };
-  const harvestsThrough = date => samePondHarvests.filter(harvest => String(harvest.date || '') <= String(date || ''));
-  const harvestedPiecesThrough = date => harvestsThrough(date).reduce((sum, harvest) => sum + harvestPieces(harvest), 0);
-  const isFinalHarvest = harvest => ['full', 'final harvest'].includes(String(harvest.type || harvest.harvestType || '').trim().toLowerCase());
-  const isClosed = samePondHarvests.some(isFinalHarvest) || (typeof window.blueCrestIsPondClosed === 'function' && window.blueCrestIsPondClosed(pond.id, activeCycle.id));
-  const chartFeed = abw => Number.isFinite(abw) && abw >= 3 && abw <= 30 ? Number(getExpectedFeedPer1Lakh(abw)) : null;
-  const initialPopulation = date => {
-    const isTransferIn = String(pond.pondType || '').trim() === 'transferIn';
-    const stocked = isTransferIn
-      ? (Array.isArray(transfersForCycle) ? transfersForCycle : []).filter(transfer => {
-          const toPond = String(transfer.toPondId || transfer.toPond || '').trim();
-          const samePond = toPond === String(pond.id) || toPond === String(pond.name || pond.pondName || '');
-          return samePond && (!date || !transfer.date || String(transfer.date) <= String(date));
-        }).reduce((sum, transfer) => sum + Number(transfer.number || transfer.transferredNumber || transfer.count || 0), 0)
-      : Number(getPondwiseStockedPieces(pond) || 0);
-    return stocked > 0 ? stocked : null;
-  };
-  const estimateFor = (sample, index) => {
-    if (!sample) return { abw:null, chartFeedPerLakh:null, actualFeedPerDay:null, estimatedLivePieces:null, estimatedSurvivalPct:null, intervalDays:null, netFeed:null };
-    const previous = index > 0 ? records[index - 1] : null;
-    const abw = Number(sample.testWeight || sample.sampleWeight || 0) / Number(sample.count || 0);
-    const priorDate = previous?.date || pond.stockingDate;
-    const intervalDays = priorDate && sample.date ? Math.max(1, Math.round((new Date(sample.date) - new Date(priorDate)) / dayMs)) : null;
-    const netFeed = Number(sample.currentFeed || 0) - Number(sample.lastFeed || 0);
-    const actualFeedPerDay = intervalDays && netFeed > 0 ? netFeed / intervalDays : null;
-    const chartFeedPerLakh = chartFeed(abw);
-    const estimatedLivePieces = actualFeedPerDay !== null && chartFeedPerLakh !== null ? actualFeedPerDay / chartFeedPerLakh * 100000 : null;
-    const denominator = initialPopulation(sample.date);
-    const estimatedSurvivalPct = estimatedLivePieces !== null && denominator !== null
-      ? (estimatedLivePieces + harvestedPiecesThrough(sample.date)) / denominator * 100
-      : null;
-    return { abw, chartFeedPerLakh, actualFeedPerDay, estimatedLivePieces, estimatedSurvivalPct, intervalDays, netFeed };
-  };
-  const history = [];
-  records.forEach((sample, index) => {
-    const previousSample = index ? records[index - 1] : null;
-    const current = estimateFor(sample, index);
-    const previous = index ? history[index - 1] : null;
-    const intervalDays = previousSample ? Math.round((new Date(sample.date) - new Date(previousSample.date)) / dayMs) : null;
-    const gain = previousSample ? current.abw - previous.abw : null;
-    const adg = previousSample && intervalDays > 0 ? gain / intervalDays : null;
-    const targetAdg = previousSample ? (previous.abw < 5 ? .18 : previous.abw < 10 ? .21 : .29) : null;
-    const previousAdg = index > 1 ? history[index - 1].adg : null;
-    const growthTrend = adg === null || previousAdg === null ? '—' : adg > previousAdg + .03 ? 'Improving' : adg < previousAdg - .03 ? 'Slowing' : 'Stable';
-    const intervalHarvestedPieces = previousSample ? samePondHarvests.filter(harvest => String(harvest.date || '') > String(previousSample.date || '') && String(harvest.date || '') <= String(sample.date || '')).reduce((sum, harvest) => sum + harvestPieces(harvest), 0) : harvestedPiecesThrough(sample.date);
-    let expectedPopulationBasis = previous?.estimatedLivePieces ?? initialPopulation(sample.date);
-    if (expectedPopulationBasis !== null) expectedPopulationBasis -= intervalHarvestedPieces;
-    if (!(expectedPopulationBasis >= 0)) expectedPopulationBasis = null;
-    const expectedFeedPerDay = current.chartFeedPerLakh !== null && expectedPopulationBasis !== null ? current.chartFeedPerLakh * expectedPopulationBasis / 100000 : null;
-    const feedStatus = current.abw > 30 ? 'Outside feed-chart range' : current.chartFeedPerLakh === null || current.actualFeedPerDay === null || expectedFeedPerDay === null ? 'Insufficient data' : current.actualFeedPerDay < expectedFeedPerDay * .8 ? 'Below requirement' : current.actualFeedPerDay > expectedFeedPerDay * 1.2 ? 'Above range' : 'Adequate';
-    const survivalChange = current.estimatedSurvivalPct !== null && previous?.estimatedSurvivalPct != null ? current.estimatedSurvivalPct - previous.estimatedSurvivalPct : null;
-    const survivalTrend = survivalChange === null ? 'Insufficient Data' : survivalChange <= -10 ? 'Declining' : 'Stable';
-    const decision = getPondAttentionDecision({ hasPreviousSample:!!previousSample, adg, targetAdg, growthTrend, feedStatus, survivalTrend });
-    history.push({ sample, previousSample, date:sample.date, doc:calculateMetrics(pond.id, sample.date, sample.testWeight || sample.sampleWeight, sample.count, sample.lastFeed, sample.currentFeed, sample.id).doc, ...current, previousAbw:previous?.abw ?? null, gain, adg, targetAdg, growthTrend, previousEstimatedLivePieces:previous?.estimatedLivePieces ?? null, intervalHarvestedPieces, expectedPopulationBasis, expectedFeedPerDay, feedStatus, cumulativeHarvestedPieces:harvestedPiecesThrough(sample.date), previousSurvivalPct:previous?.estimatedSurvivalPct ?? null, survivalChange, survivalTrend, pondAttention:decision.status, pondAttentionMessage:decision.message, cumulativeFeed:sample.currentFeed ?? null, intervalFeed:current.netFeed });
-  });
-  const latest = records[records.length - 1];
-  const previous = records[records.length - 2];
-  if (!latest) return { pond, records, history, status:'Insufficient Data', latest:null, message:'No sampling data has been recorded for this pond.', due:!isClosed, isClosed, samplingStatus:isClosed ? 'Closed / Not Due' : 'Sampling required' };
-  const current = history[history.length - 1];
-  const prior = history[history.length - 2] || null;
-  const intervalDays = current.intervalDays;
-  const adg = current.adg;
-  const target = current.targetAdg;
-  const growthTrend = current.growthTrend;
-  const intervalHarvestedPieces = current.intervalHarvestedPieces;
-  const expectedPopulationBasis = current.expectedPopulationBasis;
-  const expectedFeed = current.expectedFeedPerDay;
-  const feedStatus = current.feedStatus;
-  const survivalChange = current.survivalChange;
-  const survivalTrend = current.survivalTrend;
-  const growthPoor = adg !== null && target !== null && adg < target * .7;
-  let status = current.pondAttention, message = current.pondAttentionMessage;
-  if (isClosed) {
-    if (!previous || adg === null) message = 'Historical sampling data is insufficient to judge growth before final harvest.';
-    else if (growthPoor && feedStatus === 'Adequate' && survivalTrend === 'Declining') message = 'Growth was below target while feed was adequate and estimated survival declined before final harvest.';
-    else if (growthPoor && feedStatus === 'Below requirement') message = 'Feed was below the chart requirement before final harvest.';
-    else if (growthPoor || growthTrend === 'Slowing') message = feedStatus === 'Adequate' ? 'Growth slowed despite adequate feed before final harvest.' : 'Growth was below the expected range before final harvest.';
-    else if (survivalTrend === 'Declining') message = 'Estimated survival declined beyond the practical tolerance before final harvest.';
-    else message = 'Growth, feed response and estimated survival were within the expected range before final harvest.';
-  }
-  const due = !isClosed && Math.floor((Date.now() - new Date(latest.date).getTime()) / dayMs) > 7;
-  return { pond, records, history, latest, previous, abw:current.abw, doc:calculateMetrics(pond.id, latest.date, latest.testWeight || latest.sampleWeight, latest.count, latest.lastFeed, latest.currentFeed, latest.id).doc, adg, target, growthTrend, actualFeed:current.actualFeedPerDay, expectedFeed, feedStatus, survival:current.estimatedSurvivalPct, survivalTrend, survivalChange, status, message, due, isClosed, samplingStatus:isClosed ? 'Closed / Not Due' : due ? 'Sampling Due' : 'Current', previousEstimatedLivePieces:prior?.estimatedLivePieces ?? null, intervalHarvestedPieces, expectedPopulationBasis, estimatedLivePieces:current.estimatedLivePieces, cumulativeHarvestedPieces:harvestedPiecesThrough(latest.date), chartFeedPerLakh:current.chartFeedPerLakh, previousSurvival:prior?.estimatedSurvivalPct ?? null };
+  if (model.latest) model.doc = calculateMetrics(pond.id, model.latest.date, model.latest.testWeight || model.latest.sampleWeight, model.latest.count, model.latest.lastFeed ?? model.latest.prevCumulativeFeed, model.latest.currentFeed ?? model.latest.currCumulativeFeed, model.latest.id).doc;
+  return model;
 }
 
 // Read-only chronological interval intelligence for a selected-cycle pond.
@@ -26129,6 +25880,7 @@ document.addEventListener('change', (e) => {
     }
   }
   async function directPurchaseSave(event){
+    assertEntitlementWriteAllowed();
     if(event){ event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.(); }
     const form=document.getElementById('purchaseForm');
     const btn=document.getElementById('savePurchaseDirectBtn');
@@ -26434,6 +26186,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.blueCrestIsPondClosed=isPondClosed;
   window.blueCrestIsCropClosed=isCropClosed;
   window.blueCrestAssertOperationalWrite=function(opts){
+    try { assertEntitlementWriteAllowed(); } catch (error) { return deny(`🔒 View-Only Access\n\n${error.message}`); }
     const cid=String(opts?.cycleId || activeC().id || '');
     if(isCropClosed(cid)) return deny(`🔒 Crop Closed\n\n${activeC().year} • ${activeC().crop} is closed. No new, edited, or deleted operational data can be entered until the crop is reactivated from the laptop.`);
     const pid=String(opts?.pondId || '');
@@ -26905,6 +26658,17 @@ function hdLatestSample(pondId){
   });
   return rows[0]||null;
 }
+function hdSampleMarketSize(sample){
+  const sampleWeight=Number(sample?.sampleWeight);
+  const testWeight=Number(sample?.testWeight);
+  const rawWeight=Number.isFinite(sampleWeight)&&sampleWeight>0?sampleWeight:(Number.isFinite(testWeight)&&testWeight>0?testWeight:null);
+  const rawCount=Number(sample?.count);
+  if(rawWeight!==null&&Number.isFinite(rawCount)&&rawCount>0){
+    return {countPerKg:rawCount*1000/rawWeight,abw:rawWeight/rawCount};
+  }
+  const abw=Number(sample?.abw);
+  return Number.isFinite(abw)&&abw>0?{countPerKg:1000/abw,abw}:null;
+}
 function hdPondCostToDate(pond){
   const year=Number(activeCycle.year), crop=pondwiseNormaliseCrop(activeCycle.crop);
   const scopedPonds=(Array.isArray(ponds)?ponds:[]).filter(p=>getPondwiseYear(p)===year&&pondwiseNormaliseCrop(p.crop||p.cropCycle)===crop);
@@ -26918,18 +26682,18 @@ function hdPondCostToDate(pond){
 }
 function hdCurrentMetrics(pond){
   const sample=hdLatestSample(pond.id);
-  if(!sample) return {sample:null,count:0,abw:0,survival:0,biomass:0,doc:null,dailyFeed:0};
+  if(!sample) return {sample:null,count:0,abw:0,survival:0,biomass:0,doc:null,dailyFeed:0,marketSizeAvailable:false};
   const m=calculateMetrics(pond.id,sample.date,sample.testWeight,sample.count,sample.lastFeed,sample.currentFeed,sample.id);
-  // Sampling is the source of truth for the current position. Count is rounded
-  // to a whole market-size number; ABW is then derived from that rounded count.
-  const count=hdRoundCount(sample.count);
-  const abw=count>0?hdAbwFromCount(count):(Number(m.abw)||0);
   const stocked=getPondwiseStockedPieces(pond);
   const survival=Number(m.estSurvivalPct);
   const safeSurvival=Number.isFinite(survival)?survival:0;
+  const marketSize=hdSampleMarketSize(sample);
+  if(!marketSize) return {sample,count:0,abw:0,survival:safeSurvival,biomass:0,doc:m.doc,dailyFeed:Number(m.weeklyAvgFeed)||0,marketSizeAvailable:false};
+  const count=marketSize.countPerKg;
+  const abw=marketSize.abw;
   const biomass=stocked>0&&safeSurvival>0&&count>0?(stocked*safeSurvival/100)/count:0;
   const expectedDaily=abw>0&&stocked>0?(getExpectedFeedPer1Lakh(abw)/100000)*stocked:0;
-  return {sample,count,abw,survival:safeSurvival,biomass,doc:m.doc,dailyFeed:Number(m.weeklyAvgFeed)||expectedDaily||0};
+  return {sample,count,abw,survival:safeSurvival,biomass,doc:m.doc,dailyFeed:Number(m.weeklyAvgFeed)||expectedDaily||0,marketSizeAvailable:true};
 }
 function hdDefaultPrice(pond){
   const rows=(Array.isArray(harvests)?harvests:[]).filter(h=>{
@@ -27011,6 +26775,19 @@ function hdRender(){
   const key=String(activeCycle.id)+'__'+String(pond.id);
   const cur=hdCurrentMetrics(pond);
   const cost=hdPondCostToDate(pond);
+  if(!cur.marketSizeAvailable){
+    cards.innerHTML=`
+      <div class="hd-card"><span>DOC</span><strong>${cur.doc??'—'} d</strong></div>
+      <div class="hd-card"><span>Current Count</span><strong>—</strong><small>Market size unavailable</small></div>
+      <div class="hd-card"><span>Current ABW</span><strong>—</strong><small>Market size unavailable</small></div>
+      <div class="hd-card"><span>Est. Survival</span><strong>${cur.survival?cur.survival.toFixed(1):'—'}%</strong></div>
+      <div class="hd-card"><span>Est. Biomass</span><strong>—</strong><small>Requires valid market size</small></div>
+      <div class="hd-card"><span>Cost to Date</span><strong>₹${Math.round(cost.total).toLocaleString('en-IN')}</strong><small>Used for projected P/L</small></div>`;
+    banner.className='hd-decision hd-status-yellow';
+    banner.innerHTML='<div class="hd-decision-main"><h3>🟡 Market size unavailable</h3><p>The latest sampling record needs valid sample weight and shrimp sampled values, or a valid ABW, before Harvest Decision can calculate a recommendation.</p></div>';
+    body.innerHTML='<tr><td colspan="12" class="hd-empty">Harvest Decision is unavailable until the latest sampling provides a valid market size.</td></tr>';
+    return;
+  }
   // Harvest Now price is edited directly in the table. Keep one source of truth
   // for today's market price: state[0].price.
   const state=hdScenarioState[key] ||= {};
@@ -27031,8 +26808,8 @@ function hdRender(){
   const stocked=getPondwiseStockedPieces(pond);
   cards.innerHTML=`
     <div class="hd-card"><span>DOC</span><strong>${cur.doc??'—'} d</strong></div>
-    <div class="hd-card"><span>Current Count</span><strong>${cur.count?cur.count.toLocaleString('en-IN'):'—'} pcs/kg</strong><small>Market size</small></div>
-    <div class="hd-card"><span>Current ABW</span><strong>${cur.abw?cur.abw.toFixed(2):'—'} g</strong><small>1000 ÷ count</small></div>
+    <div class="hd-card"><span>Current Count</span><strong>${cur.count?hdRoundCount(cur.count).toLocaleString('en-IN'):'—'} pcs/kg</strong><small>Market size</small></div>
+    <div class="hd-card"><span>Current ABW</span><strong>${cur.abw?cur.abw.toFixed(2):'—'} g</strong><small>Latest sampling</small></div>
     <div class="hd-card"><span>Est. Survival</span><strong>${cur.survival?cur.survival.toFixed(1):'—'}%</strong></div>
     <div class="hd-card"><span>Est. Biomass</span><strong>${cur.biomass?cur.biomass.toFixed(1):'—'} kg</strong><small>${stocked.toLocaleString('en-IN')} stocked pcs</small></div>
     <div class="hd-card"><span>Cost to Date</span><strong>₹${Math.round(cost.total).toLocaleString('en-IN')}</strong><small>Used for projected P/L</small></div>`;
@@ -27050,11 +26827,12 @@ function hdRender(){
   state[0].price=todayPrice;
   const calc=(sc)=>{
     const d=state[sc.days];
+    const currentCount=Number(d.count);
+    const currentAbw=Number(d.abw);
     const c=hdRoundCount(d.count);
-    const abw=d.days===0?hdAbwFromCount(c):(d.abw>0?Number(d.abw):hdAbwFromCount(c));
-    const roundedCount=d.days===0?c:hdRoundCount(d.count);
-    const finalCount=roundedCount||hdCountFromAbw(abw);
-    const finalAbw=d.days===0?hdAbwFromCount(finalCount):abw;
+    const abw=sc.days===0?(Number.isFinite(currentAbw)&&currentAbw>0?currentAbw:0):(d.abw>0?Number(d.abw):hdAbwFromCount(c));
+    const finalCount=sc.days===0?(Number.isFinite(currentCount)&&currentCount>0?currentCount:0):(hdRoundCount(d.count)||hdCountFromAbw(abw));
+    const finalAbw=abw;
     // Survival is measured from sampling. For future scenarios there is no
     // future sampling yet, so use the latest known survival unchanged.
     const survival=Math.max(0,Math.min(120,Number(cur.survival)||0));
@@ -27099,7 +26877,7 @@ function hdRender(){
     const rowClass=r.days===0?'hd-now':(isBest?'hd-best':'');
     return `<tr class="${rowClass}">
       <td><strong>${r.label}</strong>${isBest?'<div style="font-size:.58rem;color:#087443;font-weight:900">BEST PROJECTED</div>':''}<button type="button" class="hd-breakdown-btn" data-hd-breakdown="${r.days}">Cost Breakdown</button></td>
-      <td><input type="number" min="1" step="1" data-hd-field="count" data-days="${r.days}" value="${r.count||''}" ${r.days===0?'disabled':''}></td>
+      <td><input type="number" min="1" step="1" data-hd-field="count" data-days="${r.days}" value="${r.days===0?(hdRoundCount(r.count)||''):(r.count||'')}" ${r.days===0?'disabled':''}></td>
       <td><input type="number" min="0.01" step="0.01" data-hd-field="abw" data-days="${r.days}" value="${r.abw?r.abw.toFixed(2):''}" ${r.days===0?'disabled':''}></td>
       <td><input type="number" min="0" max="120" step="0.1" data-hd-field="survival" data-days="${r.days}" value="${r.survival?r.survival.toFixed(1):''}" disabled title="Uses latest sampling survival"></td>
       <td class="hd-number"><strong>${r.biomass?r.biomass.toFixed(1):'—'}</strong></td>
@@ -27168,16 +26946,19 @@ function hdRefreshDecisionCalculations(){
   const stocked=getPondwiseStockedPieces(pond);
   const cost=hdPondCostToDate(pond);
   const cur=hdCurrentMetrics(pond);
+  if(!cur.marketSizeAvailable){hdRender();return;}
   const scenarios=[{days:0,label:'Harvest Now'},{days:7,label:'+ 7 Days'},{days:14,label:'+ 14 Days'},{days:21,label:'+ 21 Days'}];
   // Future survival remains equal to the latest actual sampling survival.
   scenarios.forEach(sc=>{ if(state[sc.days]) state[sc.days].survival=cur.survival;
     if(sc.days>0) state[sc.days].feedPerDay=Math.round(Number(state[sc.days].feedPerDay)||0); });
   const calc=(sc)=>{
     const d=state[sc.days]||{};
+    const currentCount=Number(d.count);
+    const currentAbw=Number(d.abw);
     const c=hdRoundCount(d.count);
-    const abw=sc.days===0?hdAbwFromCount(c):(Number(d.abw)>0?Number(d.abw):hdAbwFromCount(c));
-    const finalCount=hdRoundCount(d.count)||hdCountFromAbw(abw);
-    const finalAbw=sc.days===0?hdAbwFromCount(finalCount):abw;
+    const abw=sc.days===0?(Number.isFinite(currentAbw)&&currentAbw>0?currentAbw:0):(Number(d.abw)>0?Number(d.abw):hdAbwFromCount(c));
+    const finalCount=sc.days===0?(Number.isFinite(currentCount)&&currentCount>0?currentCount:0):(hdRoundCount(d.count)||hdCountFromAbw(abw));
+    const finalAbw=abw;
     const survival=Math.max(0,Math.min(120,Number(cur.survival)||0));
     const biomass=stocked>0&&survival>0&&finalCount>0?(stocked*survival/100)/finalCount:0;
     const revenue=biomass*(Number(d.price)||0);
@@ -27233,12 +27014,15 @@ function hdOpenBreakdown(days){
   const d=state[Number(days)]||{};
   const cost=hdPondCostToDate(pond);
   const cur=hdCurrentMetrics(pond);
+  if(!cur.marketSizeAvailable)return;
   const stocked=getPondwiseStockedPieces(pond);
   const scenarioDays=Number(days)||0;
+  const currentCount=Number(d.count);
+  const currentAbw=Number(d.abw);
   const count=hdRoundCount(d.count);
-  const abw=scenarioDays===0?hdAbwFromCount(count):(Number(d.abw)>0?Number(d.abw):hdAbwFromCount(count));
-  const finalCount=scenarioDays===0?count:(hdRoundCount(d.count)||hdCountFromAbw(abw));
-  const finalAbw=scenarioDays===0?hdAbwFromCount(finalCount):abw;
+  const abw=scenarioDays===0?(Number.isFinite(currentAbw)&&currentAbw>0?currentAbw:0):(Number(d.abw)>0?Number(d.abw):hdAbwFromCount(count));
+  const finalCount=scenarioDays===0?(Number.isFinite(currentCount)&&currentCount>0?currentCount:0):(hdRoundCount(d.count)||hdCountFromAbw(abw));
+  const finalAbw=abw;
   const survival=Math.max(0,Math.min(120,Number(cur.survival)||0));
   const biomass=stocked>0&&survival>0&&finalCount>0?(stocked*survival/100)/finalCount:0;
   const price=Number(d.price)||0;
@@ -28259,309 +28043,12 @@ window.openCashExpenseAnalysis=()=>{state.year='';state.scope='ALL';state.group=
   };
   document.addEventListener('click', event => { if (event.target?.id === 'openDetailedVendorStatementBtn') window.openDetailedVendorStatement(); });
 })();
-</script><script id="bluecrest-live-posidon-identity-audit">
-/* Temporary manual-only runtime diagnostic. No Firebase calls or mutations. */
-window.blueCrestAuditLivePosidonIdentity = function blueCrestAuditLivePosidonIdentity() {
-  const pids=['pur_1789753815909_68_5uqqu9','pur_1789753815909_79_v3dpa6'], tids=['t_1790241987181_102','t_1790241987181_118','t_1790241987181_121','t_1790241987181_128','t_1790241987181_162','t_1790241987181_165','t_1790241987181_193','t_1790241987181_197','t_1790241987181_211','t_1790241987181_216','t_1790241987181_221','t_1790241987181_226','t_1790241987181_316','t_1790241987181_330','t_1790241987181_333','t_1790241987181_336','t_1790241987181_467','t_1790241987181_471','t_1790241987181_477','t_1790241987181_94'], key=v=>String(v||'').trim().toLowerCase(), raw=r=>({id:r?.id,firestoreId:r?.firestoreId,name:r?.name,productName:r?.productName,product:r?.product,productId:r?.productId,invoiceNo:r?.invoiceNo,date:r?.date,qty:r?.qty,quantity:r?.quantity,unit:r?.unit,purchaseUnit:r?.purchaseUnit,packSize:r?.packSize,stockUnit:r?.stockUnit,pondId:r?.pondId,pond:r?.pond,year:r?.year,crop:r?.crop,cycleId:r?.cycleId});
-  const ps=(Array.isArray(purchases)?purchases:[]).filter(r=>pids.includes(String(r.id))||pids.includes(String(r.firestoreId))),ts=(Array.isArray(treatments)?treatments:[]).filter(r=>tids.includes(String(r.id))||tids.includes(String(r.firestoreId)));
-  const pkeys=[...new Set(ps.map(r=>key(r.name)))],tkeys=[...new Set(ts.map(r=>key(r.productName)))],active=ts.filter(r=>typeof isRecordInActiveCycle==='function'&&isRecordInActiveCycle(r)),excluded=ts.filter(r=>!active.includes(r));
-  const inv=typeof getProductInventorySummary==='function'?getProductInventorySummary().filter(x=>key(x.name).includes('posidon suprem')):[];
-  const contributing=ts.filter(r=>pkeys.includes(key(r.productName))&&active.includes(r)).map(raw),master=(Array.isArray(masterCatalogue)?masterCatalogue:[]).filter(r=>key(r.name).includes('posidon suprem')).map(raw);
-  const result={PURCHASE_RECORDS_FOUND:ps.length,PURCHASE_RAW:ps.map(raw),HISTORICAL_TREATMENTS_FOUND:ts.length,HISTORICAL_TREATMENT_TOTAL:ts.reduce((s,r)=>s+(Number(r.qty)||0),0),TREATMENT_RAW:ts.map(raw),PURCHASE_KEYS:pkeys,TREATMENT_KEYS:tkeys,EXACT_MATCH:pkeys.length===1&&tkeys.length===1&&pkeys[0]===tkeys[0],ACTIVE_CYCLE:typeof activeCycle==='undefined'?null:{id:activeCycle.id,year:activeCycle.year,crop:activeCycle.crop},IN_ACTIVE:active.length,OUTSIDE_ACTIVE:excluded.length,EXCLUDED_BY_CYCLE:excluded.reduce((m,r)=>{const k=`${r.year}|${r.crop}|${r.cycleId}`;(m[k]??=[]).push(r.id);return m},{}),CURRENT_INVENTORY_ROWS:inv,CONTRIBUTING_TREATMENTS:contributing,PRODUCT_MASTER_MATCHES:master};console.log('[LIVE POSIDON IDENTITY AUDIT]',result);return result;
-};
 </script>
-<script type="text/plain" id="retired-live-unit-correction-precheck">
-/* Temporary, manually invoked, read-only Firebase precheck. No write API is used. */
-window.blueCrestUnitCorrectionPrecheck = async function blueCrestUnitCorrectionPrecheck() {
-  const manifest = [
-    { dataset:'Purchase', collection:'purchases', id:'pur_1789753815909_36_8mmf5y', product:'Himalaya Gel', field:'stockUnit', oldValue:'Kg', newValue:'Ltr', qty:2, packSize:30, normalizedQty:60, value:9450 },
-    { dataset:'Purchase', collection:'purchases', id:'pur_1789753815909_59_jtbspe', product:'Himalaya Gel', field:'stockUnit', oldValue:'Kg', newValue:'Ltr', qty:2, packSize:30, normalizedQty:60, value:9450 },
-    { dataset:'Treatment', collection:'treatments', id:'t_1790241987181_380', product:'Himalaya Gel', field:'unit', oldValue:'Kg', newValue:'Ltr', qty:36.165 },
-    { dataset:'Treatment', collection:'treatments', id:'t_1790241987181_430', product:'Himalaya Gel', field:'unit', oldValue:'Kg', newValue:'Ltr', qty:35.546 },
-    { dataset:'Treatment', collection:'treatments', id:'t_1790241987181_484', product:'Himalaya Gel', field:'unit', oldValue:'Kg', newValue:'Ltr', qty:49.472 },
-    { dataset:'Treatment', collection:'treatments', id:'t_1790241987181_511', product:'Himalaya Gel', field:'unit', oldValue:'Kg', newValue:'Ltr', qty:48.548 },
-    { dataset:'Treatment', collection:'treatments', id:'t_1790241987181_542', product:'Himalaya Gel', field:'unit', oldValue:'Kg', newValue:'Ltr', qty:40.269 },
-    { dataset:'Purchase', collection:'purchases', id:'pur_1789753815909_11_ryfqgz', product:'Kemin Pathrol', field:'stockUnit', oldValue:'Kg', newValue:'Ltr', qty:1, normalizedQty:1, value:4500 },
-    { dataset:'Purchase', collection:'purchases', id:'pur_1789753815909_118_jvmyfk', product:'Posidon Releif Sani', field:'stockUnit', oldValue:'Kg', newValue:'Ltr', qty:4, normalizedQty:4, value:4888 },
-    { dataset:'Closing Inventory', collection:'crop1ClosingPackedStock', id:'c1close-1790272853196-0-cf19v', product:'Posidon Releif Sani', field:'unit', oldValue:'Kg', newValue:'Ltr', qty:2, value:2444 }
-  ];
-  const control = { collection:'purchases', id:'pur_1789797164934_0_g8txdl', product:'Himalaya Gel', vendor:'Nellor', invoice:'1920', stockUnit:'Ltr', normalizedQty:90, value:12354 };
-  const numberEquals = (actual, expected) => Math.abs((Number(actual) || 0) - Number(expected)) <= 0.000001;
-  const recordValue = record => record.totalAmount !== undefined && record.totalAmount !== null ? Number(record.totalAmount) || 0 : Number(record.value ?? record.closingValue ?? 0) || 0;
-  const recordProduct = (record, dataset) => String(dataset === 'Treatment' ? (record.productName || record.product || '') : (record.name || '')).trim();
-  const inScope = (record, dataset) => {
-    if (dataset === 'Purchase') return getPurchaseYear(record) === 2026 && pondwiseNormaliseCrop(getPurchaseCrop(record)) === 'Crop 1';
-    if (dataset === 'Treatment') return getPondwiseYear(record) === 2026 && pondwiseNormaliseCrop(record.crop) === 'Crop 1';
-    return String(record.cycleId || '') === cycleIdFor(2026, 'Crop 1');
-  };
-  const line = result => console.log(`[LIVE CORRECTION PRECHECK] dataset=${result.dataset} | recordId=${result.id} | product=${result.product} | field=${result.field || ''} | currentValue=${result.currentValue ?? ''} | proposedValue=${result.proposedValue ?? ''} | quantity=${result.qty ?? ''} | packSize=${result.packSize ?? ''} | normalizedQty=${result.normalizedQty ?? ''} | value=${result.value ?? ''} | year=${result.year ?? ''} | crop=${result.crop ?? ''} | unique=${result.unique} | matched=${result.matched} | reason=${result.reason}`);
-  if (typeof db === 'undefined' || !db?.collection) {
-    console.error('[LIVE CORRECTION PRECHECK SUMMARY] expectedRecords=10 | recordsFound=0 | recordsMatched=0 | recordsFailed=10 | protectedHimalayaControlOK=false | firebaseReadSucceeded=false | WRITE_ALLOWED_FOR_STAGE_2=false | reason=Firebase database handle unavailable');
-    return { writeAllowed:false, reason:'Firebase database handle unavailable' };
-  }
-  let reads;
-  try {
-    reads = await Promise.all([...manifest, { dataset:'Protected Control', ...control }].map(async item => ({ item, snapshot: await db.collection(item.collection).doc(item.id).get() })));
-  } catch (error) {
-    console.error('[LIVE CORRECTION PRECHECK SUMMARY] expectedRecords=10 | recordsFound=0 | recordsMatched=0 | recordsFailed=10 | protectedHimalayaControlOK=false | firebaseReadSucceeded=false | WRITE_ALLOWED_FOR_STAGE_2=false', error);
-    return { writeAllowed:false, reason:'Authoritative Firebase read failed', error };
-  }
-  const backup = [], outcomes = [];
-  reads.filter(({ item }) => item.dataset !== 'Protected Control').forEach(({ item, snapshot }) => {
-    if (!snapshot.exists) {
-      const outcome = { ...item, currentValue:'', qty:'', normalizedQty:'', value:'', year:'', crop:'', unique:false, matched:false, reason:'Record not found in authoritative Firebase collection' };
-      outcomes.push(outcome); line(outcome); return;
-    }
-    const record = snapshot.data() || {};
-    const normalizedQty = Number(getNormalizedStockQuantity(record) || 0);
-    const qty = Number(record.qty ?? record.closingQty ?? 0);
-    const productOk = recordProduct(record, item.dataset) === item.product;
-    const idOk = String(record.id || '') === item.id && String(snapshot.id) === item.id;
-    const valueOk = item.value === undefined || numberEquals(recordValue(record), item.value);
-    const qtyOk = item.qty === undefined || numberEquals(qty, item.qty);
-    const packSizeOk = item.packSize === undefined || numberEquals(record.packSize, item.packSize);
-    const normalizedOk = item.normalizedQty === undefined || numberEquals(normalizedQty, item.normalizedQty);
-    const fieldOk = String(record[item.field] ?? '') === item.oldValue;
-    const scopeOk = inScope(record, item.dataset);
-    const matched = productOk && idOk && valueOk && qtyOk && packSizeOk && normalizedOk && fieldOk && scopeOk;
-    const outcome = { ...item, currentValue:record[item.field], proposedValue:item.newValue, qty, packSize:record.packSize ?? '', normalizedQty, value:recordValue(record), year:record.year ?? '', crop:record.crop ?? '', unique:idOk, matched, reason:matched ? 'All approved preconditions matched' : `Precondition failed: ${[!productOk&&'product',!idOk&&'id',!scopeOk&&'scope',!fieldOk&&'field',!qtyOk&&'quantity',!packSizeOk&&'pack size',!normalizedOk&&'normalized quantity',!valueOk&&'value'].filter(Boolean).join(', ')}` };
-    backup.push({ dataset:item.dataset, collection:item.collection, recordId:item.id, completeOriginalRecord:JSON.parse(JSON.stringify(record)) });
-    outcomes.push(outcome); line(outcome);
-  });
-  const controlRead = reads.find(({ item }) => item.dataset === 'Protected Control');
-  const controlRecord = controlRead?.snapshot?.exists ? controlRead.snapshot.data() || {} : null;
-  const protectedOk = Boolean(controlRecord) && String(controlRead.snapshot.id) === control.id && String(controlRecord.id || '') === control.id && recordProduct(controlRecord, 'Purchase') === control.product && String(controlRecord.supplier || '') === control.vendor && String(controlRecord.invoiceNo || '') === control.invoice && String(controlRecord.stockUnit || '') === control.stockUnit && numberEquals(getNormalizedStockQuantity(controlRecord), control.normalizedQty) && numberEquals(recordValue(controlRecord), control.value) && inScope(controlRecord, 'Purchase');
-  console.log(`PROTECTED_CONTROL_RECORD_OK=${protectedOk}`);
-  window.blueCrestUnitCorrectionBackupPreview = backup;
-  backup.forEach(item => console.log(`[LIVE UNIT CORRECTION BACKUP] dataset=${item.dataset} | recordId=${item.recordId} | completeOriginalRecord=${JSON.stringify(item.completeOriginalRecord)}`));
-  const found = outcomes.filter(item => item.unique).length;
-  const matched = outcomes.filter(item => item.matched).length;
-  const failed = manifest.length - matched;
-  const writeAllowed = found === 10 && matched === 10 && failed === 0 && protectedOk && backup.length === 10;
-  console.log(`[LIVE CORRECTION PRECHECK SUMMARY] expectedRecords=10 | recordsFound=${found} | recordsMatched=${matched} | recordsFailed=${failed} | protectedHimalayaControlOK=${protectedOk} | firebaseReadSucceeded=true | WRITE_ALLOWED_FOR_STAGE_2=${writeAllowed}`);
-  return { writeAllowed, outcomes, backupPreview:backup };
-};
-</script>
-<script type="text/plain" id="retired-live-unit-correction-stage-2">
-/* Temporary, manually invoked Stage 2. This function is never called automatically. */
-window.blueCrestApplyApprovedUnitCorrection = async function blueCrestApplyApprovedUnitCorrection() {
-  const allowlist = [
-    { collection:'purchases', id:'pur_1789753815909_36_8mmf5y', field:'stockUnit', oldValue:'Kg', newValue:'Ltr' },
-    { collection:'purchases', id:'pur_1789753815909_59_jtbspe', field:'stockUnit', oldValue:'Kg', newValue:'Ltr' },
-    { collection:'treatments', id:'t_1790241987181_380', field:'unit', oldValue:'Kg', newValue:'Ltr' },
-    { collection:'treatments', id:'t_1790241987181_430', field:'unit', oldValue:'Kg', newValue:'Ltr' },
-    { collection:'treatments', id:'t_1790241987181_484', field:'unit', oldValue:'Kg', newValue:'Ltr' },
-    { collection:'treatments', id:'t_1790241987181_511', field:'unit', oldValue:'Kg', newValue:'Ltr' },
-    { collection:'treatments', id:'t_1790241987181_542', field:'unit', oldValue:'Kg', newValue:'Ltr' },
-    { collection:'purchases', id:'pur_1789753815909_11_ryfqgz', field:'stockUnit', oldValue:'Kg', newValue:'Ltr' },
-    { collection:'purchases', id:'pur_1789753815909_118_jvmyfk', field:'stockUnit', oldValue:'Kg', newValue:'Ltr' },
-    { collection:'crop1ClosingPackedStock', id:'c1close-1790272853196-0-cf19v', field:'unit', oldValue:'Kg', newValue:'Ltr' }
-  ];
-  const stable = value => {
-    if (value === null || typeof value !== 'object') return JSON.stringify(value);
-    if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;
-    return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}`;
-  };
-  const summary = (status, extra = '') => console.log(`[LIVE UNIT CORRECTION STATUS] status=${status} | expected=10${extra ? ` | ${extra}` : ''}`);
-  if (typeof window.blueCrestUnitCorrectionPrecheck !== 'function' || typeof db === 'undefined' || !db?.collection) {
-    summary('ABORTED_BEFORE_WRITE', 'reason=Precheck function or Firebase connection unavailable');
-    return { status:'ABORTED_BEFORE_WRITE', reason:'Precheck function or Firebase connection unavailable' };
-  }
-  const preflight = await window.blueCrestUnitCorrectionPrecheck();
-  const expectedKeys = new Set(allowlist.map(item => `${item.collection}|${item.id}`));
-  const backup = Array.isArray(preflight?.backupPreview) ? preflight.backupPreview.map(item => JSON.parse(JSON.stringify(item))) : [];
-  const backupKeys = new Set(backup.map(item => `${item.collection}|${item.recordId}`));
-  const preflightValid = preflight?.writeAllowed === true && backup.length === 10 && backupKeys.size === 10 && [...expectedKeys].every(key => backupKeys.has(key));
-  if (!preflightValid) {
-    summary('ABORTED_BEFORE_WRITE', `reason=Fresh authoritative preflight did not pass | recordsFound=${preflight?.outcomes?.filter(item => item.unique).length || 0} | recordsMatched=${preflight?.outcomes?.filter(item => item.matched).length || 0}`);
-    return { status:'ABORTED_BEFORE_WRITE', reason:'Fresh authoritative preflight did not pass', preflight };
-  }
-  window.blueCrestUnitCorrectionFinalBackup = backup;
-  console.log(`[LIVE UNIT CORRECTION FINAL BACKUP] records=${backup.length} | completeBackup=${JSON.stringify(backup)}`);
-  const originals = new Map(backup.map(item => [`${item.collection}|${item.recordId}`, item.completeOriginalRecord]));
-  const changed = [];
-  const rollback = async failure => {
-    const rollbackResults = [];
-    for (const item of [...changed].reverse()) {
-      const original = originals.get(`${item.collection}|${item.id}`);
-      try {
-        await db.collection(item.collection).doc(item.id).update({ [item.field]: original[item.field] });
-        const reread = await db.collection(item.collection).doc(item.id).get();
-        const restored = reread.exists && String(reread.data()?.[item.field] ?? '') === String(original[item.field] ?? '');
-        rollbackResults.push({ id:item.id, restored });
-      } catch (error) {
-        rollbackResults.push({ id:item.id, restored:false, error:String(error?.message || error) });
-      }
-    }
-    const rollbackOk = rollbackResults.length === changed.length && rollbackResults.every(item => item.restored);
-    console.error(`PARTIAL_WRITE_FAILURE | failedRecord=${failure?.id || ''} | successfullyChanged=${changed.map(item => item.id).join(',')} | rollback=${rollbackOk ? 'verified' : 'failed'} | rollbackDetails=${JSON.stringify(rollbackResults)}`);
-    const status = rollbackOk ? 'PARTIAL_WRITE_ROLLED_BACK' : 'ROLLBACK_FAILED';
-    summary(status, `changedBeforeFailure=${changed.length} | failedRecord=${failure?.id || ''}`);
-    return { status, changed, failure, rollbackResults };
-  };
-  for (const item of allowlist) {
-    const original = originals.get(`${item.collection}|${item.id}`);
-    if (!original || String(original[item.field] ?? '') !== item.oldValue) {
-      if (!changed.length) {
-        summary('ABORTED_BEFORE_WRITE', `reason=Backup allowlist precondition failed | failedRecord=${item.id}`);
-        return { status:'ABORTED_BEFORE_WRITE', changed, failure:{ id:item.id, reason:'Backup allowlist precondition changed unexpectedly' } };
-      }
-      return rollback({ id:item.id, reason:'Backup allowlist precondition changed unexpectedly' });
-    }
-    try {
-      await db.collection(item.collection).doc(item.id).update({ [item.field]: item.newValue });
-      changed.push(item);
-    } catch (error) {
-      return rollback({ id:item.id, error:String(error?.message || error) });
-    }
-  }
-  const verification = [];
-  for (const item of allowlist) {
-    const original = originals.get(`${item.collection}|${item.id}`);
-    try {
-      const snapshot = await db.collection(item.collection).doc(item.id).get();
-      const current = snapshot.exists ? snapshot.data() || {} : null;
-      const beforeWithoutField = { ...original }; delete beforeWithoutField[item.field];
-      const afterWithoutField = current ? { ...current } : null; if (afterWithoutField) delete afterWithoutField[item.field];
-      const verified = Boolean(current) && String(current[item.field] ?? '') === item.newValue && stable(beforeWithoutField) === stable(afterWithoutField);
-      verification.push({ item, verified });
-      console.log(`[LIVE UNIT CORRECTION VERIFIED] dataset=${item.collection} | recordId=${item.id} | field=${item.field} | oldValue=${item.oldValue} | newValue=${item.newValue} | verified=${verified}`);
-    } catch (error) {
-      verification.push({ item, verified:false, error:String(error?.message || error) });
-      console.error(`[LIVE UNIT CORRECTION VERIFIED] dataset=${item.collection} | recordId=${item.id} | field=${item.field} | oldValue=${item.oldValue} | newValue=${item.newValue} | verified=false | error=${String(error?.message || error)}`);
-    }
-  }
-  const controlId = 'pur_1789797164934_0_g8txdl';
-  const controlBefore = await accountingSourceCollectionOrLegacy('purchases').doc(controlId).get();
-  const controlUnchanged = controlBefore.exists && String(controlBefore.data()?.stockUnit || '') === 'Ltr';
-  console.log(`PROTECTED_CONTROL_RECORD_UNCHANGED=${controlUnchanged}`);
-  if (verification.length !== 10 || !verification.every(item => item.verified) || !controlUnchanged) {
-    return rollback({ id:'post-write-verification', reason:'Authoritative verification failed' });
-  }
-  summary('SUCCESS', 'recordsUpdated=10 | recordsVerified=10');
-  return { status:'SUCCESS', updated:changed, verification };
-};
-</script>
-<script type="text/plain" id="retired-remaining-unit-correction-dry-run">
-/* Temporary, manually called, local-memory-only remaining unit correction audit. */
-window.blueCrestRemainingUnitCorrectionDryRun = function blueCrestRemainingUnitCorrectionDryRun() {
-  const confirmed = new Map([
-    ['himalayagel','ltr'],['provetrhodobac','ltr'],['calgophos','ltr'],['challengersanti','ltr'],['biomarinevirbac','ltr'],['bloombooster','kg'],['avantdflow','ltr'],['keminacidlac','kg'],['keminaquastemc','kg'],['keminpathrol','ltr'],['pondplus','kg'],['ponddtox','kg'],['nommonia','kg'],['provetbenzatec80','ltr'],['cpfzeoliteultra','kg'],['pisancogrocid','kg'],['pisancosanityz','ltr'],['posidonfreeze80','ltr'],['posidonlactact','kg'],['posidonreleifsani','ltr'],['keminprozytawp','kg'],['keminnutrasist','kg'],['thionilsp','kg'],['posidonsupremps','ltr'],['pvswhitemaster','ltr'],['rallibond','kg'],['tabletindianovib','kg'],['lavisacyeast','kg'],['keminmastermin','kg'],['keminmasterminar','kg'],['kemintracemin','kg'],['kmax','kg'],['lavishmineral','kg'],['potash','kg'],['cpsuperps','ltr'],['gentechps','ltr'],['posidonboomin','kg'],['rrnubiotic','kg']
-  ]);
-  const excluded = new Set(['pur_1789753815909_36_8mmf5y','pur_1789753815909_59_jtbspe','t_1790241987181_380','t_1790241987181_430','t_1790241987181_484','t_1790241987181_511','t_1790241987181_542','pur_1789753815909_11_ryfqgz','pur_1789753815909_118_jvmyfk','c1close-1790272853196-0-cf19v']);
-  const year=2026, crop='Crop 1', cycle=cycleIdFor(year,crop), key=v=>String(v||'').trim().toLowerCase(), loose=v=>key(v).replace(/[-\s]*(?:\d+(?:\.\d+)?\s*)?(?:kg|gm|gms|ltr|l|ml)$/i,'').replace(/[^a-z0-9]/g,''), base=v=>['ltr','l','ml','milliliter','milliliters'].includes(key(v))?'ltr':'kg', unit=b=>b==='ltr'?'Ltr':'Kg';
-  const pScope=r=>getPurchaseYear(r)===year&&pondwiseNormaliseCrop(getPurchaseCrop(r))===crop, fifoScope=r=>getPondwiseYear(r)===year&&pondwiseNormaliseCrop(r.crop)===crop, amount=r=>r.totalAmount!==undefined&&r.totalAmount!==null?(Number(r.totalAmount)||0):(Number(r.qty)||0)*(Number(r.unitPrice)||0), pBase=r=>base(getPackSizeInfo(r).unit||r.stockUnit||r.unit), tBase=r=>base(r.unit||'Kg');
-  const virtualP=new Map(),virtualR=new Map(),virtualT=new Map(), candidates=[];
-  const add=(dataset,r,field,target,scope,normalBefore,normalAfter)=>{if(excluded.has(String(r.id||'')))return;const safe=scope&&Math.abs(normalBefore-normalAfter)<=1e-6;const c={dataset,record:r,field,target,safe,normalBefore,normalAfter};candidates.push(c);console.log(`[REMAINING UNIT CORRECTION MANIFEST] dataset=${dataset} | recordId=${r.id||''} | product=${r.name||r.productName||r.product||''} | field=${field} | oldValue=${r[field]??''} | newValue=${unit(target)} | quantityBefore=${Number(r.qty??r.closingQty??0).toFixed(3)} | quantityAfter=${Number(r.qty??r.closingQty??0).toFixed(3)} | normalizedQtyBefore=${normalBefore.toFixed(3)} | normalizedQtyAfter=${normalAfter.toFixed(3)} | valueBefore=${amount(r).toFixed(2)} | valueAfter=${amount(r).toFixed(2)} | year=${r.year??''} | crop=${r.crop??''} | SAFE=${safe} | reason=${safe?'Confirmed physical unit; metadata-only invariants verified':'AMBIGUOUS_DO_NOT_CHANGE_SCOPE_OR_NORMALIZATION'}`);if(safe){const clone={...r,[field]:unit(target)};if(dataset==='Purchase')virtualP.set(r,clone);else if(dataset==='Treatment')virtualT.set(r,clone);else if(dataset==='Stock Return')virtualR.set(r,clone);}};
-  (Array.isArray(purchases)?purchases:[]).filter(pScope).forEach(r=>{const u=confirmed.get(loose(r.name));if(u&&String(r.category||'').toLowerCase()!=='feed'&&pBase(r)!==u){const n=Number(getNormalizedStockQuantity(r)||0),clone={...r,stockUnit:unit(u)};add('Purchase',r,'stockUnit',u,true,n,Number(getNormalizedStockQuantity(clone)||0));}});
-  (Array.isArray(treatments)?treatments:[]).filter(fifoScope).forEach(r=>{const u=confirmed.get(loose(r.productName||r.product));if(u&&tBase(r)!==u){const n=getPondwiseTreatmentBaseQty(Number(r.qty||0),r.unit||'Kg'),clone={...r,unit:unit(u)};add('Treatment',r,'unit',u,true,n,getPondwiseTreatmentBaseQty(Number(clone.qty||0),clone.unit));}});
-  (Array.isArray(stockReturns)?stockReturns:[]).filter(r=>getRecordYear(r)===year&&pondwiseNormaliseCrop(getRecordCrop(r))===crop).forEach(r=>{const u=confirmed.get(loose(r.name));if(u&&String(r.category||'').toLowerCase()!=='feed'&&pBase(r)!==u){const n=Number(getNormalizedStockQuantity(r)||0),clone={...r,stockUnit:unit(u)};add('Stock Return',r,'stockUnit',u,true,n,Number(getNormalizedStockQuantity(clone)||0));}});
-  const closing=(typeof getActiveCropClosingStockItems==='function'?getActiveCropClosingStockItems({id:cycle,year,crop}):[]);closing.forEach(r=>{const u=confirmed.get(loose(r.name));if(u&&base(r.unit||r.stockUnit)!==u){const n=Number(getNormalizedStockQuantity(r)||0),clone={...r,unit:unit(u),stockUnit:unit(u)};add('Closing Inventory',r,'unit',u,String(r.cycleId||'')===cycle,n,Number(getNormalizedStockQuantity(clone)||0));}});
-  const vCost=source=>{const t=virtualT.get(source)||source,k=key(t.productName||t.product),need=getPondwiseTreatmentBaseQty(Number(t.qty||0),t.unit||'Kg'),wanted=tBase(t),lots=[];(Array.isArray(purchases)?purchases:[]).filter(r=>fifoScope(r)&&key(r.name)===k&&String(r.category||'').toLowerCase()!=='feed').forEach((sourceP,i)=>{const p=virtualP.get(sourceP)||sourceP;if(pBase(p)!==wanted)return;const q=Number(getNormalizedStockQuantity(p)||0),price=Number(p.totalAmount||0)>0?Number(p.totalAmount)/q:Number(p.unitPrice||0);if(q>0&&price>0)lots.push({d:String(p.date||'9999-12-31'),i,q,price});});lots.sort((a,b)=>a.d.localeCompare(b.d)||a.i-b.i);const consume=q=>{let rem=Number(q||0),cost=0;for(const lot of lots){const take=Math.min(lot.q,rem);lot.q-=take;rem-=take;cost+=take*lot.price;if(rem<=0)break;}return{rem,cost}};(Array.isArray(stockReturns)?stockReturns:[]).filter(r=>fifoScope(r)&&key(r.name)===k&&String(r.date||'9999-12-31')<=String(t.date||'9999-12-31')).sort((a,b)=>String(a.date).localeCompare(String(b.date))).forEach(sourceR=>consume(getNormalizedStockQuantity(virtualR.get(sourceR)||sourceR)));(Array.isArray(treatments)?treatments:[]).filter(r=>fifoScope(r)&&String(r.id)!==String(source.id)&&key(r.productName||r.product)===k&&(String(r.date)<String(t.date)||(String(r.date)===String(t.date)&&String(r.id).localeCompare(String(source.id))<0))).sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.id).localeCompare(String(b.id))).forEach(sourceT=>{const prior=virtualT.get(sourceT)||sourceT;consume(getPondwiseTreatmentBaseQty(Number(prior.qty||0),prior.unit||'Kg'));});return consume(need).cost;};
-  const scopedT=(Array.isArray(treatments)?treatments:[]).filter(fifoScope),current=scopedT.reduce((s,r)=>s+(Number(getTreatmentCostDetails(r,year,crop).cost)||0),0),simulated=scopedT.reduce((s,r)=>s+vCost(r),0);
-  const financeP=(Array.isArray(purchases)?purchases:[]).filter(r=>pScope(r)&&['medicine','fertilizer'].includes(key(r.category))).reduce((s,r)=>s+amount(r),0),financeR=(Array.isArray(stockReturns)?stockReturns:[]).filter(r=>getRecordYear(r)===year&&pondwiseNormaliseCrop(getRecordCrop(r))===crop&&['medicine','fertilizer'].includes(key(r.category))).reduce((s,r)=>s+amount(r),0),financeC=closing.filter(r=>['medicine','fertilizer'].includes(key(r.category))).reduce((s,r)=>s+(Number(r.closingValue??r.value)||0),0),financeConsumed=financeP-financeR-financeC;
-  const byProduct=new Map();scopedT.forEach(r=>{const n=String(r.productName||r.product||'');const x=byProduct.get(n)||{current:0,sim:0};x.current+=Number(getTreatmentCostDetails(r,year,crop).cost)||0;x.sim+=vCost(r);byProduct.set(n,x)});[...byProduct.entries()].filter(([,x])=>Math.abs(x.sim-x.current)>0.005).sort((a,b)=>(b[1].sim-b[1].current)-(a[1].sim-a[1].current)).forEach(([product,x])=>console.log(`[REMAINING UNIT CORRECTION RECOVERY] product=${product} | currentFIFO=${x.current.toFixed(2)} | simulatedFIFO=${x.sim.toFixed(2)} | recovered=${(x.sim-x.current).toFixed(2)}`));
-  const safe=candidates.filter(c=>c.safe).length,ambiguous=candidates.length-safe;console.log(`[REMAINING UNIT CORRECTION SUMMARY] confirmedProducts=39 | alreadyCorrectedRecordsExcluded=10 | candidateRecords=${candidates.length} | safeRecords=${safe} | ambiguousRecords=${ambiguous} | currentTreatmentFIFO=${current.toFixed(2)} | simulatedTreatmentFIFO=${simulated.toFixed(2)} | additionalRecovery=${(simulated-current).toFixed(2)} | financeMedFertConsumed=${financeConsumed.toFixed(2)} | currentMedFertResidual=${(financeConsumed-current).toFixed(2)} | simulatedMedFertResidual=${(financeConsumed-simulated).toFixed(2)}`);
-  return { candidates, currentTreatmentFIFO:current, simulatedTreatmentFIFO:simulated, financeMedFertConsumed:financeConsumed };
-};
-</script>
-<script type="text/plain" id="retired-remaining-live-unit-precheck">
-/* Temporary, manual, read-only Firebase precheck for the frozen SAFE dry-run manifest. */
-window.blueCrestRemainingUnitCorrectionPrecheck = async function blueCrestRemainingUnitCorrectionPrecheck() {
-  const correctedIds = new Set(['pur_1789753815909_36_8mmf5y','pur_1789753815909_59_jtbspe','t_1790241987181_380','t_1790241987181_430','t_1790241987181_484','t_1790241987181_511','t_1790241987181_542','pur_1789753815909_11_ryfqgz','pur_1789753815909_118_jvmyfk','c1close-1790272853196-0-cf19v']);
-  const collections = { Purchase:'purchases', Treatment:'treatments', 'Stock Return':'stockReturns', 'Closing Inventory':'crop1ClosingPackedStock' };
-  const expectedCounts = { Treatment:163, Purchase:14, 'Closing Inventory':3, 'Stock Return':1 };
-  const numberEquals = (a,b) => Math.abs((Number(a)||0)-(Number(b)||0)) <= 0.000001;
-  const valueOf = r => r.totalAmount !== undefined && r.totalAmount !== null ? Number(r.totalAmount)||0 : Number(r.value ?? r.closingValue ?? 0)||0;
-  const productOf = (r,dataset) => String(dataset === 'Treatment' ? (r.productName||r.product||'') : (r.name||'')).trim();
-  const scopeOk = (r,dataset) => dataset === 'Purchase' ? getPurchaseYear(r)===2026 && pondwiseNormaliseCrop(getPurchaseCrop(r))==='Crop 1' : dataset === 'Treatment' ? getPondwiseYear(r)===2026 && pondwiseNormaliseCrop(r.crop)==='Crop 1' : dataset === 'Stock Return' ? getRecordYear(r)===2026 && pondwiseNormaliseCrop(getRecordCrop(r))==='Crop 1' : String(r.cycleId||'')===cycleIdFor(2026,'Crop 1');
-  const stable = value => { if(value===null||typeof value!=='object')return JSON.stringify(value);if(Array.isArray(value))return`[${value.map(stable).join(',')}]`;return`{${Object.keys(value).sort().map(k=>`${JSON.stringify(k)}:${stable(value[k])}`).join(',')}}`; };
-  const hasOwn=(object,key)=>Object.prototype.hasOwnProperty.call(object||{},key);
-  const sameText=(a,b)=>String(a??'').trim()===String(b??'').trim();
-  const normalQty=(record,dataset)=>dataset==='Treatment'?Number(getPondwiseTreatmentBaseQty(Number(record?.qty||0),record?.unit||'Kg')||0):Number(getNormalizedStockQuantity(record)||0);
-  const persistedProjection={
-    Purchase:[['productId','text'],['date','text'],['year','number'],['crop','text'],['cycleId','text'],['supplier','text'],['invoiceNo','text'],['company','text'],['category','text'],['packSize','number'],['unit','text'],['unitPrice','number'],['invoiceUnitPrice','number'],['finalUnitPrice','number'],['totalAmount','number']],
-    Treatment:[['productId','text'],['date','text'],['pondId','text'],['pond','text'],['year','number'],['crop','text'],['cycleId','text'],['category','text'],['purpose','text'],['notes','text']],
-    'Stock Return':[['productId','text'],['date','text'],['year','number'],['crop','text'],['cycleId','text'],['supplier','text'],['invoiceNo','text'],['company','text'],['category','text'],['packSize','number'],['unit','text'],['unitPrice','number'],['invoiceUnitPrice','number'],['finalUnitPrice','number'],['totalAmount','number']],
-    'Closing Inventory':[['productId','text'],['date','text'],['year','number'],['crop','text'],['cycleId','text'],['category','text'],['company','text'],['packSize','number'],['stockUnit','text'],['price','number'],['value','number'],['qty','number']]
-  };
-  const persistedInvariantChecks=(item,current,normalized)=>{
-    const expected=item.expectedRecord||{};
-    const check=(property,expectedValue,actualValue,equal,reason)=>({property,expected:expectedValue,actual:actualValue,equal,reason});
-    const checks=[
-      check('recordId',item.id,current.id,sameText(item.id,current.id),'Exact stored record identity'),
-      check('product',item.product,productOf(current,item.dataset),sameText(item.product,productOf(current,item.dataset)),'Exact product identity'),
-      check(`field:${item.field}`,item.oldValue,current[item.field],sameText(item.oldValue,current[item.field]),'Live corrected field must equal frozen oldValue'),
-      check('manifestNewValue',item.newValue,item.oldValue,Boolean(String(item.newValue??'').trim())&&!sameText(item.newValue,item.oldValue),'Approved replacement must be nonblank and different'),
-      check('scope','2026 / Crop 1',`${current.year??''} / ${current.crop??''}`,scopeOk(current,item.dataset),'Year/Crop scope'),
-      check('quantity',item.quantity,current.qty??current.closingQty??0,numberEquals(item.quantity,current.qty??current.closingQty??0),'Raw persisted quantity'),
-      check('normalizedQuantity',item.normalizedQty,normalized,numberEquals(item.normalizedQty,normalized),'Existing dataset normalization')
-    ];
-    if(item.dataset!=='Treatment')checks.push(check('monetaryValue',item.value,valueOf(current),numberEquals(item.value,valueOf(current)),'Persisted monetary value'));
-    (persistedProjection[item.dataset]||[]).forEach(([property,type])=>{if(!hasOwn(current,property))return;const expectedValue=expected[property],actualValue=current[property],equal=type==='number'?numberEquals(expectedValue,actualValue):sameText(expectedValue,actualValue);checks.push(check(property,expectedValue,actualValue,equal,'Persisted business field'));});
-    if(item.dataset==='Purchase'){const withoutExpected={...expected},withoutCurrent={...current};delete withoutExpected[item.field];delete withoutCurrent[item.field];checks.push(check('purchaseUnchanged',stable(withoutExpected),stable(withoutCurrent),stable(withoutExpected)===stable(withoutCurrent),'Existing full persisted Purchase comparison'));}
-    return checks;
-  };
-  const output = o => console.log(`[REMAINING LIVE UNIT PRECHECK] dataset=${o.dataset} | recordId=${o.id} | product=${o.product} | field=${o.field} | currentValue=${o.currentValue ?? ''} | proposedValue=${o.newValue ?? ''} | quantity=${o.qty ?? ''} | normalizedQty=${o.normalizedQty ?? ''} | value=${o.value ?? ''} | year=${o.year ?? ''} | crop=${o.crop ?? ''} | unique=${o.unique} | matched=${o.matched} | reason=${o.reason}`);
-  if(typeof window.blueCrestRemainingUnitCorrectionDryRun!=='function'||typeof db==='undefined'||!db?.collection){console.error('[REMAINING LIVE UNIT PRECHECK SUMMARY] firebaseReadSucceeded=false | WRITE_ALLOWED_FOR_REMAINING_STAGE2=false | reason=Dry-run function or Firebase database handle unavailable');return{writeAllowed:false};}
-  const dryRun=window.blueCrestRemainingUnitCorrectionDryRun();
-  const candidates=Array.isArray(dryRun?.candidates)?dryRun.candidates:[];
-  const ambiguousCandidates=candidates.filter(c=>!c.safe).length;
-  const frozen=candidates.filter(c=>c.safe).map(c=>{const r=JSON.parse(JSON.stringify(c.record));const newValue=c.target==='ltr'?'Ltr':c.target==='kg'?'Kg':'';return{dataset:c.dataset,collection:collections[c.dataset],id:String(r.id||''),product:productOf(r,c.dataset),field:c.field,oldValue:r[c.field],newValue,quantity:Number(r.qty??r.closingQty??0),normalizedQty:Number(c.normalBefore||0),value:valueOf(r),expectedRecord:r};});
-  const countBy=items=>items.reduce((m,x)=>{m[x.dataset]=(m[x.dataset]||0)+1;return m;},{}), frozenCounts=countBy(frozen);
-  window.blueCrestRemainingUnitCorrectionFrozenManifest=JSON.parse(JSON.stringify(frozen));
-  const malformedManifest=frozen.filter(x=>!String(x.oldValue??'').trim()||!String(x.newValue??'').trim()||String(x.oldValue).trim()===String(x.newValue).trim());
-  const frozenValid=ambiguousCandidates===0&&frozen.length===181&&Object.keys(expectedCounts).every(k=>(frozenCounts[k]||0)===expectedCounts[k])&&new Set(frozen.map(x=>`${x.collection}|${x.id}`)).size===181&&frozen.every(x=>x.collection&&x.id&&!correctedIds.has(x.id))&&malformedManifest.length===0;
-  if(!frozenValid){malformedManifest.forEach(x=>console.error(`[REMAINING LIVE UNIT PRECHECK MANIFEST FAILURE] dataset=${x.dataset} | recordId=${x.id} | product=${x.product} | oldValue=${x.oldValue??''} | newValue=${x.newValue??''}`));console.error(`[REMAINING LIVE UNIT PRECHECK SUMMARY] expectedRecords=181 | recordsFound=0 | recordsMatched=0 | recordsFailed=181 | treatmentExpected=163 | treatmentMatched=0 | purchaseExpected=14 | purchaseMatched=0 | closingExpected=3 | closingMatched=0 | stockReturnExpected=1 | stockReturnMatched=0 | ambiguousRecords=${ambiguousCandidates} | backupRecords=0 | firebaseReadSucceeded=false | WRITE_ALLOWED_FOR_REMAINING_STAGE2=false | reason=Frozen SAFE manifest mismatch | frozenRecords=${frozen.length} | frozenCounts=${JSON.stringify(frozenCounts)} | malformedManifestRecords=${malformedManifest.length}`);return{writeAllowed:false,frozen};}
-  const readTimeoutMs=12000,maxConcurrentReads=15,reads=new Array(frozen.length);let nextRead=0,completedReads=0;
-  const readOne=item=>new Promise(resolve=>{let settled=false;const settle=result=>{if(settled)return;settled=true;clearTimeout(timer);resolve(result);};const timer=setTimeout(()=>settle({item,status:'TIMEOUT',error:new Error(`Read timed out after ${readTimeoutMs}ms`)}),readTimeoutMs);Promise.resolve().then(()=>db.collection(item.collection).doc(item.id).get()).then(snapshot=>settle({item,status:'OK',snapshot})).catch(error=>settle({item,status:'FAILED',error}));});
-  const worker=async()=>{while(true){const index=nextRead++;if(index>=frozen.length)return;const result=await readOne(frozen[index]);reads[index]=result;completedReads++;console.log(`[REMAINING PRECHECK PROGRESS] completed=${completedReads}/181 | dataset=${result.item.dataset} | recordId=${result.item.id} | status=${result.status}`);}};
-  await Promise.all(Array.from({length:Math.min(maxConcurrentReads,frozen.length)},worker));
-  const backup=[],outcomes=[];reads.forEach(result=>{const {item,snapshot,status,error}=result;if(status!=='OK'){const o={...item,currentValue:'',qty:'',normalizedQty:'',value:'',year:'',crop:'',unique:false,matched:false,reason:`Authoritative Firebase read ${status}: ${String(error?.message||error||'Unknown error')}`};outcomes.push(o);output(o);return;}if(!snapshot.exists){const o={...item,currentValue:'',qty:'',normalizedQty:'',value:'',year:'',crop:'',unique:false,matched:false,reason:'Record not found in authoritative Firebase'};outcomes.push(o);output(o);return;}try{const current=snapshot.data()||{},normalized=normalQty(current,item.dataset),checks=persistedInvariantChecks(item,current,normalized),failures=checks.filter(check=>!check.equal),matched=failures.length===0;failures.forEach(check=>console.error(`[REMAINING PRECHECK INVARIANT FAILURE] dataset=${item.dataset} | recordId=${item.id} | product=${item.product} | property=${check.property} | expected=${String(check.expected??'')} | actual=${String(check.actual??'')} | reason=${check.reason}`));const o={...item,currentValue:current[item.field],qty:Number(current.qty??current.closingQty??0),normalizedQty:normalized,value:valueOf(current),year:current.year??'',crop:current.crop??'',unique:checks.find(check=>check.property==='recordId')?.equal===true,matched,reason:matched?'All persisted business invariants matched':`Precondition failed: ${failures.map(check=>check.property).join(', ')}`};backup.push({dataset:item.dataset,collection:item.collection,recordId:item.id,completeOriginalRecord:JSON.parse(JSON.stringify(current))});outcomes.push(o);output(o);}catch(processingError){const o={...item,currentValue:'',qty:'',normalizedQty:'',value:'',year:'',crop:'',unique:false,matched:false,reason:`Result validation failed: ${String(processingError?.message||processingError||'Unknown error')}`};outcomes.push(o);output(o);}});
-  window.blueCrestRemainingUnitCorrectionBackupPreview=backup;
-  const matched=outcomes.filter(o=>o.matched).length,found=outcomes.filter(o=>o.unique).length,counts=countBy(outcomes.filter(o=>o.matched)),firebaseReadSucceeded=reads.every(result=>result.status==='OK'),writeAllowed=firebaseReadSucceeded&&found===181&&matched===181&&backup.length===181&&Object.keys(expectedCounts).every(k=>(counts[k]||0)===expectedCounts[k]);
-  console.log(`[REMAINING LIVE UNIT PRECHECK SUMMARY] expectedRecords=181 | recordsFound=${found} | recordsMatched=${matched} | recordsFailed=${181-matched} | treatmentExpected=163 | treatmentMatched=${counts.Treatment||0} | purchaseExpected=14 | purchaseMatched=${counts.Purchase||0} | closingExpected=3 | closingMatched=${counts['Closing Inventory']||0} | stockReturnExpected=1 | stockReturnMatched=${counts['Stock Return']||0} | ambiguousRecords=${ambiguousCandidates} | backupRecords=${backup.length} | firebaseReadSucceeded=${firebaseReadSucceeded} | WRITE_ALLOWED_FOR_REMAINING_STAGE2=${writeAllowed}`);
-  return{writeAllowed,frozen,outcomes,backupPreview:backup};
-};
-</script>
-<script type="text/plain" id="retired-remaining-live-unit-correction-stage-2">
-/* Temporary, manual-only Stage 2 writer. It is never called automatically. */
-window.blueCrestApplyRemainingUnitCorrection = async function blueCrestApplyRemainingUnitCorrection() {
-  const expectedCounts={Treatment:163,Purchase:14,'Closing Inventory':3,'Stock Return':1};
-  const protectedIds=new Set(['pur_1789753815909_36_8mmf5y','pur_1789753815909_59_jtbspe','t_1790241987181_380','t_1790241987181_430','t_1790241987181_484','t_1790241987181_511','t_1790241987181_542','pur_1789753815909_11_ryfqgz','pur_1789753815909_118_jvmyfk','c1close-1790272853196-0-cf19v']);
-  const stable=value=>{if(value===null||typeof value!=='object')return JSON.stringify(value);if(Array.isArray(value))return`[${value.map(stable).join(',')}]`;return`{${Object.keys(value).sort().map(key=>`${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}`;};
-  const countBy=items=>items.reduce((counts,item)=>{counts[item.dataset]=(counts[item.dataset]||0)+1;return counts;},{});
-  const countsMatch=counts=>Object.keys(expectedCounts).every(key=>(counts[key]||0)===expectedCounts[key]);
-  const abort=(reason,extra={})=>{console.error(`[REMAINING UNIT CORRECTION ABORTED] reason=${reason}${Object.entries(extra).map(([key,value])=>` | ${key}=${value}`).join('')}`);return{status:'ABORTED_BEFORE_WRITE',reason,...extra};};
-  const status=(state,extra={})=>console.log(`[REMAINING LIVE UNIT CORRECTION STATUS] status=${state}${Object.entries(extra).map(([key,value])=>` | ${key}=${value}`).join('')}`);
-  if(typeof window.blueCrestRemainingUnitCorrectionPrecheck!=='function'||typeof db==='undefined'||!db?.collection)return abort('Fresh authoritative preflight unavailable');
-  let preflight;
-  try{preflight=await window.blueCrestRemainingUnitCorrectionPrecheck();}catch(error){return abort('Fresh authoritative preflight failed',{error:String(error?.message||error)});}
-  const allowlist=Array.isArray(preflight?.frozen)?preflight.frozen.map(item=>JSON.parse(JSON.stringify(item))):[];
-  const outcomes=Array.isArray(preflight?.outcomes)?preflight.outcomes:[];
-  const allowlistCounts=countBy(allowlist),matchedCounts=countBy(outcomes.filter(item=>item.matched)),allowlistKeys=new Set(allowlist.map(item=>`${item.collection}|${item.id}`));
-  const preflightValid=preflight?.writeAllowed===true&&allowlist.length===181&&outcomes.length===181&&outcomes.filter(item=>item.unique).length===181&&outcomes.filter(item=>item.matched).length===181&&allowlistKeys.size===181&&countsMatch(allowlistCounts)&&countsMatch(matchedCounts)&&allowlist.every(item=>item.collection&&item.id&&item.field&&String(item.oldValue??'').trim()&&String(item.newValue??'').trim()&&String(item.oldValue).trim()!==String(item.newValue).trim()&&!protectedIds.has(item.id));
-  if(!preflightValid)return abort('Fresh authoritative preflight failed',{recordsFound:outcomes.filter(item=>item.unique).length,recordsMatched:outcomes.filter(item=>item.matched).length,manifestRecords:allowlist.length});
-  const readTimeoutMs=12000,maxConcurrentReads=10,backupReads=new Array(allowlist.length);let nextRead=0;
-  const readOne=item=>new Promise(resolve=>{let settled=false;const settle=result=>{if(settled)return;settled=true;clearTimeout(timer);resolve(result);};const timer=setTimeout(()=>settle({item,status:'TIMEOUT',error:new Error(`Backup read timed out after ${readTimeoutMs}ms`)}),readTimeoutMs);Promise.resolve().then(()=>db.collection(item.collection).doc(item.id).get()).then(snapshot=>settle({item,status:'OK',snapshot})).catch(error=>settle({item,status:'FAILED',error}));});
-  const backupWorker=async()=>{while(true){const index=nextRead++;if(index>=allowlist.length)return;backupReads[index]=await readOne(allowlist[index]);}};
-  await Promise.all(Array.from({length:Math.min(maxConcurrentReads,allowlist.length)},backupWorker));
-  const backupFailures=backupReads.filter(result=>result.status!=='OK'||!result.snapshot?.exists||String(result.snapshot.id)!==String(result.item.id)||String(result.snapshot.data()?.id??'')!==String(result.item.id));
-  if(backupFailures.length)return abort('Fresh complete authoritative backup failed',{backupRecords:allowlist.length-backupFailures.length,failedRecords:backupFailures.map(result=>`${result.item.dataset}:${result.item.id}`).join(',')});
-  const backup=backupReads.map(({item,snapshot})=>({dataset:item.dataset,collection:item.collection,recordId:item.id,completeOriginalRecord:JSON.parse(JSON.stringify(snapshot.data()||{})),field:item.field,oldValue:item.oldValue,newValue:item.newValue}));
-  if(backup.length!==181||!countsMatch(countBy(backup))||new Set(backup.map(item=>`${item.collection}|${item.recordId}`)).size!==181)return abort('Fresh complete authoritative backup failed',{backupRecords:backup.length});
-  window.blueCrestRemainingUnitCorrectionFinalBackup=backup;
-  const originals=new Map(backup.map(item=>[`${item.collection}|${item.recordId}`,item]));
-  const changed=[];
-  const rollback=async failure=>{const results=[];for(const item of [...changed].reverse()){const original=originals.get(`${item.collection}|${item.id}`);try{await db.collection(item.collection).doc(item.id).update({[item.field]:original.completeOriginalRecord[item.field]});const reread=await db.collection(item.collection).doc(item.id).get();const restored=reread.exists&&String(reread.data()?.[item.field]??'')===String(original.completeOriginalRecord[item.field]??'');results.push({dataset:item.dataset,id:item.id,restored});}catch(error){results.push({dataset:item.dataset,id:item.id,restored:false,error:String(error?.message||error)});}}const restored=results.filter(result=>result.restored).length,verified=restored,failed=results.length-restored;console.error(`[REMAINING UNIT CORRECTION ROLLBACK] attempted=${results.length} | restored=${restored} | verified=${verified} | failed=${failed}`);if(failed)console.error(`[REMAINING UNIT CORRECTION ROLLBACK ERROR] manualAttention=${results.filter(result=>!result.restored).map(result=>`${result.dataset}:${result.id}`).join(',')}`);status(failed?'FAILED':'ROLLED_BACK',{attempted:results.length,restored,verified,failed});return{status:failed?'ROLLBACK_FAILED':'ROLLED_BACK',failure,rollback:results};};
-  for(const item of allowlist){const original=originals.get(`${item.collection}|${item.id}`);let live;try{live=await db.collection(item.collection).doc(item.id).get();}catch(error){if(!changed.length)return abort('Per-record authoritative guard failed',{recordId:item.id,error:String(error?.message||error)});return rollback({id:item.id,reason:'Per-record authoritative guard read failed',error:String(error?.message||error)});}if(!live.exists||String(live.id)!==String(item.id)||String(live.data()?.id??'')!==String(item.id)||String(live.data()?.[item.field]??'')!==String(item.oldValue??'')){console.error(`[REMAINING UNIT WRITE PROGRESS] completed=${changed.length}/181 | dataset=${item.dataset} | recordId=${item.id} | product=${item.product} | field=${item.field} | oldValue=${item.oldValue} | newValue=${item.newValue} | status=FAILED`);if(!changed.length)return abort('Per-record old-value guard failed',{recordId:item.id});return rollback({id:item.id,reason:'Per-record old-value guard failed'});}try{await db.collection(item.collection).doc(item.id).update({[item.field]:item.newValue});changed.push(item);console.log(`[REMAINING UNIT WRITE PROGRESS] completed=${changed.length}/181 | dataset=${item.dataset} | recordId=${item.id} | product=${item.product} | field=${item.field} | oldValue=${item.oldValue} | newValue=${item.newValue} | status=UPDATED`);}catch(error){console.error(`[REMAINING UNIT WRITE PROGRESS] completed=${changed.length}/181 | dataset=${item.dataset} | recordId=${item.id} | product=${item.product} | field=${item.field} | oldValue=${item.oldValue} | newValue=${item.newValue} | status=FAILED`);return rollback({id:item.id,reason:'Field-only update failed',error:String(error?.message||error)});}}
-  const verification=[];for(const item of allowlist){const original=originals.get(`${item.collection}|${item.id}`);try{const snapshot=await db.collection(item.collection).doc(item.id).get(),current=snapshot.exists?(snapshot.data()||{}):null,beforeWithoutField={...original.completeOriginalRecord},afterWithoutField=current?{...current}:null;delete beforeWithoutField[item.field];if(afterWithoutField)delete afterWithoutField[item.field];const verified=Boolean(current)&&String(snapshot.id)===String(item.id)&&String(current.id??'')===String(item.id)&&String(current[item.field]??'')===String(item.newValue??'')&&stable(beforeWithoutField)===stable(afterWithoutField);verification.push({item,verified});if(!verified)console.error(`[REMAINING UNIT POST-WRITE FAILURE] dataset=${item.dataset} | recordId=${item.id} | field=${item.field}`);}catch(error){verification.push({item,verified:false,error:String(error?.message||error)});console.error(`[REMAINING UNIT POST-WRITE FAILURE] dataset=${item.dataset} | recordId=${item.id} | error=${String(error?.message||error)}`);}}
-  const verifiedCount=verification.filter(result=>result.verified).length,verificationCounts=countBy(verification.filter(result=>result.verified).map(result=>result.item));
-  if(changed.length!==181||verifiedCount!==181||!countsMatch(verificationCounts))return rollback({id:'post-write-verification',reason:'Authoritative post-write verification failed'});
-  status('SUCCESS',{expected:181,recordsUpdated:181,recordsVerified:181,verificationFailed:0,Treatment:163,Purchase:14,ClosingInventory:3,StockReturn:1});
-  return{status:'SUCCESS',updated:changed,verification,backup};
-};
-</script>
+
+
+
+
+
 <script id="farm-setup-phase-one">
 function farmSetupIsOwner() { return blueCrestSession?.role === 'owner' && blueCrestSession?.canWrite === true && canWriteFoundation(); }
 function farmSetupPondsForActiveCycle() { const cycleId = String(activeCycle?.id || ''); return (Array.isArray(ponds) ? ponds : []).filter(pond => String(pond?.cycleId || cycleIdFor(pond?.year, pond?.crop)) === cycleId); }
